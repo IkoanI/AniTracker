@@ -1,0 +1,99 @@
+<resources>
+    <string name="app_name">AniTracker</string>
+    <string name="Rank">Rank</string>
+    <string name="title">Title</string>
+    <string name="rating">Rating</string>
+    <string name="season_format">Season · Format</string>
+    <string name="genres">Genres</string>
+    <string name="studio">Studio</string>
+    <string name="favorites">Favorites</string>
+    <string name="heart">Heart</string>
+    <string name="rating_star">rating star</string>
+    <string name="description">Description</string>
+    <string name="loremIpsum"> Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+        In vehicula tellus dolor, non imperdiet nibh rhoncus maximus. Vestibulum ac eros
+        quis turpis auctor dictum. Nam sit amet elit eu massa blandit pulvinar consectetur
+        sed est. Cras eget mi gravida, elementum dui vel, laoreet quam. Nunc rutrum dolor
+        quis tortor dictum, ut mollis magna dictum. Suspendisse ac luctus mi. In fringilla
+        augue sit amet nibh molestie rhoncus. Sed eu ornare risus. Sed id orci elit.
+        Suspendisse ornare sagittis dolor, quis aliquet augue rhoncus id. Aliquam dictum,
+        mauris ut cursus auctor, dolor neque sollicitudin velit, eu tincidunt urna metus ut
+        velit. Pellentesque ac dictum enim. Pellentesque vitae porta libero, vel imperdiet
+        dui. Proin posuere tristique aliquam. Vestibulum ut ante id est vestibulum semper a
+        eget nisl. Suspendisse at ligula scelerisque, condimentum justo quis, aliquam velit.
+        Nam luctus ultrices euismod. Ut lobortis sed lorem ac mollis. Mauris euismod felis
+        quis felis consequat luctus. Vestibulum imperdiet nisl a dui tincidunt, eu rutrum
+        metus scelerisque. Cras porta lorem non ligula sodales tempor. Mauris non semper
+        ligula. Morbi sodales commodo aliquet. Fusce quis sollicitudin dolor. Mauris ac
+        dui pulvinar, gravida odio et, bibendum justo. Praesent sagittis commodo tortor,
+        nec condimentum dui feugiat at. Ut vitae sagittis ligula. Vivamus placerat massa
+        mattis placerat molestie. Praesent vel commodo arcu, a facilisis justo. Sed varius
+        et augue ut tempus. Aenean sodales nulla id vestibulum facilisis. Donec luctus
+        iaculis lorem, pretium eleifend orci aliquet quis. Sed ultrices vitae lacus sed
+        suscipit. Nullam non augue in lacus tristique scelerisque eu a ante. Nulla vulputate
+        ante vel magna scelerisque efficitur. Nullam tincidunt diam non mi eleifend, a
+        condimentum diam cursus. Etiam pretium purus nisi, nec efficitur felis finibus nec.
+        Etiam eu consectetur lacus, tristique lacinia elit. Aliquam efficitur ligula leo, a
+        finibus leo commodo commodo. Pellentesque hendrerit lacinia gravida. Integer eu
+        libero at purus gravida fermentum. Praesent malesuada feugiat venenatis. Sed placerat
+        vel elit quis volutpat. Vestibulum pellentesque vel tellus quis rhoncus. Quisque vel ex
+        in turpis vestibulum tristique. Quisque aliquet vitae nibh vel ullamcorper. Vivamus
+        vitae massa quam. Donec est enim, fringilla aliquet auctor sed, pulvinar eget mi. Proin
+        cursus ut risus in fermentum. Nulla rhoncus velit orci, quis semper felis tincidunt id.
+        Nullam et egestas urna. Phasellus condimentum semper tortor eget consectetur. Sed fringilla
+        bibendum dolor, vitae pulvinar augue venenatis in. Curabitur et nisi quis tortor hendrerit
+        facilisis quis in est. Mauris vel nibh vel sapien tempor vestibulum. Pellentesque habitant
+        morbi tristique senectus et netus et malesuada fames ac turpis egestas. Pellentesque finibus
+        nisl eget nisl malesuada ultrices. Sed iaculis, nibh id malesuada dapibus, dolor lacus luctus
+        tortor, porta sollicitudin mi metus ac turpis. Donec enim nisi, commodo eget vehicula
+        vitae, pulvinar a nunc.</string>
+    <string name="banner">banner</string>
+    <string name="synopsis">Synopsis</string>
+    <string name="read_more">Read More</string>
+    <string name="genre">Genre</string>
+    <string name="info">Info</string>
+    <string name="format">Format</string>
+    <string name="episodes">Episodes</string>
+    <string name="duration">Duration</string>
+    <string name="status">Status</string>
+    <string name="start_date">Start Date</string>
+    <string name="end_date">End Date</string>
+    <string name="season">Season</string>
+    <string name="average_score">Average Score</string>
+    <string name="mean_score">Mean Score</string>
+    <string name="popularity">Popularity</string>
+    <string name="studios">Studios</string>
+    <string name="producers">Producers</string>
+    <string name="source">Source</string>
+    <string name="hashtag">Hashtag</string>
+    <string name="romaji">Romaji</string>
+    <string name="english">English</string>
+    <string name="nativeTitle">Native</string>
+    <string name="synonyms">Synonyms</string>
+    <string name="thumbnail">thumbnail</string>
+    <string name="play_button">Play Button</string>
+    <string name="value">Value</string>
+    <string name="overview">Overview</string>
+    <string name="characters">Characters</string>
+    <string name="staff">Staff</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="tags">Tags</string>
+    <string name="tag_name">Tag Name</string>
+    <string name="tag_ranking">Tag Ranking</string>
+    <string name="show_spoilers">Show Spoilers</string>
+    <string name="hide_spoilers">Hide Spoilers</string>
+    <string name="character_name">Character Name</string>
+    <string name="role">Role</string>
+    <string name="header">Header</string>
+    <string name="staff_name">Staff Name</string>
+    <string name="relation">Relation</string>
+    <string name="format_status">Format · Status</string>
+    <string name="anime">Anime</string>
+    <string name="manga">Manga</string>
+    <string name="visual_novel">Visual Novel</string>
+    <string name="release_date">Release Date</string>
+    <string name="developers">Developers</string>
+    <string name="year_play_time">Year · Play Time</string>
+    <string name="image">image</string>
+</resources>

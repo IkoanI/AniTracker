@@ -1,0 +1,265 @@
+query topAnimePage($pageNo : Int!){
+    Page(page: $pageNo, perPage: 50){
+        media(sort: SCORE_DESC, type: ANIME) {
+            title {
+                userPreferred
+            }
+            averageScore
+            coverImage {
+                large
+            }
+            format
+            season
+            episodes
+            duration
+            genres
+            startDate {
+                year
+            }
+            favourites
+            studios(isMain:true){
+                nodes{
+                    name
+                }
+            }
+            nextAiringEpisode {
+                timeUntilAiring
+                episode
+            }
+            id
+            type
+        }
+    }
+}
+
+query topMangaPage($pageNo : Int!){
+    Page(page: $pageNo, perPage: 50){
+        media(sort: SCORE_DESC, type: MANGA) {
+            title {
+                userPreferred
+            }
+            averageScore
+            coverImage {
+                large
+            }
+            format
+            id
+            genres
+            startDate {
+                year
+            }
+            endDate {
+                year
+            }
+            favourites
+            volumes
+            status
+        }
+    }
+}
+
+query animeSearchPage ($pageNo : Int!, $userSearch : String!){
+    Page (page: $pageNo, perPage: 50){
+        media (search: $userSearch, type: ANIME){
+            title {
+                userPreferred
+            }
+            averageScore
+            coverImage {
+                large
+            }
+            format
+            season
+            episodes
+            duration
+            genres
+            startDate {
+                year
+            }
+            favourites
+            studios(isMain:true){
+                nodes{
+                    name
+                }
+            }
+            nextAiringEpisode {
+                timeUntilAiring
+                episode
+            }
+            id
+            type
+        }
+    }
+}
+
+query mangaSearchPage ($pageNo : Int!, $userSearch : String!){
+    Page (page: $pageNo, perPage: 50){
+        media (search: $userSearch, type: MANGA){
+            title {
+                userPreferred
+            }
+            averageScore
+            coverImage {
+                large
+            }
+            format
+            id
+            genres
+            startDate {
+                year
+            }
+            endDate {
+                year
+            }
+            favourites
+            volumes
+            status
+        }
+    }
+}
+
+fragment commonDetails on Media {
+    title {
+        userPreferred
+        romaji
+        native
+        english
+    }
+    averageScore
+    coverImage {
+        large
+    }
+    format
+    genres
+    startDate {
+        year
+        month
+        day
+    }
+    endDate {
+        year
+        month
+        day
+    }
+    favourites
+    id
+    description
+    bannerImage
+    trailer {
+        id
+        site
+        thumbnail
+    }
+    synonyms
+    source
+    meanScore
+    popularity
+    hashtag
+    status
+    tags {
+        name
+        rank
+        isMediaSpoiler
+        isGeneralSpoiler
+    }
+}
+
+query AnimeMoreDetails($id : Int!){
+    Media(id: $id, type: ANIME) {
+        ...commonDetails
+        season
+        episodes
+        duration
+        studios {
+            edges {
+                isMain
+                node {
+                    name
+                    isAnimationStudio
+                }
+            }
+        }
+        nextAiringEpisode {
+            timeUntilAiring
+            episode
+        }
+    }
+}
+
+query MangaMoreDetails($id : Int!) {
+    Media(id: $id, type: MANGA){
+        ...commonDetails
+        chapters
+        volumes
+    }
+}
+
+query characterPage($mediaId : Int!, $pageNo : Int!, $language : StaffLanguage!) {
+    Media(id: $mediaId) {
+        characters(page: $pageNo, perPage: 25, sort: [ROLE, RELEVANCE, ID]) {
+            edges {
+                role
+                voiceActorRoles(language: $language) {
+                    roleNotes
+                    voiceActor {
+                        name {
+                            userPreferred
+                        }
+                        image{
+                            large
+                        }
+                    }
+                }
+                node {
+                    name {
+                        userPreferred
+                    }
+                    id
+                    image {
+                        large
+                    }
+                }
+            }
+        }
+    }
+}
+
+query staffPage ($mediaId : Int!, $pageNo : Int!) {
+    Media(id: $mediaId) {
+        staff(page: $pageNo, perPage: 25, sort: [RELEVANCE, ID]) {
+            edges {
+                role
+                node {
+                    name {
+                        userPreferred
+                    }
+                    image {
+                        large
+                    }
+                }
+            }
+        }
+    }
+}
+
+query relationsPage($mediaId : Int!) {
+    Media(id: $mediaId) {
+        relations {
+            edges {
+                relationType
+                node {
+                    title {
+                        userPreferred
+                    }
+                    coverImage {
+                        large
+                    }
+                    format
+                    status
+                    type
+                    id
+                }
+            }
+        }
+    }
+}
