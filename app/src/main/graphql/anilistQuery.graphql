@@ -1,136 +1,72 @@
-query topAnimePage($pageNo : Int!){
-    Page(page: $pageNo, perPage: 50){
-        media(sort: SCORE_DESC, type: ANIME) {
-            title {
-                userPreferred
-            }
-            averageScore
-            coverImage {
-                large
-            }
-            format
-            season
-            episodes
-            duration
-            genres
-            startDate {
-                year
-            }
-            favourites
-            studios(isMain:true){
-                nodes{
-                    name
-                }
-            }
-            nextAiringEpisode {
-                timeUntilAiring
-                episode
-            }
-            id
-            type
-        }
-    }
-}
-
-query topMangaPage($pageNo : Int!){
-    Page(page: $pageNo, perPage: 50){
-        media(sort: SCORE_DESC, type: MANGA) {
-            title {
-                userPreferred
-            }
-            averageScore
-            coverImage {
-                large
-            }
-            format
-            id
-            genres
-            startDate {
-                year
-            }
-            endDate {
-                year
-            }
-            favourites
-            volumes
-            status
-        }
-    }
-}
-
-query animeSearchPage ($pageNo : Int!, $userSearch : String!){
-    Page (page: $pageNo, perPage: 50){
-        media (search: $userSearch, type: ANIME){
-            title {
-                userPreferred
-            }
-            averageScore
-            coverImage {
-                large
-            }
-            format
-            season
-            episodes
-            duration
-            genres
-            startDate {
-                year
-            }
-            favourites
-            studios(isMain:true){
-                nodes{
-                    name
-                }
-            }
-            nextAiringEpisode {
-                timeUntilAiring
-                episode
-            }
-            id
-            type
-        }
-    }
-}
-
-query mangaSearchPage ($pageNo : Int!, $userSearch : String!){
-    Page (page: $pageNo, perPage: 50){
-        media (search: $userSearch, type: MANGA){
-            title {
-                userPreferred
-            }
-            averageScore
-            coverImage {
-                large
-            }
-            format
-            id
-            genres
-            startDate {
-                year
-            }
-            endDate {
-                year
-            }
-            favourites
-            volumes
-            status
-        }
-    }
-}
-
-fragment commonDetails on Media {
+fragment shortDetail on Media {
     title {
         userPreferred
-        romaji
-        native
-        english
     }
     averageScore
     coverImage {
         large
     }
     format
+    id
     genres
+    favourites
+    status
+    startDate {
+        year
+    }
+}
+
+fragment animeShortDetail on Media {
+    ...shortDetail
+    season
+    episodes
+    duration
+
+    nextAiringEpisode {
+        timeUntilAiring
+        episode
+    }
+
+    type
+}
+
+fragment mangaShortDetail on Media {
+    ...shortDetail
+    endDate {
+        year
+    }
+    volumes
+}
+
+query AnimeSearchPage ($pageNo : Int!, $userSearch : String, $sort:[MediaSort]){
+    Page (page: $pageNo, perPage: 50){
+        media (search: $userSearch, sort: $sort, type: ANIME){
+            ...animeShortDetail
+            studios(isMain:true){
+                nodes{
+                    name
+                }
+            }
+        }
+    }
+}
+
+query MangaSearchPage ($pageNo : Int!, $userSearch : String, $sort:[MediaSort]){
+    Page (page: $pageNo, perPage: 50){
+        media (search: $userSearch, sort: $sort, type: MANGA){
+            ...mangaShortDetail
+        }
+    }
+}
+
+fragment detail on Media {
+    ...shortDetail
+    title {
+        userPreferred
+        romaji
+        native
+        english
+    }
     startDate {
         year
         month
@@ -141,8 +77,6 @@ fragment commonDetails on Media {
         month
         day
     }
-    favourites
-    id
     description
     bannerImage
     trailer {
@@ -155,7 +89,6 @@ fragment commonDetails on Media {
     meanScore
     popularity
     hashtag
-    status
     tags {
         name
         rank
@@ -164,33 +97,35 @@ fragment commonDetails on Media {
     }
 }
 
-query AnimeMoreDetails($id : Int!){
-    Media(id: $id, type: ANIME) {
-        ...commonDetails
-        season
-        episodes
-        duration
-        studios {
-            edges {
-                isMain
-                node {
-                    name
-                    isAnimationStudio
-                }
+fragment animeDetail on Media {
+    ...detail
+    ...animeShortDetail
+    studios {
+        edges {
+            isMain
+            node {
+                name
+                isAnimationStudio
             }
         }
-        nextAiringEpisode {
-            timeUntilAiring
-            episode
-        }
+    }
+}
+
+fragment mangaDetail on Media {
+    ...detail
+    ...mangaShortDetail
+    chapters
+}
+
+query AnimeMoreDetails($id : Int!){
+    Media(id: $id, type: ANIME) {
+        ...animeDetail
     }
 }
 
 query MangaMoreDetails($id : Int!) {
     Media(id: $id, type: MANGA){
-        ...commonDetails
-        chapters
-        volumes
+        ...mangaDetail
     }
 }
 

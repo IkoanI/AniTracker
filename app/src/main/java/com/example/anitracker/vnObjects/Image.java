@@ -26,7 +26,7 @@ public class Image {
     }
 
     public String getUrl() {
-        if(url == null){
+        if (url == null) {
             return "https://s4.anilist.co/file/anilistcdn/staff/large/default.jpg";
         }
         return url;
@@ -59,7 +59,7 @@ public class Image {
 
     public String getThumbnail() {
         // String, URL to the thumbnail.
-        if(thumbnail == null){
+        if (thumbnail == null) {
             return "https://s4.anilist.co/file/anilistcdn/staff/large/default.jpg";
         }
         return thumbnail;

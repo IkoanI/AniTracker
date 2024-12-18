@@ -47,12 +47,12 @@ public class AnilistObjectMappings {
             Map.entry(MediaFormat.ONE_SHOT, "One Shot")
     );
 
-    public static Map<MediaStatus, String> mediaStatusToString = Map.ofEntries(
-            Map.entry(MediaStatus.FINISHED, "Finished"),
-            Map.entry(MediaStatus.RELEASING, "Releasing"),
-            Map.entry(MediaStatus.NOT_YET_RELEASED, "Not Yet Released"),
-            Map.entry(MediaStatus.CANCELLED, "Cancelled"),
-            Map.entry(MediaStatus.HIATUS, "Hiatus")
+    public static Map<String, String> mediaStatusToString = Map.ofEntries(
+            Map.entry(MediaStatus.FINISHED.rawValue, "Finished"),
+            Map.entry(MediaStatus.RELEASING.rawValue, "Releasing"),
+            Map.entry(MediaStatus.NOT_YET_RELEASED.rawValue, "Not Yet Released"),
+            Map.entry(MediaStatus.CANCELLED.rawValue, "Cancelled"),
+            Map.entry(MediaStatus.HIATUS.rawValue, "Hiatus")
     );
 
     public static Map<MediaSource, String> mediaSourceToString = Map.ofEntries(

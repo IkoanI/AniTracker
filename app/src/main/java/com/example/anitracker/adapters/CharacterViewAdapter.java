@@ -18,6 +18,7 @@ import com.bumptech.glide.Glide;
 import com.example.anitracker.R;
 import com.example.anitracker.mediaObjects.CharacterDetails;
 import com.example.anitracker.repository.AnilistObjectMappings;
+import com.example.anitracker.type.MediaType;
 import com.example.anitracker.type.StaffLanguage;
 import com.example.anitracker.uiObjects.LanguageDropdown;
 import com.example.anitracker.viewModels.DetailsViewModel;
@@ -40,7 +41,7 @@ public class CharacterViewAdapter extends RecyclerView.Adapter<RecyclerView.View
         this.viewModel = viewModel;
         this.objectList = objectList;
         if(objectList.isEmpty()){
-            if(Objects.equals(this.viewModel.getType(), "Visual Novel")){
+            if(this.viewModel.getType() == MediaType.VISUAL_NOVEL) {
                 this.viewModel.getVNCharPage();
             }
             else{
@@ -95,10 +96,10 @@ public class CharacterViewAdapter extends RecyclerView.Adapter<RecyclerView.View
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if (!loading && position >= getItemCount()-1){
-            if(Objects.equals(viewModel.getType(), "Visual Novel") && hasMorePages) {
+            if(viewModel.getType() == MediaType.VISUAL_NOVEL && hasMorePages) {
                 viewModel.getVNCharPage();
             }
-            else if(!Objects.equals(viewModel.getType(), "Visual Novel")){
+            else if(viewModel.getType() != MediaType.VISUAL_NOVEL){
                 viewModel.getCharPage(selectedLanguage);
             }
         }
@@ -157,7 +158,7 @@ public class CharacterViewAdapter extends RecyclerView.Adapter<RecyclerView.View
                     characterView.language.setVisibility(View.VISIBLE);
                     characterView.vaName.setText(character.getVoiceActor().getName().getUserPref());
                     Glide.with(context.getApplicationContext()).load(character.getVoiceActor().getImage()).into(characterView.vaImage);
-                    if(Objects.equals(viewModel.getType(), "Visual Novel")){
+                    if(viewModel.getType() ==  MediaType.VISUAL_NOVEL){
                         characterView.language.setText(character.getVoiceActor().getLang());
                     }
                     else{

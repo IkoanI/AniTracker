@@ -1,9 +1,5 @@
 package com.example.anitracker.mediaObjects;
 
-import com.example.anitracker.CharacterPageQuery;
-
-import java.util.List;
-
 public class CharacterDetails {
     String image, role, notes;
     Name name;

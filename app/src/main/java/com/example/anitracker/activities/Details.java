@@ -49,36 +49,22 @@ public class Details extends AppCompatActivity {
         });
 
         // set up view model which holds all info used by all fragments
-        detailsViewModel = new ViewModelProvider(this).get(DetailsViewModel.class);
-        detailsViewModel.setType(Objects.requireNonNull(getIntent().getExtras()).getString("Type"));
-        if(Objects.equals(detailsViewModel.getType(), "Visual Novel")){
-            detailsViewModel.setVndbId(Objects.requireNonNull(getIntent().getExtras()).getString("ID"));
-        }
-        else{
-            detailsViewModel.setId(Objects.requireNonNull(getIntent().getExtras()).getInt("ID"));
-        }
+        this.detailsViewModel = new ViewModelProvider(this).get(DetailsViewModel.class);
+        this.detailsViewModel.setType(MediaType.safeValueOf(Objects.requireNonNull(Objects.requireNonNull(getIntent().getExtras()).getString("Type"))));
+        this.detailsViewModel.setId(Objects.requireNonNull(getIntent().getExtras()).getString("ID"));
 
         // observe any errors from repository
-        detailsViewModel.observeErrorMsg().observe(this, errorMsg -> Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show());
+        this.detailsViewModel.observeErrorMsg().observe(this, errorMsg -> Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show());
 
         // get and observe details from repository
-        if(Objects.equals(detailsViewModel.getType(), MediaType.ANIME.rawValue)){
-            detailsViewModel.getAnimeDetails();
-        }
-        else if(Objects.equals(detailsViewModel.getType(), MediaType.MANGA.rawValue)){
-            detailsViewModel.getMangaDetails();
-        }
-        else if(Objects.equals(detailsViewModel.getType(), "Visual Novel")){
-            detailsViewModel.getVNDetails();
-        }
-
-        detailsViewModel.observeMediaDetails().observe(this, this::populateActivity);
+        this.detailsViewModel.getDetails();
+        this.detailsViewModel.observeMediaDetails().observe(this, this::populateActivity);
         
         // hide ui and display loading bar while data is loading
-        appBarLayout = findViewById(R.id.appBarLayout);
-        loadingSpinner = findViewById(R.id.loadingSpinner);
-        appBarLayout.setVisibility(View.INVISIBLE);
-        loadingSpinner.setVisibility(View.VISIBLE);
+        this.appBarLayout = findViewById(R.id.appBarLayout);
+        this.loadingSpinner = findViewById(R.id.loadingSpinner);
+        this.appBarLayout.setVisibility(View.INVISIBLE);
+        this.loadingSpinner.setVisibility(View.VISIBLE);
         
         // set up tab layout and view pager
         TabLayout tabLayout = findViewById(R.id.tabs);
@@ -105,10 +91,10 @@ public class Details extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        detailsViewModel.clearComposite();
+        this.detailsViewModel.clearComposite();
     }
 
-    private void populateActivity(MediaDetails details){
+    private void populateActivity(MediaDetails details) {
             // insert banner image
             ImageView banner = this.findViewById(R.id.banner);
             if(details.getBanner() != null){
@@ -123,7 +109,7 @@ public class Details extends AppCompatActivity {
             TextView title = this.findViewById(R.id.title);
             title.setText(details.getTitles().getUserPref());
 
-            loadingSpinner.setVisibility(View.GONE);
-            appBarLayout.setVisibility(View.VISIBLE);
+            this.loadingSpinner.setVisibility(View.GONE);
+            this.appBarLayout.setVisibility(View.VISIBLE);
     }
 }

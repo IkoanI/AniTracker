@@ -1,7 +1,6 @@
 package com.example.anitracker.adapters;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,19 +24,20 @@ public class RelationsViewAdapter extends RecyclerView.Adapter<RecyclerView.View
     DetailsViewModel viewModel;
     List<MediaDetails> relationsList = new ArrayList<>();
     RecyclerViewInterface recyclerViewInterface;
-    private boolean loading = false;
+    private boolean loading;
 
-    public RelationsViewAdapter(Context context, DetailsViewModel viewModel, RecyclerViewInterface recyclerViewInterface){
+    public RelationsViewAdapter(Context context, DetailsViewModel viewModel, RecyclerViewInterface recyclerViewInterface) {
         this.context = context;
         this.viewModel = viewModel;
         this.recyclerViewInterface = recyclerViewInterface;
+        this.loading = false;
     }
 
     public void addRelations(List<MediaDetails> newItems){
-        loading = true;
+        this.loading = true;
         relationsList.addAll(newItems);
         notifyItemRangeInserted(relationsList.size()-newItems.size(), newItems.size());
-        loading = false;
+        this.loading = false;
     }
 
     public MediaDetails getRelation(int pos){
@@ -48,12 +48,13 @@ public class RelationsViewAdapter extends RecyclerView.Adapter<RecyclerView.View
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(context);
-        View view = inflater.inflate(R.layout.relations_view_layout, parent, false);
+        View view = inflater.inflate(R.layout.relations_card, parent, false);
         return new RelationsViewAdapter.RelationsViewItem(view, recyclerViewInterface);
     }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+
         RelationsViewItem relationsViewItem = (RelationsViewItem) holder;
         Glide.with(context).load(relationsList.get(position).getCoverImg()).into(relationsViewItem.coverImg);
         relationsViewItem.relation.setText(relationsList.get(position).getRelation());

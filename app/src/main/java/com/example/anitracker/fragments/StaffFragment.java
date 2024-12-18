@@ -15,9 +15,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.anitracker.R;
 import com.example.anitracker.adapters.StaffViewAdapter;
+import com.example.anitracker.type.MediaType;
 import com.example.anitracker.viewModels.DetailsViewModel;
-
-import java.util.Objects;
 
 public class StaffFragment extends Fragment {
     private Context context;
@@ -39,17 +38,19 @@ public class StaffFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         // set up recyclerview
-        View view = inflater.inflate(R.layout.staff_fragment, container, false);
-        RecyclerView staffView = view.findViewById(R.id.staffView);
+        View view = inflater.inflate(R.layout.recycler_view, container, false);
+        RecyclerView staffView = view.findViewById(R.id.recView);
         StaffViewAdapter staffViewAdapter = new StaffViewAdapter(context, detailsViewModel);
         staffView.setAdapter(staffViewAdapter);
         LinearLayoutManager staffViewLayoutManager = new LinearLayoutManager(context);
         staffView.setLayoutManager(staffViewLayoutManager);
         // observe change in staff page
         detailsViewModel.observeStaffPage().observe(getViewLifecycleOwner(), staffViewAdapter::addStaffs);
-        if(!Objects.equals(detailsViewModel.getType(), "Visual Novel")){
+
+        if (detailsViewModel.getType() != MediaType.VISUAL_NOVEL) {
             detailsViewModel.getStaffPage();
         }
+
         return view;
     }
 }

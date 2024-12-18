@@ -19,7 +19,7 @@ public class Studios {
         return animationStudios;
     }
 
-    public void addProducer(String producer) {this.producers.add(producer); }
+    public void addProducer(String producer) {this.producers.add(producer);}
 
     public void addAnimationStudio(String animationStudio) {this.animationStudios.add(animationStudio); }
 

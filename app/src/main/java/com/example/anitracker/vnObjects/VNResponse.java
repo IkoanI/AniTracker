@@ -1,8 +1,10 @@
 package com.example.anitracker.vnObjects;
 
 import com.example.anitracker.mediaObjects.CharacterDetails;
+import com.example.anitracker.mediaObjects.Date;
 import com.example.anitracker.mediaObjects.Tag;
 import com.example.anitracker.mediaObjects.Titles;
+import com.example.anitracker.type.MediaType;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;
@@ -60,11 +62,12 @@ public class VNResponse {
         if(image == null){
             return new Image();
         }
+
         return image;
     }
 
     public String getLength() {
-        switch(this.length){
+        switch (this.length) {
             case 1:
                 return "Very Short (< 2 hours)";
 
@@ -80,10 +83,9 @@ public class VNResponse {
             case 5:
                 return "Very Long (> 50 hours)";
 
-
+            default:
+                return "Unknown";
         }
-
-        return "Unknown";
     }
 
     public int getLengthMinutes() {
@@ -102,61 +104,65 @@ public class VNResponse {
         return released;
     }
 
-    public String getStatus(){
-        switch (this.devStatus){
+    public String getStatus() {
+        switch (this.devStatus) {
             case 0:
                 return "Finished";
             case 1:
                 return "In development";
             case 2:
                 return "Cancelled";
+
+            default:
+                return "Unknown";
         }
-        return "Unknown";
     }
 
-    public VNDetails convertToMediaObject(){
+    public VNDetails convertToMediaObject() {
         VNDetails vnDetails = new VNDetails();
-
         String natTitle = null, romTitle = null, engTitle = null;
         List<String> synonyms = new ArrayList<>();
-        for (VNTitle title : this.titles){
-            if (title.isMain()){
-                natTitle = title.getTitle();
-                romTitle = title.getLatin();
-            }
-            else if (title.isOfficial()) {
-                if(Objects.equals(title.getLang(), "en")){
-                    engTitle = title.getTitle();
-                }
-                else {
-                    synonyms.add(title.getTitle());
+
+        if (this.titles != null) {
+            for (VNTitle title : this.titles) {
+                if (title.isMain()) {
+                    natTitle = title.getTitle();
+                    romTitle = title.getLatin();
+                } else if (title.isOfficial()) {
+                    if( Objects.equals(title.getLang(), "en")) {
+                        engTitle = title.getTitle();
+                    } else {
+                        synonyms.add(title.getTitle());
+                    }
                 }
             }
         }
-        vnDetails.setTitles(new Titles(engTitle, natTitle, romTitle, this.title));
-        vnDetails.setSynonyms(synonyms);
 
-        if(this.aliases != null){ vnDetails.setAliases(this.aliases); }
+        vnDetails.setTitles(new Titles(engTitle, natTitle, romTitle, this.title));
+
+        if (!synonyms.isEmpty()) {vnDetails.setSynonyms(synonyms);}
+
+        if (this.aliases != null && !this.aliases.isEmpty()) { vnDetails.setAliases(this.aliases); }
 
         vnDetails.setCoverImg(this.getImage().getThumbnail());
 
-        if(this.desc != null){vnDetails.setDesc(this.desc);}
+        if (this.desc != null) {vnDetails.setDesc(this.desc);}
 
         vnDetails.setStatus(this.getStatus());
 
-        vnDetails.setVndbID(this.id);
+        vnDetails.setId(this.id);
 
         vnDetails.setAvgScore(this.getRating());
 
         vnDetails.setMeanScore(Math.round(this.average));
 
-        if(this.tags != null){
+        if (this.tags != null) {
             List<Tag> noSpoilerTags = new ArrayList<>();
             List<Tag> allTags = new ArrayList<>();
             for(VNTag vnTag : this.tags){
                 int rating = Math.round((vnTag.getRating() / 3) * 100 );
                 Tag tag = new Tag(vnTag.getName(), rating, vnTag.isSpoiler());
-                if(!tag.getSpoiler()){
+                if (!tag.getSpoiler()) {
                     noSpoilerTags.add(tag);
                 }
                 allTags.add(tag);
@@ -168,34 +174,43 @@ public class VNResponse {
         }
 
 
-        if(this.developers != null){ vnDetails.setDevelopers(this.developers); }
+        if (this.developers != null && !this.developers.isEmpty()) { vnDetails.setDevelopers(this.developers); }
 
-        vnDetails.setLengthMinutes(this.length_minutes);
+        if (this.length_minutes > 0) {vnDetails.setLengthMinutes(this.length_minutes);}
 
         vnDetails.setLength(this.getLength());
 
         vnDetails.setLengthVotes(lengthVotes);
 
-        if(this.released != null){
-            vnDetails.setReleaseDate(this.released);
+        if (this.released != null) {
+            int[] date = {-1, -1, -1};
+
+            String[] prevDate = this.released.split("-");
+
+            for (int i = 0; i < prevDate.length; i++) {
+                date[i] = Integer.parseInt(prevDate[i]);
+            }
+
+            vnDetails.setStartDate(new Date(date[0], date[1], date[2]));
         }
 
-        if(this.screenshots != null){
+        if (this.screenshots != null) {
             List<String> screenshotURLs = new ArrayList<>();
-            for(Image screenshot: this.screenshots){
+            for (Image screenshot: this.screenshots) {
                 screenshotURLs.add(screenshot.url);
             }
             vnDetails.setScreenshots(new Screenshots(screenshotURLs));
         }
 
+        vnDetails.setType(MediaType.VISUAL_NOVEL);
+
         return vnDetails;
     }
 
-    public int compareTags(Tag tag, Tag t1){
-        if(tag.getTagRanking() < t1.getTagRanking()){
+    public int compareTags (Tag tag, Tag t1) {
+        if (tag.getTagRanking() < t1.getTagRanking()) {
             return 1;
-        }
-        else if(tag.getTagRanking() > t1.getTagRanking()){
+        } else if (tag.getTagRanking() > t1.getTagRanking()) {
             return -1;
         }
         return 0;
@@ -207,7 +222,7 @@ public class VNResponse {
 
     public List<CharacterDetails> getCharacterDetails(){
         List<CharacterDetails> characterDetails = new ArrayList<>();
-        for (VNVoiceActor va : voiceActors){
+        for (VNVoiceActor va : voiceActors) {
             characterDetails.add(va.convertToMediaObject(this.id));
         }
         return characterDetails;

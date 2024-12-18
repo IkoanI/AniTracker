@@ -1,6 +1,7 @@
 package com.example.anitracker.adapters;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,11 +14,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.anitracker.R;
 import com.example.anitracker.mediaObjects.StaffDetails;
+import com.example.anitracker.type.MediaType;
 import com.example.anitracker.viewModels.DetailsViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class StaffViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private final List<StaffDetails> staffDetailsList = new ArrayList<>();
@@ -41,16 +42,19 @@ public class StaffViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(context);
-        View view = inflater.inflate(R.layout.staff_view_layout, parent, false);
+        View view = inflater.inflate(R.layout.staff_card, parent, false);
         return new StaffViewAdapter.StaffViewItem(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        if (!loading && position >= getItemCount()-1 && !Objects.equals(viewModel.getType(), "Visual Novel")){
+        if (!loading && position >= getItemCount()-1 && viewModel.getType() != MediaType.VISUAL_NOVEL) {
             viewModel.getStaffPage();
         }
         StaffViewItem staffViewItem = (StaffViewItem) holder;
+        Log.d("TESTING", staffDetailsList.get(position).getName().getUserPref());
+        Log.d("TESTING", staffDetailsList.get(position).getImage());
+        Log.d("TESTING", staffDetailsList.get(position).getRole());
         Glide.with(context).load(staffDetailsList.get(position).getImage()).into(staffViewItem.staffImage);
         staffViewItem.staffName.setText(staffDetailsList.get(position).getName().getUserPref());
         staffViewItem.staffRole.setText(staffDetailsList.get(position).getRole());

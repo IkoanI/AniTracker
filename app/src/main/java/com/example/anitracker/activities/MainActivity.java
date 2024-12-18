@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,15 +15,13 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.anitracker.R;
 import com.example.anitracker.adapters.VPAdapter;
-import com.example.anitracker.fragments.AnimeSearchFragment;
-import com.example.anitracker.fragments.MangaSearchFragment;
-import com.example.anitracker.fragments.VNSearchFragment;
+import com.example.anitracker.fragments.SearchFragment;
+import com.example.anitracker.type.MediaType;
 import com.example.anitracker.viewModels.MainViewModel;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEvent;
-import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEventListener;
 
 public class MainActivity extends AppCompatActivity {
     MainViewModel viewModel;
@@ -40,12 +37,11 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
         Handler handler = new Handler();
 
         // initialize view model
-        viewModel = new ViewModelProvider(this).get(MainViewModel.class);
-
-
+        this.viewModel = new ViewModelProvider(this).get(MainViewModel.class);
 
         // set up error alert dialogue
         AlertDialog.Builder builder1 = new AlertDialog.Builder(this);
@@ -62,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
                 });
 
         // observe error message
-        viewModel.getErrorMsg().observe(this, error -> {
+        this.viewModel.getErrorMsg().observe(this, error -> {
             builder1.setMessage(error);
             AlertDialog alert11 = builder1.create();
             alert11.show();
@@ -104,9 +100,9 @@ public class MainActivity extends AppCompatActivity {
         VPAdapter viewPagerAdapter = new VPAdapter(this);
 
         // creating fragments
-        AnimeSearchFragment animeSearchFragment = new AnimeSearchFragment();
-        MangaSearchFragment mangaSearchFragment = new MangaSearchFragment();
-        VNSearchFragment vnSearchFragment = new VNSearchFragment();
+        SearchFragment animeSearchFragment = new SearchFragment(MediaType.ANIME);
+        SearchFragment mangaSearchFragment = new SearchFragment(MediaType.MANGA);
+        SearchFragment vnSearchFragment = new SearchFragment(MediaType.VISUAL_NOVEL);
 
         // adding fragments to view pager
         viewPagerAdapter.addFragment(animeSearchFragment);
@@ -118,7 +114,5 @@ public class MainActivity extends AppCompatActivity {
 
         viewPager.setAdapter(viewPagerAdapter);
         new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> tab.setText(fragmentTitles[position])).attach();
-
-
     }
 }

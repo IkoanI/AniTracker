@@ -1,12 +1,11 @@
 package com.example.anitracker.repository;
 
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 import androidx.lifecycle.MutableLiveData;
 
 import com.apollographql.apollo3.ApolloCall;
 import com.apollographql.apollo3.ApolloClient;
+import com.apollographql.apollo3.api.Optional;
 import com.apollographql.apollo3.rx3.Rx3Apollo;
 import com.example.anitracker.AnimeMoreDetailsQuery;
 import com.example.anitracker.AnimeSearchPageQuery;
@@ -15,17 +14,21 @@ import com.example.anitracker.MangaMoreDetailsQuery;
 import com.example.anitracker.MangaSearchPageQuery;
 import com.example.anitracker.RelationsPageQuery;
 import com.example.anitracker.StaffPageQuery;
-import com.example.anitracker.TopAnimePageQuery;
-import com.example.anitracker.TopMangaPageQuery;
 import com.example.anitracker.animeObjects.AiringSchedule;
 import com.example.anitracker.animeObjects.AnimeDetails;
 import com.example.anitracker.animeObjects.Studios;
 import com.example.anitracker.clients.AniClient;
 import com.example.anitracker.clients.VNDBClient;
+import com.example.anitracker.fragment.AnimeDetail;
+import com.example.anitracker.fragment.AnimeShortDetail;
+import com.example.anitracker.fragment.Detail;
+import com.example.anitracker.fragment.MangaDetail;
+import com.example.anitracker.fragment.MangaShortDetail;
+import com.example.anitracker.fragment.ShortDetail;
+import com.example.anitracker.type.MediaSort;
 import com.example.anitracker.vnObjects.VNCharPage;
-import com.example.anitracker.vnObjects.VNCharacter;
+import com.example.anitracker.vnObjects.VNDetails;
 import com.example.anitracker.vnObjects.VNRequestBody;
-import com.example.anitracker.fragment.CommonDetails;
 import com.example.anitracker.interfaces.VNDBApi;
 import com.example.anitracker.mangaObjects.MangaDetails;
 import com.example.anitracker.mediaObjects.CharacterDetails;
@@ -57,7 +60,7 @@ public class ApiRepository {
     // manga search page
     private final MutableLiveData<List<MangaDetails>> mutableMangaPage = new MutableLiveData<>();
     // visual novel search page
-    private final MutableLiveData<VNPage> mutableVNPage = new MutableLiveData<>();
+    private final MutableLiveData<List<VNDetails>> mutableVNPage = new MutableLiveData<>();
     // overview fragment
     private final MutableLiveData<MediaDetails> mutableLiveData = new MutableLiveData<>();
     // character fragment
@@ -72,13 +75,11 @@ public class ApiRepository {
     // help clear requests upon activity death
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
-    public ApiRepository() {}
-
     public void clearComposite(){
         compositeDisposable.dispose();
     }
 
-    public MutableLiveData<MediaDetails>  getMutableLiveData() { return  mutableLiveData; }
+    public MutableLiveData<MediaDetails>  getMutableLiveData() { return mutableLiveData; }
 
     public MutableLiveData<List<AnimeDetails>> getMutableAnimePage() {
         return mutableAnimePage;
@@ -88,7 +89,7 @@ public class ApiRepository {
         return mutableMangaPage;
     }
 
-    public MutableLiveData<VNPage> getMutableVNPage() { return mutableVNPage; }
+    public MutableLiveData<List<VNDetails>> getMutableVNPage() { return mutableVNPage; }
 
     public MutableLiveData<List<CharacterDetails>> getMutableCharPage() {
         return mutableCharPage;
@@ -102,17 +103,100 @@ public class ApiRepository {
         return mutableStaffPage;
     }
 
-    public MutableLiveData<List<MediaDetails>> getMutableRelationsPage() {
-        return mutableRelationsPage;
-    }
+    public MutableLiveData<List<MediaDetails>> getMutableRelationsPage() {return mutableRelationsPage;}
 
     public MutableLiveData<String> getMutableErrorMsg() { return mutableErrorMsg; }
 
-    private void setCommonDetails(MediaDetails mediaDetails, CommonDetails commonDetails){
-        mediaDetails.setTitles(new Titles(commonDetails.title.english, commonDetails.title.native_, commonDetails.title.romaji, commonDetails.title.userPreferred));
+    private void setCommonShortDetail(MediaDetails mediaDetails, ShortDetail commonDetails) {
+        mediaDetails.setTitles(new Titles(null, null, null, commonDetails.title.userPreferred));
         mediaDetails.setCoverImg(commonDetails.coverImage.large);
-        if(commonDetails.averageScore != null){mediaDetails.setAvgScore(commonDetails.averageScore);}
+        if (commonDetails.averageScore != null) {mediaDetails.setAvgScore(commonDetails.averageScore);}
         mediaDetails.setFormat(AnilistObjectMappings.mediaFormatToString.get(commonDetails.format));
+        if(commonDetails.startDate.year != null){mediaDetails.setStartDate(new Date(commonDetails.startDate.year, -1, -1));}
+        if (!commonDetails.genres.isEmpty()) {mediaDetails.setGenres(commonDetails.genres);}
+        mediaDetails.setFavorites(commonDetails.favourites);
+        mediaDetails.setId(String.valueOf(commonDetails.id));
+        if (commonDetails.status != null) {mediaDetails.setStatus(commonDetails.status);}
+
+    }
+
+    private void setAnimeShortDetail(AnimeDetails animeDetails, AnimeShortDetail animeShortDetail) {
+        if (animeShortDetail.season != null) {animeDetails.setSeason(AnilistObjectMappings.mediaSeasonToString.get(animeShortDetail.season));}
+        if (animeShortDetail.duration != null) {animeDetails.setDuration(animeShortDetail.duration);}
+        if (animeShortDetail.episodes != null) {animeDetails.setEpisodes(animeShortDetail.episodes);}
+        if (animeShortDetail.nextAiringEpisode != null) {animeDetails.setAiringSchedule(new AiringSchedule(animeShortDetail.nextAiringEpisode.episode, animeShortDetail.nextAiringEpisode.timeUntilAiring));}
+        animeDetails.setType(MediaType.ANIME);
+    }
+
+    private void setMangaShortDetail(MangaDetails mangaDetails, MangaShortDetail mangaShortDetail) {
+        if(mangaShortDetail.endDate.year != null){mangaDetails.setEndDate(new Date(mangaShortDetail.endDate.year, -1, -1));}
+        mangaDetails.setType(MediaType.MANGA);
+        if (mangaShortDetail.volumes != null){mangaDetails.setVolumes(mangaShortDetail.volumes);}
+
+    }
+
+    public void fetchSearchResults(MediaType mediaType, int page, String userSearch, List<MediaSort> sort) {
+        Optional<String> opUserSearch = Optional.present(userSearch);
+        Optional<List<MediaSort>> opSort = Optional.present(sort);
+
+        if (mediaType == MediaType.ANIME) {
+            ApolloCall<AnimeSearchPageQuery.Data> animeQueryCall = aniClient.query(new AnimeSearchPageQuery(page, opUserSearch, opSort));
+            compositeDisposable.add(Rx3Apollo.single(animeQueryCall)
+                    .subscribeOn(Schedulers.newThread())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(res -> {
+                                assert res.data != null;
+                                List<AnimeDetails> animeList = new ArrayList<>();
+                                List<AnimeSearchPageQuery.Medium> results = res.data.Page.media;
+                                for (AnimeSearchPageQuery.Medium result : results) {
+                                    AnimeDetails animeDetails = new AnimeDetails();
+                                    this.setCommonShortDetail(animeDetails, result.animeShortDetail.shortDetail);
+                                    this.setAnimeShortDetail(animeDetails, result.animeShortDetail);
+                                    if (!result.studios.nodes.isEmpty()) {
+                                        Studios studios = new Studios();
+                                        for(AnimeSearchPageQuery.Node studio : result.studios.nodes){
+                                            studios.addAnimationStudio(studio.name);
+                                        }
+                                        animeDetails.setStudios(studios);
+                                    }
+                                    animeList.add(animeDetails);
+                                }
+                                mutableAnimePage.setValue(animeList);
+                            },
+                            error -> mutableErrorMsg.setValue(error.getMessage()))
+            );
+        } else if (mediaType == MediaType.MANGA) {
+            ApolloCall<MangaSearchPageQuery.Data> mangaQueryCall = aniClient.query(new MangaSearchPageQuery(page, opUserSearch, opSort));
+            compositeDisposable.add(Rx3Apollo.single(mangaQueryCall)
+                    .subscribeOn(Schedulers.newThread())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(res -> {
+                                assert res.data != null;
+                                List<MangaDetails> mangaList = new ArrayList<>();
+                                List<MangaSearchPageQuery.Medium> results = res.data.Page.media;
+                                for (MangaSearchPageQuery.Medium result : results) {
+                                    MangaDetails mangaDetails = new MangaDetails();
+                                    this.setCommonShortDetail(mangaDetails, result.mangaShortDetail.shortDetail);
+                                    this.setMangaShortDetail(mangaDetails, result.mangaShortDetail);
+                                    mangaList.add(mangaDetails);
+                                }
+                                mutableMangaPage.setValue(mangaList);
+                            },
+                            error -> mutableErrorMsg.setValue(error.getMessage()))
+            );
+        } else if (mediaType == MediaType.VISUAL_NOVEL) {
+            String fields = "title, image{thumbnail}, developers{name}, released, length, length_minutes, rating, id";
+            if (userSearch == null) {
+                this.fetchDefaultVNPage("rating", fields, page);
+            } else {
+                this.fetchVNSearchPage(userSearch, "searchrank", fields, page);
+            }
+        }
+    }
+
+    private void setCommonDetails(MediaDetails mediaDetails, Detail commonDetails) {
+        this.setCommonShortDetail(mediaDetails, commonDetails.shortDetail);
+        mediaDetails.setTitles(new Titles(commonDetails.title.english, commonDetails.title.native_, commonDetails.title.romaji, commonDetails.title.userPreferred));
         if(commonDetails.startDate.year != null){
             int startMonth = -1, startDay = -1;
             if(commonDetails.startDate.month != null){
@@ -135,22 +219,39 @@ public class ApiRepository {
             }
             mediaDetails.setEndDate(new Date(commonDetails.endDate.year, endMonth, endDay));
         }
-        if(!commonDetails.genres.isEmpty()){mediaDetails.setGenres(commonDetails.genres);}
-        mediaDetails.setFavorites(commonDetails.favourites);
-        mediaDetails.setId(commonDetails.id);
         mediaDetails.setDesc(commonDetails.description);
         if(commonDetails.bannerImage != null){mediaDetails.setBanner(commonDetails.bannerImage);}
         if(commonDetails.meanScore != null){mediaDetails.setMeanScore(commonDetails.meanScore);}
         mediaDetails.setPopularity(commonDetails.popularity);
         if(commonDetails.source != null){mediaDetails.setSource(AnilistObjectMappings.mediaSourceToString.get(commonDetails.source));}
         if(commonDetails.hashtag != null){mediaDetails.setHashtags(commonDetails.hashtag);}
-        mediaDetails.setStatus(AnilistObjectMappings.mediaStatusToString.get(commonDetails.status));
         if(commonDetails.trailer != null){mediaDetails.setTrailer(commonDetails.trailer);}
-        mediaDetails.setSynonyms(commonDetails.synonyms);
+        if(!commonDetails.synonyms.isEmpty()) {mediaDetails.setSynonyms(commonDetails.synonyms);}
         if(commonDetails.tags != null){mediaDetails.setTags(commonDetails.tags);}
     }
 
-    public void fetchAnimeData (int id){
+    private void setAnimeDetail(AnimeDetails animeDetails, AnimeDetail animeDetail) {
+        this.setAnimeShortDetail(animeDetails, animeDetail.animeShortDetail);
+        if(!animeDetail.studios.edges.isEmpty()){
+            Studios studios = new Studios();
+            for(AnimeDetail.Edge studio : animeDetail.studios.edges){
+                if (studio.isMain){
+                    studios.addAnimationStudio(studio.node.name);
+                }
+                else{
+                    studios.addProducer(studio.node.name);
+                }
+            }
+            animeDetails.setStudios(studios);
+        }
+    }
+
+    private void setMangaDetail(MangaDetails mangaDetails, MangaDetail mangaDetail) {
+        this.setMangaShortDetail(mangaDetails, mangaDetail.mangaShortDetail);
+        if(mangaDetail.chapters != null){mangaDetails.setChapters(mangaDetail.chapters);}
+    }
+
+    private void fetchAnimeData (int id){
         ApolloCall<AnimeMoreDetailsQuery.Data> queryCall;
         queryCall = aniClient.query(new AnimeMoreDetailsQuery(id));
         AnimeDetails animeDetails = new AnimeDetails();
@@ -160,32 +261,15 @@ public class ApiRepository {
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(res -> {
                             assert res.data != null;
-                            CommonDetails commonDetails = res.data.Media.commonDetails;
-                            setCommonDetails(animeDetails, commonDetails);
-                            AnimeMoreDetailsQuery.Media anime = res.data.Media;
-                            if(anime.duration != null){animeDetails.setDuration(anime.duration);}
-                            if(anime.episodes != null){animeDetails.setEpisodes(anime.episodes);}
-                            if(anime.season != null){animeDetails.setSeason(AnilistObjectMappings.mediaSeasonToString.get(anime.season));}
-                            if(anime.nextAiringEpisode != null){animeDetails.setAiringSchedule(new AiringSchedule(anime.nextAiringEpisode.episode, anime.nextAiringEpisode.timeUntilAiring));}
-                            if(!anime.studios.edges.isEmpty()){
-                                Studios studios = new Studios();
-                                for(AnimeMoreDetailsQuery.Edge studio : anime.studios.edges){
-                                    if (studio.isMain){
-                                        studios.addAnimationStudio(studio.node.name);
-                                    }
-                                    else{
-                                        studios.addProducer(studio.node.name);
-                                    }
-                                }
-                                animeDetails.setStudios(studios);
-                            }
+                            this.setCommonDetails(animeDetails, res.data.Media.animeDetail.detail);
+                            this.setAnimeDetail(animeDetails, res.data.Media.animeDetail);
                             mutableLiveData.setValue(animeDetails);
                         },
                                 error -> mutableErrorMsg.setValue(error.getMessage()))
         );
     }
 
-    public void fetchMangaData (int id){
+    private void fetchMangaData (int id) {
         ApolloCall<MangaMoreDetailsQuery.Data> queryCall;
         queryCall = aniClient.query(new MangaMoreDetailsQuery(id));
         MangaDetails mangaDetails = new MangaDetails();
@@ -195,216 +279,25 @@ public class ApiRepository {
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(res -> {
                                     assert res.data != null;
-                                    CommonDetails commonDetails = res.data.Media.commonDetails;
-                                    setCommonDetails(mangaDetails, commonDetails);
-                                    MangaMoreDetailsQuery.Media manga = res.data.Media;
-                                    if(manga.chapters != null){mangaDetails.setChapters(manga.chapters);}
-                                    if(manga.volumes != null){mangaDetails.setVolumes(manga.volumes);}
+                                    this.setCommonDetails(mangaDetails, res.data.Media.mangaDetail.detail);
+                                    this.setMangaDetail(mangaDetails, res.data.Media.mangaDetail);
                                     mutableLiveData.setValue(mangaDetails);
                                 },
                                 error -> mutableErrorMsg.setValue(error.getMessage()))
         );
     }
 
-    public void fetchTopAnimePage(int page){
-        ApolloCall<TopAnimePageQuery.Data> queryCall = aniClient.query(new TopAnimePageQuery(page));
-        compositeDisposable.add(Rx3Apollo.single(queryCall)
-                                .subscribeOn(Schedulers.newThread())
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(res -> {
-                                    assert res.data != null;
-                                    List<AnimeDetails> animeList = new ArrayList<>();
-                                    List<TopAnimePageQuery.Medium> shows = res.data.Page.media;
-                                    for (TopAnimePageQuery.Medium show : shows) {
-                                        AnimeDetails details = new AnimeDetails();
-                                        details.setTitles(new Titles(null, null, null, show.title.userPreferred));
-                                        details.setCoverImg(show.coverImage.large);
-                                        details.setAvgScore(show.averageScore);
-                                        details.setFormat(AnilistObjectMappings.mediaFormatToString.get(show.format));
-                                        if (show.season != null) {
-                                            details.setSeason(AnilistObjectMappings.mediaSeasonToString.get(show.season));
-                                        }
-                                        if(show.startDate.year != null){
-                                            details.setStartDate(new Date(show.startDate.year, -1, -1));
-                                        }
-                                        if (show.duration != null) {
-                                            details.setDuration(show.duration);
-                                        }
-                                        if (show.episodes != null) {
-                                            details.setEpisodes(show.episodes);
-                                        }
-                                        if (!show.genres.isEmpty()) {
-                                            details.setGenres(show.genres);
-                                        }
-                                        details.setFavorites(show.favourites);
-                                        if (show.nextAiringEpisode != null) {
-                                            details.setAiringSchedule(new AiringSchedule(show.nextAiringEpisode.episode, show.nextAiringEpisode.timeUntilAiring));
-                                        }
-                                        if (!show.studios.nodes.isEmpty()) {
-                                            Studios studios = new Studios();
-                                            for(TopAnimePageQuery.Node studio : show.studios.nodes){
-                                                studios.addAnimationStudio(studio.name);
-                                            }
-                                            details.setStudios(studios);
-                                        }
-                                        details.setId(show.id);
-                                        details.setType(MediaType.ANIME);
-                                        animeList.add(details);
-                                    }
-                                    mutableAnimePage.setValue(animeList);
-                                },
-                                        error -> mutableErrorMsg.setValue(error.getMessage()))
-        );
+    public void fetchData(MediaType mediaType, String id) {
+        if (mediaType == MediaType.ANIME) {
+            this.fetchAnimeData(Integer.parseInt(id));
+        } else if (mediaType == MediaType.MANGA) {
+            this.fetchMangaData(Integer.parseInt(id));
+        } else if (mediaType == MediaType.VISUAL_NOVEL) {
+            this.fetchVNData(id);
+        }
     }
 
-    public void fetchUserAnimeSearch(int page, String userSearch){
-        ApolloCall<AnimeSearchPageQuery.Data> queryCall = aniClient.query(new AnimeSearchPageQuery(page, userSearch));
-        compositeDisposable.add(Rx3Apollo.single(queryCall)
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(res -> {
-                            assert res.data != null;
-                            List<AnimeDetails> animeList = new ArrayList<>();
-                            List<AnimeSearchPageQuery.Medium> shows = res.data.Page.media;
-                            for (AnimeSearchPageQuery.Medium show : shows) {
-                                AnimeDetails details = new AnimeDetails();
-                                details.setTitles(new Titles(null, null, null, show.title.userPreferred));
-                                details.setCoverImg(show.coverImage.large);
-                                if(show.averageScore != null){
-                                    details.setAvgScore(show.averageScore);
-                                }
-                                else{
-                                    details.setAvgScore(0);
-                                }
-
-                                details.setFormat(AnilistObjectMappings.mediaFormatToString.get(show.format));
-                                if (show.season != null) {
-                                    details.setSeason(AnilistObjectMappings.mediaSeasonToString.get(show.season));
-                                }
-                                if(show.startDate.year != null){
-                                    details.setStartDate(new Date(show.startDate.year, -1, -1));
-                                }
-                                if (show.duration != null) {
-                                    details.setDuration(show.duration);
-                                }
-                                if (show.episodes != null) {
-                                    details.setEpisodes(show.episodes);
-                                }
-                                if (!show.genres.isEmpty()) {
-                                    details.setGenres(show.genres);
-                                }
-                                details.setFavorites(show.favourites);
-                                if (show.nextAiringEpisode != null) {
-                                    details.setAiringSchedule(new AiringSchedule(show.nextAiringEpisode.episode, show.nextAiringEpisode.timeUntilAiring));
-                                }
-                                if (!show.studios.nodes.isEmpty()) {
-                                    Studios studios = new Studios();
-                                    for(AnimeSearchPageQuery.Node studio : show.studios.nodes){
-                                        studios.addAnimationStudio(studio.name);
-                                    }
-                                    details.setStudios(studios);
-                                }
-                                details.setId(show.id);
-                                details.setType(MediaType.ANIME);
-                                animeList.add(details);
-                            }
-                            mutableAnimePage.setValue(animeList);
-                        },
-                        error -> mutableErrorMsg.setValue(error.getMessage()))
-        );
-    }
-
-    public void fetchTopMangaPage(int page){
-        ApolloCall<TopMangaPageQuery.Data> queryCall = aniClient.query(new TopMangaPageQuery(page));
-        compositeDisposable.add(Rx3Apollo.single(queryCall)
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(res -> {
-                            assert res.data != null;
-                            List<MangaDetails> mangaList = new ArrayList<>();
-                            List<TopMangaPageQuery.Medium> mangas = res.data.Page.media;
-                            for (TopMangaPageQuery.Medium manga : mangas) {
-                                MangaDetails details = new MangaDetails();
-                                details.setTitles(new Titles(null, null, null, manga.title.userPreferred));
-                                details.setCoverImg(manga.coverImage.large);
-                                if(manga.averageScore != null){
-                                    details.setAvgScore(manga.averageScore);
-                                }
-                                else{
-                                    details.setAvgScore(0);
-                                }
-
-                                details.setFormat(AnilistObjectMappings.mediaFormatToString.get(manga.format));
-                                if(manga.startDate.year != null){
-                                    details.setStartDate(new Date(manga.startDate.year, -1, -1));
-                                }
-
-                                if(manga.endDate.year != null){
-                                    details.setEndDate(new Date(manga.endDate.year, -1, -1));
-                                }
-
-                                if (!manga.genres.isEmpty()) {
-                                    details.setGenres(manga.genres);
-                                }
-                                if (manga.volumes != null){
-                                    details.setVolumes(manga.volumes);
-                                }
-                                details.setStatus(AnilistObjectMappings.mediaStatusToString.get(manga.status));
-                                details.setFavorites(manga.favourites);
-                                details.setId(manga.id);
-                                details.setType(MediaType.MANGA);
-                                mangaList.add(details);
-                            }
-                            mutableMangaPage.setValue(mangaList);
-                        },
-                        error -> mutableErrorMsg.setValue(error.getMessage()))
-        );
-    }
-
-    public void fetchUserMangaSearch(int page, String userSearch){
-        ApolloCall<MangaSearchPageQuery.Data> queryCall = aniClient.query(new MangaSearchPageQuery(page, userSearch));
-        compositeDisposable.add(Rx3Apollo.single(queryCall)
-                .subscribeOn(Schedulers.newThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(res -> {
-                            assert res.data != null;
-                            List<MangaDetails> mangaList = new ArrayList<>();
-                            List<MangaSearchPageQuery.Medium> mangas = res.data.Page.media;
-                            for (MangaSearchPageQuery.Medium manga : mangas) {
-                                MangaDetails details = new MangaDetails();
-                                details.setTitles(new Titles(null, null, null, manga.title.userPreferred));
-                                details.setCoverImg(manga.coverImage.large);
-                                if(manga.averageScore != null){
-                                    details.setAvgScore(manga.averageScore);
-                                }
-                                else{
-                                    details.setAvgScore(0);
-                                }
-
-                                details.setFormat(AnilistObjectMappings.mediaFormatToString.get(manga.format));
-                                if(manga.startDate.year != null){
-                                    details.setStartDate(new Date(manga.startDate.year, -1, -1));
-                                }
-
-                                if (!manga.genres.isEmpty()) {
-                                    details.setGenres(manga.genres);
-                                }
-                                if (manga.volumes != null){
-                                    details.setVolumes(manga.volumes);
-                                }
-                                details.setStatus(AnilistObjectMappings.mediaStatusToString.get(manga.status));
-                                details.setFavorites(manga.favourites);
-                                details.setId(manga.id);
-                                details.setType(MediaType.MANGA);
-                                mangaList.add(details);
-                            }
-                            mutableMangaPage.setValue(mangaList);
-                        },
-                        error -> mutableErrorMsg.setValue(error.getMessage()))
-        );
-    }
-
-    public void fetchCharPage(int mediaId, int pageNo, StaffLanguage language){
+    public void fetchCharPage(int mediaId, int pageNo, StaffLanguage language) {
         ApolloCall<CharacterPageQuery.Data> charPageCall = aniClient.query(new CharacterPageQuery(mediaId, pageNo, language));
         compositeDisposable.add(Rx3Apollo.single(charPageCall)
                 .subscribeOn(Schedulers.newThread())
@@ -482,9 +375,9 @@ public class ApiRepository {
                                 mediaDetails.setTitles(new Titles(null, null, null, edge.node.title.userPreferred));
                                 mediaDetails.setRelation(AnilistObjectMappings.mediaRelationsToString.get(edge.relationType));
                                 mediaDetails.setFormat(AnilistObjectMappings.mediaFormatToString.get(edge.node.format));
-                                mediaDetails.setStatus(AnilistObjectMappings.mediaStatusToString.get(edge.node.status));
+                                if (edge.node.status != null) {mediaDetails.setStatus(edge.node.status);}
                                 mediaDetails.setType(edge.node.type);
-                                mediaDetails.setId(edge.node.id);
+                                mediaDetails.setId(String.valueOf(edge.node.id));
                                 relationsPage.add(mediaDetails);
                             }
                             mutableRelationsPage.setValue(relationsPage);
@@ -509,7 +402,8 @@ public class ApiRepository {
         call.enqueue(new Callback<VNPage>() {
             @Override
             public void onResponse(@NonNull Call<VNPage> call, @NonNull Response<VNPage> response) {
-                mutableVNPage.setValue(response.body());
+                assert response.body() != null;
+                mutableVNPage.setValue(response.body().getVnDetailsList());
             }
 
             @Override
@@ -519,7 +413,7 @@ public class ApiRepository {
         });
     }
 
-    public void fetchVNData(String vndbID){
+    private void fetchVNData(String vndbID) {
         String fields = "title, titles{lang, title, latin, official, main}, " +
                 "image{thumbnail}, released, length, length_minutes, length_votes, rating, " +
                 "average, developers{name}, description, devstatus, " +
@@ -532,7 +426,7 @@ public class ApiRepository {
             @Override
             public void onResponse(@NonNull Call<VNPage> call, @NonNull Response<VNPage> response) {
                 assert response.body() != null;
-                mutableLiveData.setValue(response.body().getVnDetailsList().get(0).convertToMediaObject());
+                mutableLiveData.setValue(response.body().getVnDetailsList().get(0));
             }
 
             @Override

@@ -16,16 +16,16 @@ public class VNCharacter {
     private Image image;
 
     public List<VNResponse> getVns() {
-        return vns;
+        return this.vns;
     }
 
     public String getId() {
-        return id;
+        return this.id;
     }
 
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public String getRole(String vndbID){
@@ -39,6 +39,9 @@ public class VNCharacter {
     }
 
     public Image getImage() {
-        return image;
+        if (this.image == null) {
+            return new Image();
+        }
+        return this.image;
     }
 }

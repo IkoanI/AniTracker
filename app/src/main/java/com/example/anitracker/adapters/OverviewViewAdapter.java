@@ -9,8 +9,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -20,54 +23,70 @@ import com.example.anitracker.animeObjects.Trailer;
 import com.example.anitracker.mediaObjects.Description;
 import com.example.anitracker.mediaObjects.Genres;
 import com.example.anitracker.mediaObjects.Info;
+import com.example.anitracker.mediaObjects.MediaDetails;
+import com.example.anitracker.mediaObjects.Tag;
 import com.example.anitracker.uiObjects.Header;
+import com.example.anitracker.uiObjects.TagsHeader;
 import com.example.anitracker.vnObjects.Screenshots;
+import com.google.android.flexbox.FlexboxLayoutManager;
 import com.google.android.material.carousel.CarouselLayoutManager;
 import com.google.android.material.carousel.CarouselSnapHelper;
-import com.google.android.material.carousel.FullScreenCarouselStrategy;
 import com.google.android.material.carousel.HeroCarouselStrategy;
 
 
 import java.util.List;
+import java.util.Locale;
 
 public class OverviewViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     List<Object> objectList;
     Context context;
+    MediaDetails details;
+
     private final int headerTypeVar = 0;
     private final int descriptionTypeVar = 1;
     private final int trailerTypeVar = 2;
     private final int infoTypeVar = 3;
     private final int genreListVar = 4;
     private final int imageCarouselVar = 5;
+    private final int tagsHeaderVar = 6;
+    private final int tagsVar = 7;
 
 
 
-    public OverviewViewAdapter(List<Object> objectList, Context context) {
+    public OverviewViewAdapter(MediaDetails details, List<Object> objectList, Context context) {
         this.objectList = objectList;
         this.context = context;
+        this.details = details;
     }
 
     @Override
     public int getItemViewType(int position) {
-        if(objectList.get(position) instanceof Header){
+        if (objectList.get(position) instanceof Header) {
             return headerTypeVar;
-        }
-        else if(objectList.get(position) instanceof Description){
+        } else if (objectList.get(position) instanceof Description) {
             return descriptionTypeVar;
-        }
-        else if(objectList.get(position) instanceof Trailer){
+        } else if (objectList.get(position) instanceof Trailer) {
             return trailerTypeVar;
-        }
-        else if(objectList.get(position) instanceof Info){
+        } else if (objectList.get(position) instanceof Info) {
             return infoTypeVar;
-        }
-        else if(objectList.get(position) instanceof Genres){
+        } else if (objectList.get(position) instanceof Genres) {
             return genreListVar;
-        }
-        else if(objectList.get(position) instanceof Screenshots){
+        } else if (objectList.get(position) instanceof Screenshots) {
             return imageCarouselVar;
+        } else if (objectList.get(position) instanceof TagsHeader) {
+            return tagsHeaderVar;
+        } else if (objectList.get(position) instanceof Tag) {
+            return tagsVar;
         }
         return -1;
+    }
+
+    public void setSpan (View view, float span) {
+        ViewGroup.LayoutParams lp  = view.getLayoutParams();
+        if (lp instanceof FlexboxLayoutManager.LayoutParams) {
+            FlexboxLayoutManager.LayoutParams flexboxLp = (FlexboxLayoutManager.LayoutParams) lp;
+            flexboxLp.setFlexBasisPercent(span);
+        }
     }
 
     @NonNull
@@ -76,7 +95,7 @@ public class OverviewViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         View view;
         RecyclerView.ViewHolder viewHolder = null;
         LayoutInflater inflater = LayoutInflater.from(context);
-        switch (viewType){
+        switch (viewType) {
             case headerTypeVar:
                 view = inflater.inflate(R.layout.header_layout, parent, false );
                 viewHolder = new HeaderView(view);
@@ -105,6 +124,17 @@ public class OverviewViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             case imageCarouselVar:
                 view = inflater.inflate(R.layout.image_carousel, parent, false);
                 viewHolder = new ImageCarouselView(view);
+                break;
+
+            case tagsHeaderVar:
+                view = inflater.inflate(R.layout.tags_header_layout, parent, false);
+                viewHolder = new TagsHeaderView(view);
+                break;
+
+            case tagsVar:
+                view = inflater.inflate(R.layout.tag_view_layout, parent, false);
+                setSpan(view, 0.5f);
+                viewHolder = new TagsView(view);
                 break;
         }
 
@@ -181,8 +211,53 @@ public class OverviewViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 carouselLayoutManager.setCarouselAlignment(CarouselLayoutManager.ALIGNMENT_CENTER);
                 imageCarousel.setLayoutManager(carouselLayoutManager);
                 CarouselSnapHelper snapHelper = new CarouselSnapHelper();
+                imageCarousel.setOnFlingListener(null);
                 snapHelper.attachToRecyclerView(imageCarousel);
+                break;
 
+            case tagsHeaderVar:
+                TagsHeaderView tagsHeaderView = (TagsHeaderView) holder;
+                TagsHeader tagsHeader = (TagsHeader) objectList.get(position);
+                // set up show spoiler tag button
+                TextView showSpoilerTags = tagsHeaderView.showSpoilers;
+
+                if (this.details.getAllTags().size() == details.getNoSpoilerTags().size()) {
+                    // no spoiler tags, hide show spoiler button
+                    showSpoilerTags.setVisibility(View.GONE);
+                } else {
+                    showSpoilerTags.setOnClickListener(view1 -> {
+                        objectList.subList(position + 1, objectList.size()).clear();
+
+                        if (tagsHeader.getSpoilersShown()) {
+                            showSpoilerTags.setText(R.string.show_spoilers);
+                            tagsHeader.setSpoilersShown(false);
+                            objectList.addAll(details.getNoSpoilerTags());
+                        } else {
+                            showSpoilerTags.setText(R.string.hide_spoilers);
+                            tagsHeader.setSpoilersShown(true);
+                            objectList.addAll(details.getAllTags());
+                        }
+
+                        notifyItemRangeChanged(position + 1, objectList.size());
+                    });
+                }
+
+                break;
+
+            case tagsVar:
+                TagsView tagsView = (TagsView) holder;
+                Tag tag = (Tag) objectList.get(position);
+                tagsView.tagName.setText(tag.getTagName());
+                tagsView.tagRanking.setText(String.format(Locale.ENGLISH,"%d%%", tag.getTagRanking()));
+                if (tag.getSpoiler()) {
+                    tagsView.tagName.setTextColor(ContextCompat.getColor(context, R.color.red));
+                    tagsView.tagRanking.setTextColor(ContextCompat.getColor(context, R.color.red));
+                }
+                else {
+                    tagsView.tagName.setTextColor(ContextCompat.getColor(context, R.color.white));
+                    tagsView.tagRanking.setTextColor(ContextCompat.getColor(context, R.color.white));
+                }
+                break;
         }
 
     }
@@ -238,11 +313,34 @@ public class OverviewViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         }
     }
 
-    public static class ImageCarouselView extends RecyclerView.ViewHolder{
+    public static class ImageCarouselView extends RecyclerView.ViewHolder {
         RecyclerView imageCarousel;
         public ImageCarouselView(@NonNull View itemView) {
             super(itemView);
             imageCarousel = itemView.findViewById(R.id.imageCarousel);
+        }
+    }
+
+    public static class TagsHeaderView extends RecyclerView.ViewHolder {
+        TextView tags, showSpoilers;
+        public TagsHeaderView(@NonNull View itemView) {
+            super(itemView);
+            tags = itemView.findViewById(R.id.tags);
+            showSpoilers = itemView.findViewById(R.id.showSpoilers);
+        }
+    }
+
+    public class TagsView extends RecyclerView.ViewHolder {
+        ConstraintLayout mainLayout;
+        TextView tagName, tagRanking;
+        public TagsView(@NonNull View itemView) {
+            super(itemView);
+            tagName = itemView.findViewById(R.id.tagName);
+            tagRanking = itemView.findViewById(R.id.tagRanking);
+            mainLayout = itemView.findViewById(R.id.tagLayout);
+            itemView.setOnClickListener(view -> {
+                Toast.makeText(context, tagName.getText(), Toast.LENGTH_SHORT).show();
+            });
         }
     }
 }

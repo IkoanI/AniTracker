@@ -17,10 +17,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.anitracker.R;
 import com.example.anitracker.activities.Details;
-import com.example.anitracker.activities.MainActivity;
 import com.example.anitracker.adapters.RelationsViewAdapter;
 import com.example.anitracker.interfaces.RecyclerViewInterface;
 import com.example.anitracker.mediaObjects.MediaDetails;
+import com.example.anitracker.type.MediaType;
 import com.example.anitracker.viewModels.DetailsViewModel;
 
 public class RelationsFragment extends Fragment implements RecyclerViewInterface {
@@ -45,14 +45,18 @@ public class RelationsFragment extends Fragment implements RecyclerViewInterface
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         // set up recyclerview
-        View view = inflater.inflate(R.layout.relations_fragment, container, false);
-        RecyclerView relationsView = view.findViewById(R.id.relationsView);
+        View view = inflater.inflate(R.layout.recycler_view, container, false);
+        RecyclerView relationsView = view.findViewById(R.id.recView);
         relationsView.setAdapter(relationsViewAdapter);
         LinearLayoutManager relationsViewLayoutManager = new LinearLayoutManager(context);
         relationsView.setLayoutManager(relationsViewLayoutManager);
         // observe change in staff page
-        detailsViewModel.getRelationsPage();
         detailsViewModel.observeRelationsPage().observe(getViewLifecycleOwner(), relationsViewAdapter::addRelations);
+
+        if (detailsViewModel.getType() != MediaType.VISUAL_NOVEL) {
+            detailsViewModel.getRelationsPage();
+        }
+
         return view;
     }
 

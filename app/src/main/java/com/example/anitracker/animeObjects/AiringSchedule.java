@@ -25,5 +25,4 @@ public class AiringSchedule {
         long minutes = TimeUnit.SECONDS.toMinutes(this.timeUntilAiring) - (TimeUnit.SECONDS.toHours(this.timeUntilAiring)* 60);
         return String.format(Locale.ENGLISH,"Ep %s: %dd %dh %dm", this.airingEp, days, hours, minutes);
     }
-
 }

@@ -12,22 +12,20 @@ public class Trailer {
     }
 
     public String getId() {
-        return id;
+        return this.id;
     }
 
     public String getThumbnail() {
-        return thumbnail;
+        return this.thumbnail;
     }
 
     public String getTrailerLink() {
         String link = "";
-        if(Objects.equals(this.site, "youtube")){
+        if (Objects.equals(this.site, "youtube")) {
             link = String.format("https://www.youtube.com/watch?v=%s", this.id);
-        }
-        else if(Objects.equals(this.site, "dailymotion")){
+        } else if(Objects.equals(this.site, "dailymotion")){
             link = String.format("https://www.dailymotion.com/video/%s", this.id);
         }
         return link;
     }
-
 }

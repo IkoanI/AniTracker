@@ -1,21 +1,29 @@
 package com.example.anitracker.vnObjects;
 
+import android.util.Log;
+
 import com.google.gson.annotations.SerializedName;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class VNPage {
     @SerializedName("more")
     boolean more;
     @SerializedName("results")
-    List<VNResponse> vnDetailsList;
-
+    List<VNResponse> vnResponseList;
 
     public boolean hasMore() {
         return more;
     }
 
-    public List<VNResponse> getVnDetailsList() {
+    public List<VNDetails> getVnDetailsList() {
+        List<VNDetails> vnDetailsList = new ArrayList<>();
+
+        for (VNResponse vnResponse :  this.vnResponseList) {
+            vnDetailsList.add(vnResponse.convertToMediaObject());
+        }
         return vnDetailsList;
     }
+
 }

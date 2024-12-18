@@ -8,6 +8,7 @@ import com.example.anitracker.mediaObjects.CharacterDetails;
 import com.example.anitracker.mediaObjects.MediaDetails;
 import com.example.anitracker.mediaObjects.StaffDetails;
 import com.example.anitracker.repository.ApiRepository;
+import com.example.anitracker.type.MediaType;
 import com.example.anitracker.type.StaffLanguage;
 import com.example.anitracker.vnObjects.VNCharPage;
 
@@ -15,9 +16,8 @@ import java.util.List;
 
 public class DetailsViewModel extends ViewModel {
     private final ApiRepository repository;
-    private int id;
-    private String vndbId;
-    private String type;
+    private String id;
+    private MediaType type;
 
     // error message
     private final MutableLiveData<String> liveErrorMsg;
@@ -49,29 +49,20 @@ public class DetailsViewModel extends ViewModel {
 
     public LiveData<String> observeErrorMsg() { return liveErrorMsg; }
 
-    public void setId(int id) { this.id = id;}
+    public void setId(String id) { this.id = id;}
 
-    public void setVndbId(String vndbId) {
-        this.vndbId = vndbId;
+    public String getId() {
+        return this.id;
     }
 
-    public String getVndbId() { return vndbId; }
+    public void setType(MediaType type) { this.type = type;}
 
-    public void setType(String type) { this.type = type;}
-
-    public String getType() { return this.type;}
+    public MediaType getType() { return this.type;}
 
     // overview fragment
-
-    public void getAnimeDetails(){
-        repository.fetchAnimeData(this.id);
+    public void getDetails() {
+        repository.fetchData(this.type, this.id);
     }
-
-    public void getMangaDetails(){
-        repository.fetchMangaData(this.id);
-    }
-
-    public void getVNDetails() { repository.fetchVNData(this.vndbId); }
 
     public LiveData<MediaDetails> observeMediaDetails(){
         return mediaDetails;
@@ -79,13 +70,13 @@ public class DetailsViewModel extends ViewModel {
 
     // character fragment
 
-    public void getCharPage(StaffLanguage language){
-        repository.fetchCharPage(this.id, this.currCharPage, language);
+    public void getCharPage(StaffLanguage language) {
+        repository.fetchCharPage(Integer.parseInt(this.id), this.currCharPage, language);
         this.currCharPage++;
     }
 
-    public void getVNCharPage(){
-        repository.fetchVNChars(this.vndbId, this.currCharPage);
+    public void getVNCharPage() {
+        repository.fetchVNChars(this.id, this.currCharPage);
         this.currCharPage++;
     }
 
@@ -104,7 +95,7 @@ public class DetailsViewModel extends ViewModel {
     // staff fragment
 
     public void getStaffPage(){
-        repository.fetchStaffPage(this.id, this.currStaffPage);
+        repository.fetchStaffPage(Integer.parseInt(this.id), this.currStaffPage);
         this.currStaffPage++;
     }
 
@@ -114,7 +105,7 @@ public class DetailsViewModel extends ViewModel {
 
     // relation fragment
     public void getRelationsPage(){
-        repository.fetchRelationsPage(this.id);
+        repository.fetchRelationsPage(Integer.parseInt(this.id));
     }
 
     public LiveData<List<MediaDetails>> observeRelationsPage(){

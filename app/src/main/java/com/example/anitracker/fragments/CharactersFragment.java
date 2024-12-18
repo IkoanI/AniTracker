@@ -16,13 +16,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.anitracker.R;
 import com.example.anitracker.adapters.CharacterViewAdapter;
 import com.example.anitracker.type.MediaType;
-import com.example.anitracker.type.StaffLanguage;
 import com.example.anitracker.uiObjects.LanguageDropdown;
 import com.example.anitracker.viewModels.DetailsViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class CharactersFragment extends Fragment {
     private Context context;
@@ -46,23 +44,22 @@ public class CharactersFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         // creating list of objects to populate recycler view
         List<Object> objectList = new ArrayList<>();
-        if(Objects.equals(detailsViewModel.getType(), MediaType.ANIME.rawValue)){
+        if (detailsViewModel.getType() == MediaType.ANIME) {
             // if not anime, no need for ability to change language of voice actor
             objectList.add(new LanguageDropdown());
         }
         this.characterViewAdapter = new CharacterViewAdapter(objectList, context, detailsViewModel);
-        if(Objects.equals(detailsViewModel.getType(), "Visual Novel")){
+        if (detailsViewModel.getType() == MediaType.VISUAL_NOVEL) {
             detailsViewModel.observeVNCharPage().observe(getViewLifecycleOwner(), res -> {
                 characterViewAdapter.setHasMorePages(res.hasMore());
-                characterViewAdapter.addChars(res.getVNCharList(detailsViewModel.getVndbId()));
+                characterViewAdapter.addChars(res.getVNCharList(detailsViewModel.getId()));
             });
-        }
-        else{
+        } else {
             detailsViewModel.observeCharPage().observe(getViewLifecycleOwner(), res -> characterViewAdapter.addChars(res));
         }
-        View view = inflater.inflate(R.layout.characters_fragment, container, false);
+        View view = inflater.inflate(R.layout.recycler_view, container, false);
         //initializing recycler view
-        RecyclerView characterView = view.findViewById(R.id.characterView);
+        RecyclerView characterView = view.findViewById(R.id.recView);
         characterView.setAdapter(characterViewAdapter);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context);
         characterView.setLayoutManager(linearLayoutManager);
