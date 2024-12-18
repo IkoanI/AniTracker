@@ -194,7 +194,11 @@ public class VNResponse {
             String[] prevDate = this.released.split("-");
 
             for (int i = 0; i < prevDate.length; i++) {
-                date[i] = Integer.parseInt(prevDate[i]);
+                try {
+                    date[i] = Integer.parseInt(prevDate[i]);
+                } catch (NumberFormatException e) {
+                    date[i] = -1;
+                }
             }
 
             vnDetails.setStartDate(new Date(date[0], date[1], date[2]));

@@ -2,10 +2,13 @@ package com.example.anitracker.mediaObjects;
 
 import androidx.annotation.NonNull;
 
-import java.util.Locale;
 
 public class Date {
     private final int year, month, day;
+
+    private final String[] months = {"Jan", "Feb", "Mar", "Apr",
+            "May", "Jun", "Jul", "Aug",
+            "Sep", "Oct", "Nov", "Dec"};
 
     public Date(int year, int month, int day) {
         this.year = year;
@@ -29,20 +32,9 @@ public class Date {
     @Override
     @NonNull
     public String toString() {
-        String[] months = {"Jan", "Feb", "Mar", "Apr",
-                "May", "Jun", "Jul", "Aug",
-                "Sep", "Oct", "Nov", "Dec"};
-
-        String dateString = String.valueOf(this.year);
-
-        if(this.month != -1){
-            dateString += String.format(" %s", months[this.month-1]);
-        }
-
-        if(this.day != -1){
-            dateString += String.format(Locale.ENGLISH, " %d", this.day);
-        }
-
-        return dateString;
+        return String.format("%s %s %s",
+                this.year == -1 ? "TBA" : this.year,
+                this.month == -1 ? "" : this.months[this.month - 1],
+                this.day == -1 ? "" : this.day);
     }
 }
