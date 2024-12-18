@@ -53,8 +53,8 @@ public class RelationsFragment extends Fragment implements RecyclerViewInterface
         if (detailsViewModel.getType() != MediaType.VISUAL_NOVEL) {
             detailsViewModel.observeRelationsPage().observe(getViewLifecycleOwner(), relationsViewAdapter::addRelations);
             detailsViewModel.getRelationsPage();
-        } else if (detailsViewModel.getType() == MediaType.VISUAL_NOVEL) {
-            relationsViewAdapter.addRelations(detailsViewModel.vnRelationsList);
+        } else if (detailsViewModel.getType() == MediaType.VISUAL_NOVEL && detailsViewModel.getVnRelationsList() != null) {
+            relationsViewAdapter.addRelations(detailsViewModel.getVnRelationsList());
         }
 
         return view;

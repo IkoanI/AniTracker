@@ -57,7 +57,8 @@ public class OverviewFragment extends Fragment {
 
         // relations list for vn is fetched in the big api call in the overview fragment and kept in viewmodel for usage in relations fragment
         if (details instanceof VNDetails) {
-            detailsViewModel.vnRelationsList = ((VNDetails) details).getRelations();
+            detailsViewModel.setVnRelationsList(((VNDetails) details).getRelations());
+            detailsViewModel.setVnStaffsList(((VNDetails) details).getStaffs());
         }
         // setting up recyclerView displaying genres
         RecyclerView overviewView = view.findViewById(R.id.recView);

@@ -1,6 +1,7 @@
 package com.example.anitracker.vnObjects;
 
 import com.example.anitracker.mediaObjects.MediaDetails;
+import com.example.anitracker.mediaObjects.StaffDetails;
 import com.example.anitracker.type.Media;
 
 import java.util.ArrayList;
@@ -14,6 +15,7 @@ public class VNDetails extends MediaDetails {
     private int lengthMinutes, lengthVotes;
     private String length;
     private List<MediaDetails> relations;
+    private List<StaffDetails> staffs;
 
     public List<Developer> getDevelopers() {
         return this.developers;
@@ -33,6 +35,14 @@ public class VNDetails extends MediaDetails {
 
     public int getLengthVotes() {
         return this.lengthVotes;
+    }
+
+    public void setStaffs(List<StaffDetails> staffs) {
+        this.staffs = staffs;
+    }
+
+    public List<StaffDetails> getStaffs() {
+        return this.staffs;
     }
 
     public void setRelations(List<MediaDetails> relations) {

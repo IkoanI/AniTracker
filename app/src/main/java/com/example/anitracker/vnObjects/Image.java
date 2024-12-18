@@ -20,6 +20,8 @@ public class Image {
     @SerializedName("thumbnail_dims")
     int[] thumbnail_dims;
 
+    public static String defaultImage = "https://s4.anilist.co/file/anilistcdn/staff/large/default.jpg";
+
 
     public String getId() {
         return id;
@@ -27,7 +29,7 @@ public class Image {
 
     public String getUrl() {
         if (url == null) {
-            return "https://s4.anilist.co/file/anilistcdn/staff/large/default.jpg";
+            return Image.defaultImage;
         }
         return url;
     }
@@ -60,7 +62,7 @@ public class Image {
     public String getThumbnail() {
         // String, URL to the thumbnail.
         if (thumbnail == null) {
-            return "https://s4.anilist.co/file/anilistcdn/staff/large/default.jpg";
+            return Image.defaultImage;
         }
         return thumbnail;
     }

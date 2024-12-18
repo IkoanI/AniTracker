@@ -49,6 +49,8 @@ public class StaffFragment extends Fragment {
 
         if (detailsViewModel.getType() != MediaType.VISUAL_NOVEL) {
             detailsViewModel.getStaffPage();
+        } else if (detailsViewModel.getType() == MediaType.VISUAL_NOVEL && detailsViewModel.getVnStaffsList() != null) {
+            staffViewAdapter.addStaffs(detailsViewModel.getVnStaffsList());
         }
 
         return view;

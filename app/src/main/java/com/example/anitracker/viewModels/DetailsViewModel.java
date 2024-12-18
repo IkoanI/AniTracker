@@ -12,6 +12,7 @@ import com.example.anitracker.type.MediaType;
 import com.example.anitracker.type.StaffLanguage;
 import com.example.anitracker.vnObjects.VNCharPage;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class DetailsViewModel extends ViewModel {
@@ -33,10 +34,11 @@ public class DetailsViewModel extends ViewModel {
     // used by staff fragment
     private final MutableLiveData<List<StaffDetails>> liveStaffPage;
     private int currStaffPage = 1;
+    private List<StaffDetails> vnStaffsList;
 
     // used by relations fragment
     private final MutableLiveData<List<MediaDetails>> liveRelationsPage;
-    public List<MediaDetails> vnRelationsList;
+    private List<MediaDetails> vnRelationsList;
 
     public DetailsViewModel() {
         this.repository = new ApiRepository();
@@ -95,7 +97,7 @@ public class DetailsViewModel extends ViewModel {
 
     // staff fragment
 
-    public void getStaffPage(){
+    public void getStaffPage() {
         repository.fetchStaffPage(Integer.parseInt(this.id), this.currStaffPage);
         this.currStaffPage++;
     }
@@ -104,13 +106,29 @@ public class DetailsViewModel extends ViewModel {
         return this.liveStaffPage;
     }
 
+    public void setVnStaffsList(List<StaffDetails> vnStaffsList) {
+        this.vnStaffsList = vnStaffsList;
+    }
+
+    public List<StaffDetails> getVnStaffsList() {
+        return this.vnStaffsList;
+    }
+
     // relation fragment
-    public void getRelationsPage(){
+    public void getRelationsPage() {
         repository.fetchRelationsPage(Integer.parseInt(this.id));
     }
 
     public LiveData<List<MediaDetails>> observeRelationsPage(){
         return liveRelationsPage;
+    }
+
+    public void setVnRelationsList(List<MediaDetails> vnRelationsList) {
+        this.vnRelationsList = vnRelationsList;
+    }
+
+    public List<MediaDetails> getVnRelationsList() {
+        return this.vnRelationsList;
     }
 
     // clear requests

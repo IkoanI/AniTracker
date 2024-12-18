@@ -2,6 +2,8 @@ package com.example.anitracker.vnObjects;
 
 import com.example.anitracker.mediaObjects.Date;
 import com.example.anitracker.mediaObjects.MediaDetails;
+import com.example.anitracker.mediaObjects.Name;
+import com.example.anitracker.mediaObjects.StaffDetails;
 import com.example.anitracker.mediaObjects.Tag;
 import com.example.anitracker.mediaObjects.Titles;
 import com.example.anitracker.type.MediaStatus;
@@ -49,6 +51,10 @@ public class VNResponse {
     private String role;
     @SerializedName("relations")
     private List<VNRelation> relations;
+    @SerializedName("staff")
+    private List<VNStaff> staffs;
+    @SerializedName("editions")
+    private List<VNEdition> editions;
 
 
     public String getId() {
@@ -208,6 +214,19 @@ public class VNResponse {
                 relationsList.add(relation.convertToMediaObject());
             }
             vnDetails.setRelations(relationsList);
+        }
+
+        if (this.staffs != null && !this.staffs.isEmpty()) {
+            List<StaffDetails> staffsList = new ArrayList<>();
+            for (VNStaff staff : this.staffs) {
+                StaffDetails staffDetails = staff.convertToStaffDetail();
+                String nameAndEdition = String.format("%s\n(%s)",
+                        staff.getName(), staff.getEdition() == -1 ? "Original Edition" : this.editions.get(staff.getEdition()).getName());
+
+                staffDetails.setName(new Name(nameAndEdition));
+                staffsList.add(staffDetails);
+            }
+            vnDetails.setStaffs(staffsList);
         }
 
         vnDetails.setFormat("Visual Novel");

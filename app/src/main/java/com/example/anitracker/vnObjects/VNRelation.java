@@ -44,6 +44,10 @@ public class VNRelation extends VNResponse {
                 vnDetails.setRelation(MediaRelation.PREQUEL);
                 break;
 
+            case "orig":
+                vnDetails.setRelation(MediaRelation.SOURCE);
+                break;
+
             default:
                 vnDetails.setRelation(this.relation);
                 break;
