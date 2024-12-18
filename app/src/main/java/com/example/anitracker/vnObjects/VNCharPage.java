@@ -1,7 +1,5 @@
 package com.example.anitracker.vnObjects;
 
-import android.util.Log;
-
 import com.example.anitracker.mediaObjects.CharacterDetails;
 import com.example.anitracker.mediaObjects.Name;
 import com.google.gson.annotations.SerializedName;
@@ -26,8 +24,6 @@ public class VNCharPage {
         for (VNCharacter character : vnCharacterList) {
             CharacterDetails newCharacterDetail = new CharacterDetails();
             newCharacterDetail.setName(new Name(character.getName()));
-            Log.d("Testing", String.valueOf(character.getImage() == null));
-            Log.d("Testing", String.valueOf(character.getImage().getUrl()));
 
             newCharacterDetail.setImage(character.getImage().getUrl());
             for (VNResponse vn : character.getVns()) {

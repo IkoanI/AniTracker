@@ -36,8 +36,9 @@ public class DetailsViewModel extends ViewModel {
 
     // used by relations fragment
     private final MutableLiveData<List<MediaDetails>> liveRelationsPage;
+    public List<MediaDetails> vnRelationsList;
 
-    public DetailsViewModel(){
+    public DetailsViewModel() {
         this.repository = new ApiRepository();
         this.liveCharPage = repository.getMutableCharPage();
         this.liveVNCharPage = repository.getMutableVNCharPage();

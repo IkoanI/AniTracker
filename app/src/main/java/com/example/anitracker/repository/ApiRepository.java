@@ -373,7 +373,7 @@ public class ApiRepository {
                                 MediaDetails mediaDetails = new MediaDetails();
                                 mediaDetails.setCoverImg(edge.node.coverImage.large);
                                 mediaDetails.setTitles(new Titles(null, null, null, edge.node.title.userPreferred));
-                                mediaDetails.setRelation(AnilistObjectMappings.mediaRelationsToString.get(edge.relationType));
+                                mediaDetails.setRelation(edge.relationType);
                                 mediaDetails.setFormat(AnilistObjectMappings.mediaFormatToString.get(edge.node.format));
                                 if (edge.node.status != null) {mediaDetails.setStatus(edge.node.status);}
                                 mediaDetails.setType(edge.node.type);
@@ -417,7 +417,7 @@ public class ApiRepository {
         String fields = "title, titles{lang, title, latin, official, main}, " +
                 "image{thumbnail}, released, length, length_minutes, length_votes, rating, " +
                 "average, developers{name}, description, devstatus, " +
-                "tags{name, rating, spoiler}, aliases, screenshots{url}";
+                "tags{name, rating, spoiler}, aliases, screenshots{url}, relations{title, relation, image{thumbnail}, devstatus}";
 
         List<Object> filters = Arrays.asList("id", "=", vndbID);
         VNRequestBody body = new VNRequestBody(null, false, 1, 1, fields, filters);
@@ -436,7 +436,7 @@ public class ApiRepository {
         });
     }
 
-    public void fetchVNChars(String vndbID, int page){
+    public void fetchVNChars(String vndbID, int page) {
         String fields = "name, image{url}, vns{role}";
         List<Object> filters = Arrays.asList("vn","=", new String[]{"id","=",vndbID});
         VNRequestBody body = new VNRequestBody("name", false, 50, page, fields, filters);

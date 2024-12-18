@@ -6,8 +6,6 @@ public class CharacterDetails {
     int id;
     StaffDetails voiceActor;
 
-    public CharacterDetails(){}
-
     public Name getName() {
         return name;
     }

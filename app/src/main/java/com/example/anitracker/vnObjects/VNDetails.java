@@ -1,7 +1,9 @@
 package com.example.anitracker.vnObjects;
 
 import com.example.anitracker.mediaObjects.MediaDetails;
+import com.example.anitracker.type.Media;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -11,6 +13,7 @@ public class VNDetails extends MediaDetails {
     private Screenshots screenshots;
     private int lengthMinutes, lengthVotes;
     private String length;
+    private List<MediaDetails> relations;
 
     public List<Developer> getDevelopers() {
         return this.developers;
@@ -30,6 +33,14 @@ public class VNDetails extends MediaDetails {
 
     public int getLengthVotes() {
         return this.lengthVotes;
+    }
+
+    public void setRelations(List<MediaDetails> relations) {
+        this.relations = relations;
+    }
+
+    public List<MediaDetails> getRelations() {
+        return this.relations;
     }
 
     public void setDevelopers(List<Developer> developers) {

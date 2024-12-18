@@ -1,9 +1,10 @@
 package com.example.anitracker.vnObjects;
 
-import com.example.anitracker.mediaObjects.CharacterDetails;
 import com.example.anitracker.mediaObjects.Date;
+import com.example.anitracker.mediaObjects.MediaDetails;
 import com.example.anitracker.mediaObjects.Tag;
 import com.example.anitracker.mediaObjects.Titles;
+import com.example.anitracker.type.MediaStatus;
 import com.example.anitracker.type.MediaType;
 import com.google.gson.annotations.SerializedName;
 
@@ -45,10 +46,10 @@ public class VNResponse {
     @SerializedName("aliases")
     private List<String> aliases;
     @SerializedName("role")
-    // only used when querying vns a character appears in
     private String role;
-    @SerializedName("va")
-    private List<VNVoiceActor> voiceActors;
+    @SerializedName("relations")
+    private List<VNRelation> relations;
+
 
     public String getId() {
         return id;
@@ -112,7 +113,6 @@ public class VNResponse {
                 return "In development";
             case 2:
                 return "Cancelled";
-
             default:
                 return "Unknown";
         }
@@ -202,6 +202,16 @@ public class VNResponse {
             vnDetails.setScreenshots(new Screenshots(screenshotURLs));
         }
 
+        if (this.relations != null && !this.relations.isEmpty()) {
+            List<MediaDetails> relationsList = new ArrayList<>();
+            for (VNRelation relation : this.relations) {
+                relationsList.add(relation.convertToMediaObject());
+            }
+            vnDetails.setRelations(relationsList);
+        }
+
+        vnDetails.setFormat("Visual Novel");
+
         vnDetails.setType(MediaType.VISUAL_NOVEL);
 
         return vnDetails;
@@ -214,18 +224,6 @@ public class VNResponse {
             return -1;
         }
         return 0;
-    }
-
-    public List<VNVoiceActor> getVoiceActors() {
-        return voiceActors;
-    }
-
-    public List<CharacterDetails> getCharacterDetails(){
-        List<CharacterDetails> characterDetails = new ArrayList<>();
-        for (VNVoiceActor va : voiceActors) {
-            characterDetails.add(va.convertToMediaObject(this.id));
-        }
-        return characterDetails;
     }
 
     public String getRole() {

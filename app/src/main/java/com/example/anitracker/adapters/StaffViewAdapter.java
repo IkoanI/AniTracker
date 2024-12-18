@@ -52,9 +52,6 @@ public class StaffViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             viewModel.getStaffPage();
         }
         StaffViewItem staffViewItem = (StaffViewItem) holder;
-        Log.d("TESTING", staffDetailsList.get(position).getName().getUserPref());
-        Log.d("TESTING", staffDetailsList.get(position).getImage());
-        Log.d("TESTING", staffDetailsList.get(position).getRole());
         Glide.with(context).load(staffDetailsList.get(position).getImage()).into(staffViewItem.staffImage);
         staffViewItem.staffName.setText(staffDetailsList.get(position).getName().getUserPref());
         staffViewItem.staffRole.setText(staffDetailsList.get(position).getRole());

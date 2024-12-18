@@ -3,6 +3,7 @@ package com.example.anitracker.mediaObjects;
 import com.example.anitracker.animeObjects.Trailer;
 import com.example.anitracker.fragment.Detail;
 import com.example.anitracker.repository.AnilistObjectMappings;
+import com.example.anitracker.type.MediaRelation;
 import com.example.anitracker.type.MediaStatus;
 import com.example.anitracker.type.MediaType;
 
@@ -41,7 +42,7 @@ public class MediaDetails {
         return desc;
     }
 
-    public String getStatus() {return AnilistObjectMappings.mediaStatusToString.get(this.status);}
+    public String getStatus() {return this.status;}
 
     public String getBanner() {
         return banner;
@@ -137,14 +138,13 @@ public class MediaDetails {
         this.desc = desc;
     }
 
-    public void setStatus(MediaStatus status) {
-        this.status = status.rawValue;
-        infoMap.put("Status",  AnilistObjectMappings.mediaStatusToString.get(this.status));
-    }
-
     public void setStatus(String status) {
         this.status = status;
         infoMap.put("Status", this.status);
+    }
+
+    public void setStatus(MediaStatus status) {
+        this.setStatus(AnilistObjectMappings.mediaStatusToString.get(status.rawValue));
     }
 
     public void setBanner(String banner) {
@@ -226,6 +226,10 @@ public class MediaDetails {
     public void setEndDate(Date date) {
         this.endDate = date;
         infoMap.put("Finished", this.endDate.toString());
+    }
+
+    public void setRelation(MediaRelation relation) {
+        this.setRelation(AnilistObjectMappings.mediaRelationsToString.get(relation));
     }
 
     public void setRelation(String relation) {

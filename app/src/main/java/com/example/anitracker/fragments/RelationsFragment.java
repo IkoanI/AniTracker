@@ -3,7 +3,6 @@ package com.example.anitracker.fragments;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -50,11 +49,12 @@ public class RelationsFragment extends Fragment implements RecyclerViewInterface
         relationsView.setAdapter(relationsViewAdapter);
         LinearLayoutManager relationsViewLayoutManager = new LinearLayoutManager(context);
         relationsView.setLayoutManager(relationsViewLayoutManager);
-        // observe change in staff page
-        detailsViewModel.observeRelationsPage().observe(getViewLifecycleOwner(), relationsViewAdapter::addRelations);
 
         if (detailsViewModel.getType() != MediaType.VISUAL_NOVEL) {
+            detailsViewModel.observeRelationsPage().observe(getViewLifecycleOwner(), relationsViewAdapter::addRelations);
             detailsViewModel.getRelationsPage();
+        } else if (detailsViewModel.getType() == MediaType.VISUAL_NOVEL) {
+            relationsViewAdapter.addRelations(detailsViewModel.vnRelationsList);
         }
 
         return view;
@@ -63,7 +63,6 @@ public class RelationsFragment extends Fragment implements RecyclerViewInterface
     @Override
     public void onItemClick(int position) {
         MediaDetails selected = relationsViewAdapter.getRelation(position);
-        Log.d("RELATION SELECTION", selected.getRelation() + selected.getId());
         Intent intent = new Intent(context, Details.class);
         intent.putExtra("ID", selected.getId());
         intent.putExtra("Type", selected.getType());
