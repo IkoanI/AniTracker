@@ -28,16 +28,6 @@ public class VNCharacter {
         return this.name;
     }
 
-    public String getRole(String vndbID){
-        for(VNResponse vn : this.vns){
-            if (Objects.equals(vn.getId(), vndbID)){
-                return vn.getRole();
-            }
-        }
-
-        return "None";
-    }
-
     public Image getImage() {
         if (this.image == null) {
             return new Image();

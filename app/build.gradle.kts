@@ -44,6 +44,7 @@ apollo {
 }
 
 dependencies {
+    implementation(libs.apache.commons.lang3)
     implementation(libs.apollo.runtime)
     implementation(libs.apollo.rx3.support)
     implementation(libs.glide)

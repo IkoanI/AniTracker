@@ -4,6 +4,8 @@ import com.example.anitracker.mediaObjects.CharacterDetails;
 import com.example.anitracker.mediaObjects.Name;
 import com.google.gson.annotations.SerializedName;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -28,7 +30,7 @@ public class VNCharPage {
             newCharacterDetail.setImage(character.getImage().getUrl());
             for (VNResponse vn : character.getVns()) {
                 if (Objects.equals(vn.getId(), vndbID)) {
-                    newCharacterDetail.setRole(vn.getRole());
+                    newCharacterDetail.setRole(StringUtils.capitalize(vn.getRole()));
                     break;
                 }
             }

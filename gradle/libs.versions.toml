@@ -1,6 +1,7 @@
 [versions]
 agp = "8.6.1"
 apolloRuntime = "3.8.5"
+commonsLang3Version = "3.6"
 glide = "4.16.0"
 googleFlexbox = "3.0.0"
 jsoup = "1.18.1"
@@ -22,6 +23,7 @@ rxjava = "3.1.5"
 viewpager2 = "1.1.0"
 
 [libraries]
+apache-commons-lang3 = { module = "org.apache.commons:commons-lang3", version.ref = "commonsLang3Version" }
 apollo-runtime = { module = "com.apollographql.apollo3:apollo-runtime", version.ref = "apolloRuntime" }
 apollo-rx3-support = { module = "com.apollographql.apollo3:apollo-rx3-support", version.ref = "apolloRuntime" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "retrofit" }
