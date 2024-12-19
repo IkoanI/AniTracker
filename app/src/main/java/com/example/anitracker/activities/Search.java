@@ -23,7 +23,7 @@ import com.google.android.material.tabs.TabLayoutMediator;
 
 import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEvent;
 
-public class MainActivity extends AppCompatActivity {
+public class Search extends AppCompatActivity {
     MainViewModel viewModel;
     private final String[] fragmentTitles = {"Anime", "Manga", "Visual Novel"};
 
@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_search);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -99,15 +99,10 @@ public class MainActivity extends AppCompatActivity {
 
         VPAdapter viewPagerAdapter = new VPAdapter(this);
 
-        // creating fragments
-        SearchFragment animeSearchFragment = new SearchFragment(MediaType.ANIME);
-        SearchFragment mangaSearchFragment = new SearchFragment(MediaType.MANGA);
-        SearchFragment vnSearchFragment = new SearchFragment(MediaType.VISUAL_NOVEL);
-
         // adding fragments to view pager
-        viewPagerAdapter.addFragment(animeSearchFragment);
-        viewPagerAdapter.addFragment(mangaSearchFragment);
-        viewPagerAdapter.addFragment(vnSearchFragment);
+        viewPagerAdapter.addFragment(new SearchFragment(MediaType.ANIME));
+        viewPagerAdapter.addFragment(new SearchFragment(MediaType.MANGA));
+        viewPagerAdapter.addFragment(new SearchFragment(MediaType.VISUAL_NOVEL));
 
         // since number of tabs is known, load all at once instead of loading every time user switches
         viewPager.setOffscreenPageLimit(2);

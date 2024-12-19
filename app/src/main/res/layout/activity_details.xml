@@ -109,6 +109,7 @@
         </com.google.android.material.tabs.TabLayout>
 
     </com.google.android.material.appbar.AppBarLayout>
+
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewpager"
         android:layout_width="match_parent"
@@ -117,15 +118,5 @@
         app:layout_anchorGravity="bottom"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
-    <ProgressBar
-        android:id="@+id/loadingSpinner"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:indeterminate="true"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_gravity="center"
-        android:visibility="visible"/>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

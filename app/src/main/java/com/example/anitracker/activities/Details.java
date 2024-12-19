@@ -3,7 +3,6 @@ package com.example.anitracker.activities;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -34,7 +33,6 @@ import java.util.Objects;
 public class Details extends AppCompatActivity {
     private final String[] fragmentTitles = {"Overview", "Characters", "Staff", "Relations"};
     DetailsViewModel detailsViewModel;
-    ProgressBar loadingSpinner;
     AppBarLayout appBarLayout;
 
     @Override
@@ -59,12 +57,10 @@ public class Details extends AppCompatActivity {
         // get and observe details from repository
         this.detailsViewModel.getDetails();
         this.detailsViewModel.observeMediaDetails().observe(this, this::populateActivity);
-        
-        // hide ui and display loading bar while data is loading
+
+        // hide ui while data is loading
         this.appBarLayout = findViewById(R.id.appBarLayout);
-        this.loadingSpinner = findViewById(R.id.loadingSpinner);
         this.appBarLayout.setVisibility(View.INVISIBLE);
-        this.loadingSpinner.setVisibility(View.VISIBLE);
         
         // set up tab layout and view pager
         TabLayout tabLayout = findViewById(R.id.tabs);
@@ -109,7 +105,6 @@ public class Details extends AppCompatActivity {
             TextView title = this.findViewById(R.id.title);
             title.setText(details.getTitles().getUserPref());
 
-            this.loadingSpinner.setVisibility(View.GONE);
             this.appBarLayout.setVisibility(View.VISIBLE);
     }
 }

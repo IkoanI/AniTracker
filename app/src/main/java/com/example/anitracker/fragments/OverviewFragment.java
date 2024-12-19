@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -48,13 +49,16 @@ public class OverviewFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.recycler_view, container, false);
-        view.setVisibility(View.INVISIBLE);
-        detailsViewModel.observeMediaDetails().observe(getViewLifecycleOwner(), this::insertDetails);
+        ProgressBar progressBar = view.findViewById(R.id.loadingSpinner);
+        progressBar.setVisibility(View.VISIBLE);
+        detailsViewModel.observeMediaDetails().observe(getViewLifecycleOwner(), res -> {
+            this.insertDetails(res);
+            progressBar.setVisibility(View.GONE);
+        });
         return view;
     }
 
     public void insertDetails(MediaDetails details) {
-
         // relations list for vn is fetched in the big api call in the overview fragment and kept in viewmodel for usage in relations fragment
         if (details instanceof VNDetails) {
             detailsViewModel.setVnRelationsList(((VNDetails) details).getRelations());
@@ -96,8 +100,5 @@ public class OverviewFragment extends Fragment {
 
         overviewView.setAdapter(overviewViewAdapter);
         overviewView.setLayoutManager(layoutManager);
-
-
-        view.setVisibility(View.VISIBLE);
     }
 }

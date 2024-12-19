@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -48,18 +49,29 @@ public class SearchFragment extends Fragment implements RecyclerViewInterface {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.recycler_view, container, false);
+        ProgressBar loadingIndicator = view.findViewById(R.id.loadingSpinner);
 
         // observe search result
         if (this.mediaType == MediaType.ANIME) {
-            viewModel.observeAnimePage().observe(getViewLifecycleOwner(), adapter::addItems);
+            viewModel.observeAnimePage().observe(getViewLifecycleOwner(), res -> {
+                adapter.addItems(res);
+                loadingIndicator.setVisibility(View.GONE);
+            });
         } else if (this.mediaType == MediaType.MANGA) {
-            viewModel.observeMangaPage().observe(getViewLifecycleOwner(), adapter::addItems);
+            viewModel.observeMangaPage().observe(getViewLifecycleOwner(), res -> {
+                adapter.addItems(res);
+                loadingIndicator.setVisibility(View.GONE);
+            });
         } else if (this.mediaType == MediaType.VISUAL_NOVEL) {
-            viewModel.observeVNPage().observe(getViewLifecycleOwner(), adapter::addItems);
+            viewModel.observeVNPage().observe(getViewLifecycleOwner(), res -> {
+                adapter.addItems(res);
+                loadingIndicator.setVisibility(View.GONE);
+            });
         }
 
         // fetch data when list is empty
         if(adapter.getItemCount() == 0){
+            loadingIndicator.setVisibility(View.VISIBLE);
             viewModel.getSearchPage(this.mediaType);
         }
 
@@ -68,10 +80,12 @@ public class SearchFragment extends Fragment implements RecyclerViewInterface {
             adapter.clearItems();
             adapter.setUserSearch(res);
             viewModel.setLoadedPages(this.mediaType, 1);
-            if(res.isEmpty()){
+            if (res.isEmpty()) {
+                loadingIndicator.setVisibility(View.VISIBLE);
                 viewModel.getSearchPage(this.mediaType);
             }
-            else{
+            else {
+                loadingIndicator.setVisibility(View.VISIBLE);
                 viewModel.getSearchPage(this.mediaType, res);
             }
 

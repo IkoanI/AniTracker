@@ -19,7 +19,7 @@
             android:exported="false"
             android:configChanges="orientation|screenSize|keyboardHidden" />
         <activity
-            android:name=".activities.MainActivity"
+            android:name=".activities.Search"
             android:exported="true"
             android:configChanges="orientation|screenSize|keyboardHidden">
             <intent-filter>
