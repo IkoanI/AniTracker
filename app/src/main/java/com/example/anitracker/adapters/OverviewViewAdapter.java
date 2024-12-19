@@ -26,6 +26,7 @@ import com.example.anitracker.mediaObjects.Info;
 import com.example.anitracker.mediaObjects.MediaDetails;
 import com.example.anitracker.mediaObjects.Tag;
 import com.example.anitracker.uiObjects.Header;
+import com.example.anitracker.uiObjects.LoadingCircleDrawable;
 import com.example.anitracker.uiObjects.TagsHeader;
 import com.example.anitracker.vnObjects.Screenshots;
 import com.google.android.flexbox.FlexboxLayoutManager;
@@ -178,7 +179,10 @@ public class OverviewViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             case trailerTypeVar:
                 Trailer trailer = (Trailer) objectList.get(position);
                 TrailerView trailerView = (TrailerView) holder;
-                Glide.with(context).load(trailer.getThumbnail()).into(trailerView.trailerThumbnail);
+                Glide.with(context)
+                        .load(trailer.getThumbnail())
+                        .placeholder(LoadingCircleDrawable.getLoadingCircle(context))
+                        .into(trailerView.trailerThumbnail);
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(trailer.getTrailerLink()));
                 trailerView.playButton.setOnClickListener(v -> context.startActivity(intent));
                 break;

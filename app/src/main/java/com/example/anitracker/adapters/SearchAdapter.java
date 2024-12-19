@@ -19,6 +19,7 @@ import com.example.anitracker.mediaObjects.MediaDetails;
 import com.example.anitracker.repository.AnilistObjectMappings;
 import com.example.anitracker.type.MediaStatus;
 import com.example.anitracker.type.MediaType;
+import com.example.anitracker.uiObjects.LoadingCircleDrawable;
 import com.example.anitracker.viewModels.MainViewModel;
 import com.example.anitracker.vnObjects.Developer;
 import com.example.anitracker.vnObjects.VNDetails;
@@ -112,7 +113,10 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
     }
 
     public void setDetails(MediaDetails details, SearchViewHolder holder, int position) {
-        Glide.with(context).load(details.getCoverImg()).into(holder.coverImg);
+        Glide.with(context)
+                .load(details.getCoverImg())
+                .placeholder(LoadingCircleDrawable.getLoadingCircle(context))
+                .into(holder.coverImg);
         holder.title.setText(details.getTitles().getUserPref());
         holder.rating.setText(String.format(Locale.ENGLISH, "%d%%", details.getAvgScore()));
         holder.rank.setText(String.valueOf(position+1));

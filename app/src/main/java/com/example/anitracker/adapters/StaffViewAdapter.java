@@ -15,6 +15,7 @@ import com.bumptech.glide.Glide;
 import com.example.anitracker.R;
 import com.example.anitracker.mediaObjects.StaffDetails;
 import com.example.anitracker.type.MediaType;
+import com.example.anitracker.uiObjects.LoadingCircleDrawable;
 import com.example.anitracker.viewModels.DetailsViewModel;
 
 import java.util.ArrayList;
@@ -52,7 +53,10 @@ public class StaffViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             viewModel.getStaffPage();
         }
         StaffViewItem staffViewItem = (StaffViewItem) holder;
-        Glide.with(context).load(staffDetailsList.get(position).getImage()).into(staffViewItem.staffImage);
+        Glide.with(context)
+                .load(staffDetailsList.get(position).getImage())
+                .placeholder(LoadingCircleDrawable.getLoadingCircle(context))
+                .into(staffViewItem.staffImage);
         staffViewItem.staffName.setText(staffDetailsList.get(position).getName().getUserPref());
         staffViewItem.staffRole.setText(staffDetailsList.get(position).getRole());
     }

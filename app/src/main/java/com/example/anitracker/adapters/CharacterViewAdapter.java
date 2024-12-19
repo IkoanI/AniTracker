@@ -20,10 +20,10 @@ import com.example.anitracker.repository.AnilistObjectMappings;
 import com.example.anitracker.type.MediaType;
 import com.example.anitracker.type.StaffLanguage;
 import com.example.anitracker.uiObjects.LanguageDropdown;
+import com.example.anitracker.uiObjects.LoadingCircleDrawable;
 import com.example.anitracker.viewModels.DetailsViewModel;
 
 import java.util.List;
-import java.util.Objects;
 
 public class CharacterViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private final List<Object> objectList;
@@ -144,23 +144,29 @@ public class CharacterViewAdapter extends RecyclerView.Adapter<RecyclerView.View
                 }
 
                 characterView.role.setText(character.getRole());
-                Glide.with(context.getApplicationContext()).load(character.getImage()).into(characterView.charImage);
-                if(character.getVoiceActor() == null){
+
+                Glide.with(context.getApplicationContext())
+                        .load(character.getImage())
+                        .placeholder(LoadingCircleDrawable.getLoadingCircle(context))
+                        .into(characterView.charImage);
+
+                if (character.getVoiceActor() == null) {
                     characterView.vaImage.setVisibility(View.GONE);
                     characterView.vaName.setVisibility(View.GONE);
                     characterView.language.setVisibility(View.GONE);
-                }
-                else{
+                } else{
                     // recyclerview reuses view so if previously set gone, must be set visible again
                     characterView.vaImage.setVisibility(View.VISIBLE);
                     characterView.vaName.setVisibility(View.VISIBLE);
                     characterView.language.setVisibility(View.VISIBLE);
                     characterView.vaName.setText(character.getVoiceActor().getName().getUserPref());
-                    Glide.with(context.getApplicationContext()).load(character.getVoiceActor().getImage()).into(characterView.vaImage);
-                    if(viewModel.getType() ==  MediaType.VISUAL_NOVEL){
+                    Glide.with(context.getApplicationContext())
+                            .load(character.getVoiceActor().getImage())
+                            .placeholder(LoadingCircleDrawable.getLoadingCircle(context))
+                            .into(characterView.vaImage);
+                    if (viewModel.getType() ==  MediaType.VISUAL_NOVEL) {
                         characterView.language.setText(character.getVoiceActor().getLang());
-                    }
-                    else{
+                    } else{
                         characterView.language.setText(AnilistObjectMappings.staffLanguageToString.get(selectedLanguage));
                     }
                 }

@@ -14,6 +14,7 @@ import com.bumptech.glide.Glide;
 import com.example.anitracker.R;
 import com.example.anitracker.interfaces.RecyclerViewInterface;
 import com.example.anitracker.mediaObjects.MediaDetails;
+import com.example.anitracker.uiObjects.LoadingCircleDrawable;
 import com.example.anitracker.viewModels.DetailsViewModel;
 
 import java.util.ArrayList;
@@ -56,7 +57,10 @@ public class RelationsViewAdapter extends RecyclerView.Adapter<RecyclerView.View
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
 
         RelationsViewItem relationsViewItem = (RelationsViewItem) holder;
-        Glide.with(context).load(relationsList.get(position).getCoverImg()).into(relationsViewItem.coverImg);
+        Glide.with(context)
+                .load(relationsList.get(position).getCoverImg())
+                .placeholder(LoadingCircleDrawable.getLoadingCircle(context))
+                .into(relationsViewItem.coverImg);
         relationsViewItem.relation.setText(relationsList.get(position).getRelation());
         relationsViewItem.title.setText(relationsList.get(position).getTitles().getUserPref());
         relationsViewItem.formatAndStatus.setText(String.format("%s · %s", relationsList.get(position).getFormat(),
