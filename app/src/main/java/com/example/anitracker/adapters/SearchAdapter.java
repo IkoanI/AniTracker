@@ -20,7 +20,7 @@ import com.example.anitracker.repository.AnilistObjectMappings;
 import com.example.anitracker.type.MediaStatus;
 import com.example.anitracker.type.MediaType;
 import com.example.anitracker.uiObjects.LoadingCircleDrawable;
-import com.example.anitracker.viewModels.MainViewModel;
+import com.example.anitracker.viewModels.SearchViewModel;
 import com.example.anitracker.vnObjects.Developer;
 import com.example.anitracker.vnObjects.VNDetails;
 
@@ -31,19 +31,17 @@ import java.util.Objects;
 
 public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchViewHolder> {
     private final Context context;
-    private final List<MediaDetails> resultPage;
+    private final List<MediaDetails> resultPage = new ArrayList<>();
     private final RecyclerViewInterface recyclerViewInterface;
-    private final MainViewModel viewModel;
+    private final SearchViewModel viewModel;
     private Boolean loading = false;
-    private String userSearch;
     private final MediaType mediaType;
 
-    public SearchAdapter(MediaType mediaType, Context context, RecyclerViewInterface recyclerViewInterface, MainViewModel viewModel) {
+    public SearchAdapter(MediaType mediaType, Context context, RecyclerViewInterface recyclerViewInterface, SearchViewModel viewModel) {
         this.mediaType = mediaType;
         this.context = context;
         this.recyclerViewInterface = recyclerViewInterface;
         this.viewModel = viewModel;
-        this.resultPage = new ArrayList<>();
     }
 
     public void addItems(List<? extends MediaDetails> newItems) {
@@ -54,18 +52,13 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
     }
 
     public void clearItems() {
+        notifyItemRangeRemoved(0, resultPage.size());
         resultPage.clear();
-        notifyDataSetChanged();
     }
 
     public MediaDetails getItem(int position) {
         return resultPage.get(position);
     }
-
-    public void setUserSearch (String userSearch){
-        this.userSearch = userSearch;
-    }
-
 
     @NonNull
     @Override
@@ -91,24 +84,21 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
 
     @Override
     public void onBindViewHolder(@NonNull SearchViewHolder holder, int position) {
-        if(!loading && position >= getItemCount()-1){
-            if(userSearch == null || userSearch.isEmpty()){
-                viewModel.getSearchPage(this.mediaType);
-            }
-            else {
-                viewModel.getSearchPage(this.mediaType, this.userSearch);
-            }
+        if (!loading && position >= getItemCount()-1) {
+            viewModel.getSearchPage(this.mediaType);
         }
 
         // assign value to each view created based on position of recycler view
         MediaDetails details = resultPage.get(position);
 
+        this.setDetails(details, holder, position);
+
         if (details instanceof AnimeDetails) {
-            setAnimeDetails((AnimeDetails) details, (AnimeSearchViewHolder) holder, position);
+            setAnimeDetails((AnimeDetails) details, (AnimeSearchViewHolder) holder);
         } else if (details instanceof MangaDetails) {
-            setMangaDetails((MangaDetails) details, (MangaSearchViewHolder) holder, position);
+            setMangaDetails((MangaDetails) details, (MangaSearchViewHolder) holder);
         } else if (details instanceof VNDetails) {
-            setVNDetails((VNDetails) details, (VNSearchViewHolder) holder, position);
+            setVNDetails((VNDetails) details, (VNSearchViewHolder) holder);
         }
     }
 
@@ -122,61 +112,54 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
         holder.rank.setText(String.valueOf(position+1));
     }
 
-    public void setAnimeDetails(AnimeDetails animeDetails, AnimeSearchViewHolder holder, int position) {
-        this.setDetails(animeDetails, holder, position);
+    public void setAnimeDetails(AnimeDetails animeDetails, AnimeSearchViewHolder holder) {
         String airedSeason = "";
-        if(animeDetails.getSeason() != null){
+        if (animeDetails.getSeason() != null) {
             airedSeason = animeDetails.getSeason();
         }
 
         String airedYear = "TBA";
-        if(animeDetails.getStartDate() != null){
+        if (animeDetails.getStartDate() != null) {
             airedYear = String.valueOf(animeDetails.getStartDate().getYear());
         }
         String airedSeasonAndYear = String.format(Locale.ENGLISH, "%s %s", airedSeason, airedYear).trim();
 
-        if(animeDetails.getAiringSchedule() != null){
+        if (animeDetails.getAiringSchedule() != null) {
             // currently airing show, display time to next episode
             holder.seasonAndFormat.setText(String.format(Locale.ENGLISH,"%s · %s (Ep %d airs in %d days)",
                     airedSeasonAndYear, animeDetails.getFormat(), animeDetails.getAiringSchedule().getAiringEp(),
                     animeDetails.getAiringSchedule().daysToNextEp()));
-        }
-        else if(animeDetails.getEpisodes() == 1){
+        } else if(animeDetails.getEpisodes() == 1) {
             // show with only 1 episode, display duration of episode in minutes
             holder.seasonAndFormat.setText(String.format("%s · %s (%s mins)",
                     airedSeasonAndYear, animeDetails.getFormat() , animeDetails.getDuration()));
-        }
-        else if (animeDetails.getStartDate() == null) {
+        } else if (animeDetails.getStartDate() == null) {
             // show to be announced
             holder.seasonAndFormat.setText(String.format("%s · %s",
                     airedSeasonAndYear, animeDetails.getFormat()));
-        }
-        else{
+        } else {
             // completed show, display number of episodes
             holder.seasonAndFormat.setText(String.format(Locale.ENGLISH,"%s · %s (%d eps)",
                     airedSeasonAndYear, animeDetails.getFormat() ,animeDetails.getEpisodes()));
         }
 
-        if(animeDetails.getStudios() != null){
+        if (animeDetails.getStudios() != null) {
             holder.studio.setText(String.join(" · ",animeDetails.getStudios().getAnimationStudios()));
             holder.studio.setVisibility(View.VISIBLE);
-        }
-        else{
+        } else {
             holder.studio.setVisibility(View.GONE);
         }
 
-        if(animeDetails.getGenres() != null){
+        if (animeDetails.getGenres() != null) {
             holder.genres.setText(animeDetails.getGenres().getGenreList().toString().replaceAll("[\\[\\]]",""));
             holder.genres.setVisibility(View.VISIBLE);
-        }
-        else {
+        } else {
             holder.genres.setVisibility(View.GONE);
         }
         holder.favorites.setText(String.valueOf(animeDetails.getFavorites()));
     }
 
-    public void setMangaDetails(MangaDetails mangaDetails, MangaSearchViewHolder holder, int position) {
-        setDetails(mangaDetails, holder, position);
+    public void setMangaDetails(MangaDetails mangaDetails, MangaSearchViewHolder holder) {
         String airedYears = "TBA";
         if(mangaDetails.getStartDate() != null){
             airedYears = String.valueOf(mangaDetails.getStartDate().getYear());
@@ -211,8 +194,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
         holder.favorites.setText(String.valueOf(mangaDetails.getFavorites()));
     }
 
-    public void setVNDetails(VNDetails vnDetails, VNSearchViewHolder holder, int position) {
-        setDetails(vnDetails, holder, position);
+    public void setVNDetails(VNDetails vnDetails, VNSearchViewHolder holder) {
         String yearAndPlayTime = "Unknown";
         if (vnDetails.getStartDate() != null) {
             if (vnDetails.getStartDate().getYear() != 0) {

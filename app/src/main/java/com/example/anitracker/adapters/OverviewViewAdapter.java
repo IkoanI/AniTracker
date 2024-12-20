@@ -342,9 +342,7 @@ public class OverviewViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             tagName = itemView.findViewById(R.id.tagName);
             tagRanking = itemView.findViewById(R.id.tagRanking);
             mainLayout = itemView.findViewById(R.id.tagLayout);
-            itemView.setOnClickListener(view -> {
-                Toast.makeText(context, tagName.getText(), Toast.LENGTH_SHORT).show();
-            });
+            itemView.setOnClickListener(view -> Toast.makeText(context, tagName.getText(), Toast.LENGTH_SHORT).show());
         }
     }
 }

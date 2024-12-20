@@ -14,8 +14,8 @@ public class VNDetails extends MediaDetails {
     private Screenshots screenshots;
     private int lengthMinutes, lengthVotes;
     private String length;
-    private List<MediaDetails> relations;
-    private List<StaffDetails> staffs;
+    private List<MediaDetails> relations = new ArrayList<>();
+    private List<StaffDetails> staffs = new ArrayList<>();
 
     public List<Developer> getDevelopers() {
         return this.developers;

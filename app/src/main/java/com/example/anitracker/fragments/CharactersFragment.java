@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -15,7 +17,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.anitracker.R;
 import com.example.anitracker.adapters.CharacterViewAdapter;
+import com.example.anitracker.mediaObjects.CharacterDetails;
 import com.example.anitracker.type.MediaType;
+import com.example.anitracker.type.StaffLanguage;
 import com.example.anitracker.uiObjects.LanguageDropdown;
 import com.example.anitracker.viewModels.DetailsViewModel;
 
@@ -26,7 +30,8 @@ public class CharactersFragment extends Fragment {
     private Context context;
     private DetailsViewModel detailsViewModel;
     private CharacterViewAdapter characterViewAdapter;
-
+    private TextView noData;
+    private ProgressBar loadingIndicator;
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
@@ -42,27 +47,46 @@ public class CharactersFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.recycler_view, container, false);
+        this.noData = view.findViewById(R.id.noData);
+        this.loadingIndicator = view.findViewById(R.id.loadingSpinner);
+        this.loadingIndicator.setVisibility(View.VISIBLE);
+
         // creating list of objects to populate recycler view
         List<Object> objectList = new ArrayList<>();
         if (detailsViewModel.getType() == MediaType.ANIME) {
             // if not anime, no need for ability to change language of voice actor
             objectList.add(new LanguageDropdown());
         }
+
         this.characterViewAdapter = new CharacterViewAdapter(objectList, context, detailsViewModel);
+
         if (detailsViewModel.getType() == MediaType.VISUAL_NOVEL) {
             detailsViewModel.observeVNCharPage().observe(getViewLifecycleOwner(), res -> {
                 characterViewAdapter.setHasMorePages(res.hasMore());
-                characterViewAdapter.addChars(res.getVNCharList(detailsViewModel.getId()));
+                this.addChars(res.getVNCharList(detailsViewModel.getId()));
             });
+            this.detailsViewModel.getVNCharPage();
         } else {
-            detailsViewModel.observeCharPage().observe(getViewLifecycleOwner(), res -> characterViewAdapter.addChars(res));
+            detailsViewModel.observeCharPage().observe(getViewLifecycleOwner(), this::addChars);
+            this.detailsViewModel.getCharPage(StaffLanguage.JAPANESE);
         }
-        View view = inflater.inflate(R.layout.recycler_view, container, false);
+
         //initializing recycler view
         RecyclerView characterView = view.findViewById(R.id.recView);
         characterView.setAdapter(characterViewAdapter);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context);
         characterView.setLayoutManager(linearLayoutManager);
         return view;
+    }
+
+    public void addChars(List<CharacterDetails> characterDetailsList) {
+        characterViewAdapter.addChars(characterDetailsList);
+        this.loadingIndicator.setVisibility(View.GONE);
+        if (characterViewAdapter.getItemCount() - (detailsViewModel.getType().equals(MediaType.ANIME) ? 1 : 0) == 0) {
+            this.noData.setVisibility(View.VISIBLE);
+        } else {
+            this.noData.setVisibility(View.GONE);
+        }
     }
 }

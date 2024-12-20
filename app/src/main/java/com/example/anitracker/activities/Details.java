@@ -21,6 +21,7 @@ import com.example.anitracker.fragments.CharactersFragment;
 import com.example.anitracker.fragments.RelationsFragment;
 import com.example.anitracker.mediaObjects.MediaDetails;
 import com.example.anitracker.type.MediaType;
+import com.example.anitracker.uiObjects.LoadingCircleDrawable;
 import com.example.anitracker.viewModels.DetailsViewModel;
 import com.example.anitracker.fragments.OverviewFragment;
 import com.example.anitracker.fragments.StaffFragment;
@@ -66,7 +67,7 @@ public class Details extends AppCompatActivity {
         TabLayout tabLayout = findViewById(R.id.tabs);
         ViewPager2 viewPager = findViewById(R.id.viewpager);
 
-        VPAdapter viewPagerAdapter = new VPAdapter(this);
+        VPAdapter viewPagerAdapter = new VPAdapter(this, this);
         
         // creating fragments
         OverviewFragment overviewFragment = new OverviewFragment();
@@ -93,13 +94,19 @@ public class Details extends AppCompatActivity {
     private void populateActivity(MediaDetails details) {
             // insert banner image
             ImageView banner = this.findViewById(R.id.banner);
-            if(details.getBanner() != null){
-                Glide.with(this).load(details.getBanner()).into(banner);
+            if (details.getBanner() != null) {
+                Glide.with(this)
+                        .load(details.getBanner())
+                        .placeholder(LoadingCircleDrawable.getLoadingCircle(this))
+                        .into(banner);
             }
 
             //insert cover image
             ImageView cover = this.findViewById(R.id.cover);
-            Glide.with(this).load(details.getCoverImg()).into(cover);
+            Glide.with(this)
+                    .load(details.getCoverImg())
+                    .placeholder(LoadingCircleDrawable.getLoadingCircle(this))
+                    .into(cover);
 
             // insert title
             TextView title = this.findViewById(R.id.title);

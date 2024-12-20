@@ -1,6 +1,9 @@
 package com.example.anitracker.adapters;
 
+import android.content.Context;
+
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
@@ -10,9 +13,11 @@ import java.util.List;
 
 public class VPAdapter extends FragmentStateAdapter {
     private final List<Fragment> fragmentList = new ArrayList<>();
+    AppCompatActivity context;
 
-    public VPAdapter(@NonNull FragmentActivity fragmentActivity) {
+    public VPAdapter(@NonNull FragmentActivity fragmentActivity, Context context) {
         super(fragmentActivity);
+        this.context = (AppCompatActivity) context;
     }
 
     @NonNull
@@ -26,7 +31,7 @@ public class VPAdapter extends FragmentStateAdapter {
         return this.fragmentList.size();
     }
 
-    public void addFragment(Fragment fragment){
+    public void addFragment(Fragment fragment) {
         this.fragmentList.add(fragment);
     }
 }

@@ -12,7 +12,6 @@ import com.example.anitracker.type.MediaType;
 import com.example.anitracker.type.StaffLanguage;
 import com.example.anitracker.vnObjects.VNCharPage;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class DetailsViewModel extends ViewModel {

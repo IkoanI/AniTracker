@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -22,10 +24,14 @@ import com.example.anitracker.mediaObjects.MediaDetails;
 import com.example.anitracker.type.MediaType;
 import com.example.anitracker.viewModels.DetailsViewModel;
 
+import java.util.List;
+
 public class RelationsFragment extends Fragment implements RecyclerViewInterface {
     private Context context;
     private DetailsViewModel detailsViewModel;
-    RelationsViewAdapter relationsViewAdapter;
+    private RelationsViewAdapter relationsViewAdapter;
+    private TextView noData;
+    private ProgressBar loadingIndicator;
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -43,21 +49,35 @@ public class RelationsFragment extends Fragment implements RecyclerViewInterface
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        // set up recyclerview
         View view = inflater.inflate(R.layout.recycler_view, container, false);
+        this.noData = view.findViewById(R.id.noData);
+        this.loadingIndicator = view.findViewById(R.id.loadingSpinner);
+        this.loadingIndicator.setVisibility(View.VISIBLE);
+
+        // set up recyclerview
         RecyclerView relationsView = view.findViewById(R.id.recView);
         relationsView.setAdapter(relationsViewAdapter);
         LinearLayoutManager relationsViewLayoutManager = new LinearLayoutManager(context);
         relationsView.setLayoutManager(relationsViewLayoutManager);
 
         if (detailsViewModel.getType() != MediaType.VISUAL_NOVEL) {
-            detailsViewModel.observeRelationsPage().observe(getViewLifecycleOwner(), relationsViewAdapter::addRelations);
+            detailsViewModel.observeRelationsPage().observe(getViewLifecycleOwner(), this::addRelations);
             detailsViewModel.getRelationsPage();
-        } else if (detailsViewModel.getType() == MediaType.VISUAL_NOVEL && detailsViewModel.getVnRelationsList() != null) {
-            relationsViewAdapter.addRelations(detailsViewModel.getVnRelationsList());
+        } else if (detailsViewModel.getType() == MediaType.VISUAL_NOVEL) {
+            this.addRelations(detailsViewModel.getVnRelationsList());
         }
 
         return view;
+    }
+
+    public void addRelations(List<MediaDetails> relationsList) {
+        relationsViewAdapter.addRelations(relationsList);
+        this.loadingIndicator.setVisibility(View.GONE);
+        if (relationsViewAdapter.getItemCount() == 0) {
+            this.noData.setVisibility(View.VISIBLE);
+        } else {
+            this.noData.setVisibility(View.GONE);
+        }
     }
 
     @Override

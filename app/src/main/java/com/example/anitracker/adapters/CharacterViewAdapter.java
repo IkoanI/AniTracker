@@ -31,24 +31,19 @@ public class CharacterViewAdapter extends RecyclerView.Adapter<RecyclerView.View
     private final DetailsViewModel viewModel;
     private Boolean loading = false, hasMorePages = true;
     private final int languageDropdownVar = 0, characterViewVar = 1;
-    private StaffLanguage selectedLanguage =  StaffLanguage.JAPANESE;
+    private StaffLanguage selectedLanguage = StaffLanguage.JAPANESE;
     private final ArrayAdapter<String> languageDropdownAdapter;
-    private int previousLanguagePosition = 0, currRole = 0;
+    private int previousLanguagePosition = 0;
 
     public CharacterViewAdapter(List<Object> objectList, Context context, DetailsViewModel viewModel) {
         this.context = context;
         this.viewModel = viewModel;
         this.objectList = objectList;
-        if(objectList.isEmpty()){
-            if(this.viewModel.getType() == MediaType.VISUAL_NOVEL) {
-                this.viewModel.getVNCharPage();
-            }
-            else{
-                this.viewModel.getCharPage(selectedLanguage);
-            }
-        }
 
-        String[] languages = {"Japanese", "English", "Korean", "Italian", "Spanish", "Portuguese", "French", "German", "Hebrew", "Hungarian"};
+        String[] languages = {"Japanese", "English", "Korean", "Italian",
+                "Spanish", "Portuguese", "French",
+                "German", "Hebrew", "Hungarian"};
+
         languageDropdownAdapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_item, languages);
     }
 
@@ -61,10 +56,9 @@ public class CharacterViewAdapter extends RecyclerView.Adapter<RecyclerView.View
 
     @Override
     public int getItemViewType(int position) {
-        if(objectList.get(position) instanceof LanguageDropdown){
+        if (objectList.get(position) instanceof LanguageDropdown) {
             return languageDropdownVar;
-        }
-        else if(objectList.get(position) instanceof CharacterDetails){
+        } else if (objectList.get(position) instanceof CharacterDetails) {
             return characterViewVar;
         }
         return -1;
@@ -74,31 +68,29 @@ public class CharacterViewAdapter extends RecyclerView.Adapter<RecyclerView.View
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view;
-        RecyclerView.ViewHolder viewHolder = null;
         LayoutInflater inflater = LayoutInflater.from(context);
-        switch (viewType){
+        switch (viewType) {
             case languageDropdownVar:
                 view = inflater.inflate(R.layout.language_dropdown_layout, parent, false );
-                viewHolder = new CharacterViewAdapter.LanguageDropdownView(view);
-                break;
+                return new CharacterViewAdapter.LanguageDropdownView(view);
 
             case characterViewVar:
                 view = inflater.inflate(R.layout.character_card, parent, false );
-                viewHolder = new CharacterViewAdapter.CharacterView(view);
-                break;
-        }
+                return new CharacterViewAdapter.CharacterView(view);
 
-        assert viewHolder != null;
-        return viewHolder;
+            default:
+                //TODO make default view holder
+                view = inflater.inflate(R.layout.character_card, parent, false );
+                return new CharacterViewAdapter.CharacterView(view);
+        }
     }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        if (!loading && position >= getItemCount()-1){
-            if(viewModel.getType() == MediaType.VISUAL_NOVEL && hasMorePages) {
+        if (!loading && position >= getItemCount()-1) {
+            if (viewModel.getType() == MediaType.VISUAL_NOVEL && this.hasMorePages) {
                 viewModel.getVNCharPage();
-            }
-            else if(viewModel.getType() != MediaType.VISUAL_NOVEL){
+            } else if (viewModel.getType() != MediaType.VISUAL_NOVEL) {
                 viewModel.getCharPage(selectedLanguage);
             }
         }
@@ -108,7 +100,7 @@ public class CharacterViewAdapter extends RecyclerView.Adapter<RecyclerView.View
                 LanguageDropdown languageDropdown = (LanguageDropdown) objectList.get(position);
                 LanguageDropdownView languageDropdownView = (LanguageDropdownView) holder;
                 languageDropdownAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                if(languageDropdownView.languageDropdown.getAdapter() == null){
+                if (languageDropdownView.languageDropdown.getAdapter() == null) {
                     languageDropdownView.languageDropdown.setAdapter(languageDropdownAdapter);
                 }
                 languageDropdownView.languageDropdown.setSelection(previousLanguagePosition);
@@ -138,8 +130,7 @@ public class CharacterViewAdapter extends RecyclerView.Adapter<RecyclerView.View
 
                 if(character.getNotes() != null){
                     characterView.charName.setText(String.format("%s (%s)", character.getName().getUserPref(), character.getNotes()));
-                }
-                else {
+                } else {
                     characterView.charName.setText(character.getName().getUserPref());
                 }
 
@@ -154,7 +145,7 @@ public class CharacterViewAdapter extends RecyclerView.Adapter<RecyclerView.View
                     characterView.vaImage.setVisibility(View.GONE);
                     characterView.vaName.setVisibility(View.GONE);
                     characterView.language.setVisibility(View.GONE);
-                } else{
+                } else {
                     // recyclerview reuses view so if previously set gone, must be set visible again
                     characterView.vaImage.setVisibility(View.VISIBLE);
                     characterView.vaName.setVisibility(View.VISIBLE);
@@ -166,7 +157,7 @@ public class CharacterViewAdapter extends RecyclerView.Adapter<RecyclerView.View
                             .into(characterView.vaImage);
                     if (viewModel.getType() ==  MediaType.VISUAL_NOVEL) {
                         characterView.language.setText(character.getVoiceActor().getLang());
-                    } else{
+                    } else {
                         characterView.language.setText(AnilistObjectMappings.staffLanguageToString.get(selectedLanguage));
                     }
                 }

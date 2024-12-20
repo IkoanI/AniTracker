@@ -11,10 +11,12 @@ import com.example.anitracker.type.MediaSort;
 import com.example.anitracker.type.MediaType;
 import com.example.anitracker.vnObjects.VNDetails;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.Collections;
 import java.util.List;
 
-public class MainViewModel extends ViewModel {
+public class SearchViewModel extends ViewModel {
     private final ApiRepository repository;
     private final MutableLiveData<List<AnimeDetails>> liveAnimePage;
     private final MutableLiveData<List<MangaDetails>> liveMangaPage;
@@ -22,11 +24,12 @@ public class MainViewModel extends ViewModel {
     private final MutableLiveData<String> errorMsg;
 
     private final MutableLiveData<String> userSearch = new MutableLiveData<>();
+    private String lastUserSearch;
     private int loadedAnimePages = 1;
     private int loadedMangaPages = 1;
     private int loadedVNPages = 1;
 
-    public MainViewModel() {
+    public SearchViewModel() {
         repository = new ApiRepository();
         liveAnimePage = repository.getMutableAnimePage();
         liveMangaPage = repository.getMutableMangaPage();
@@ -49,12 +52,16 @@ public class MainViewModel extends ViewModel {
 
     // get results based on user search input
     public void getSearchPage(MediaType mediaType, String userSearch) {
-        this.getSearchPage(mediaType, this.getLoadedPages(mediaType), userSearch, null);
+        this.lastUserSearch = userSearch;
+        this.getSearchPage(mediaType);
     }
 
-    // no user search input, get top by average score descending
     public void getSearchPage(MediaType mediaType) {
-        this.getSearchPage(mediaType, this.getLoadedPages(mediaType), null, Collections.singletonList(MediaSort.SCORE_DESC));
+        if (StringUtils.isBlank(this.lastUserSearch)) {
+            this.getSearchPage(mediaType, this.getLoadedPages(mediaType), null, Collections.singletonList(MediaSort.SCORE_DESC));
+        } else {
+            this.getSearchPage(mediaType, this.getLoadedPages(mediaType), this.lastUserSearch, null);
+        }
     }
 
     // get error message from repository

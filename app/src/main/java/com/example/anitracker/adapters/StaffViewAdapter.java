@@ -1,7 +1,6 @@
 package com.example.anitracker.adapters;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,20 +22,13 @@ import java.util.List;
 
 public class StaffViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private final List<StaffDetails> staffDetailsList = new ArrayList<>();
-    Context context;
+    private final Context context;
     private Boolean loading = false;
-    DetailsViewModel viewModel;
+    private final DetailsViewModel viewModel;
 
     public StaffViewAdapter(Context context, DetailsViewModel viewModel){
         this.context = context;
         this.viewModel = viewModel;
-    }
-
-    public void addStaffs(List<StaffDetails> newItems){
-        loading = true;
-        staffDetailsList.addAll(newItems);
-        notifyItemRangeInserted(staffDetailsList.size()-newItems.size(), newItems.size());
-        loading = false;
     }
 
     @NonNull
@@ -64,6 +56,13 @@ public class StaffViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     @Override
     public int getItemCount() {
         return staffDetailsList.size();
+    }
+
+    public void addStaffs(List<StaffDetails> newItems){
+        loading = true;
+        staffDetailsList.addAll(newItems);
+        notifyItemRangeInserted(staffDetailsList.size()-newItems.size(), newItems.size());
+        loading = false;
     }
 
     public static class StaffViewItem extends RecyclerView.ViewHolder{

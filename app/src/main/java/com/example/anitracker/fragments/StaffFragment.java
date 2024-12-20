@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -15,12 +17,18 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.anitracker.R;
 import com.example.anitracker.adapters.StaffViewAdapter;
+import com.example.anitracker.mediaObjects.StaffDetails;
 import com.example.anitracker.type.MediaType;
 import com.example.anitracker.viewModels.DetailsViewModel;
+
+import java.util.List;
 
 public class StaffFragment extends Fragment {
     private Context context;
     private DetailsViewModel detailsViewModel;
+    private StaffViewAdapter staffViewAdapter;
+    private TextView noData;
+    private ProgressBar loadingIndicator;
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -32,27 +40,40 @@ public class StaffFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.detailsViewModel = new ViewModelProvider(requireActivity()).get(DetailsViewModel.class);
+        this.staffViewAdapter = new StaffViewAdapter(context, detailsViewModel);
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        // set up recyclerview
         View view = inflater.inflate(R.layout.recycler_view, container, false);
+        this.noData = view.findViewById(R.id.noData);
+        this.loadingIndicator = view.findViewById(R.id.loadingSpinner);
+        this.loadingIndicator.setVisibility(View.VISIBLE);
+
+        // set up recyclerview
         RecyclerView staffView = view.findViewById(R.id.recView);
-        StaffViewAdapter staffViewAdapter = new StaffViewAdapter(context, detailsViewModel);
         staffView.setAdapter(staffViewAdapter);
         LinearLayoutManager staffViewLayoutManager = new LinearLayoutManager(context);
         staffView.setLayoutManager(staffViewLayoutManager);
-        // observe change in staff page
-        detailsViewModel.observeStaffPage().observe(getViewLifecycleOwner(), staffViewAdapter::addStaffs);
 
         if (detailsViewModel.getType() != MediaType.VISUAL_NOVEL) {
+            detailsViewModel.observeStaffPage().observe(getViewLifecycleOwner(), this::addStaffs);
             detailsViewModel.getStaffPage();
-        } else if (detailsViewModel.getType() == MediaType.VISUAL_NOVEL && detailsViewModel.getVnStaffsList() != null) {
-            staffViewAdapter.addStaffs(detailsViewModel.getVnStaffsList());
+        } else if (detailsViewModel.getType() == MediaType.VISUAL_NOVEL) {
+            this.addStaffs(detailsViewModel.getVnStaffsList());
         }
 
         return view;
+    }
+
+    public void addStaffs(List<StaffDetails> staffList) {
+        staffViewAdapter.addStaffs(staffList);
+        this.loadingIndicator.setVisibility(View.GONE);
+        if (staffViewAdapter.getItemCount() == 0) {
+            this.noData.setVisibility(View.VISIBLE);
+        } else {
+            this.noData.setVisibility(View.GONE);
+        }
     }
 }

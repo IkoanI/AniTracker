@@ -96,4 +96,5 @@
     <string name="developers">Developers</string>
     <string name="year_play_time">Year · Play Time</string>
     <string name="image">image</string>
+    <string name="no_data_found">No data found ;/</string>
 </resources>

@@ -21,28 +21,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RelationsViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-    Context context;
-    DetailsViewModel viewModel;
-    List<MediaDetails> relationsList = new ArrayList<>();
-    RecyclerViewInterface recyclerViewInterface;
-    private boolean loading;
+    private final Context context;
+    private final DetailsViewModel viewModel;
+    private final List<MediaDetails> relationsList = new ArrayList<>();
+    private final RecyclerViewInterface recyclerViewInterface;
 
     public RelationsViewAdapter(Context context, DetailsViewModel viewModel, RecyclerViewInterface recyclerViewInterface) {
         this.context = context;
         this.viewModel = viewModel;
         this.recyclerViewInterface = recyclerViewInterface;
-        this.loading = false;
-    }
-
-    public void addRelations(List<MediaDetails> newItems){
-        this.loading = true;
-        relationsList.addAll(newItems);
-        notifyItemRangeInserted(relationsList.size()-newItems.size(), newItems.size());
-        this.loading = false;
-    }
-
-    public MediaDetails getRelation(int pos){
-        return relationsList.get(pos);
     }
 
     @NonNull
@@ -70,6 +57,15 @@ public class RelationsViewAdapter extends RecyclerView.Adapter<RecyclerView.View
     @Override
     public int getItemCount() {
         return relationsList.size();
+    }
+
+    public void addRelations(List<MediaDetails> newItems){
+        relationsList.addAll(newItems);
+        notifyItemRangeInserted(relationsList.size()-newItems.size(), newItems.size());
+    }
+
+    public MediaDetails getRelation(int pos){
+        return relationsList.get(pos);
     }
 
     public static class RelationsViewItem extends RecyclerView.ViewHolder{

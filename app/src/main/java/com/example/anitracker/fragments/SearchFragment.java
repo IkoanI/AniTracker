@@ -3,10 +3,12 @@ package com.example.anitracker.fragments;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -19,14 +21,19 @@ import com.example.anitracker.R;
 import com.example.anitracker.activities.Details;
 import com.example.anitracker.adapters.SearchAdapter;
 import com.example.anitracker.interfaces.RecyclerViewInterface;
+import com.example.anitracker.mediaObjects.MediaDetails;
 import com.example.anitracker.type.MediaType;
-import com.example.anitracker.viewModels.MainViewModel;
+import com.example.anitracker.viewModels.SearchViewModel;
+
+import java.util.List;
 
 public class SearchFragment extends Fragment implements RecyclerViewInterface {
-    private MainViewModel viewModel;
+    private SearchViewModel viewModel;
     private Context context;
     private final MediaType mediaType;
     private SearchAdapter adapter;
+    private ProgressBar loadingIndicator;
+    private TextView noData;
 
     public SearchFragment(MediaType mediaType) {
         this.mediaType = mediaType;
@@ -41,7 +48,7 @@ public class SearchFragment extends Fragment implements RecyclerViewInterface {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.viewModel = new ViewModelProvider(requireActivity()).get(MainViewModel.class);
+        this.viewModel = new ViewModelProvider(requireActivity()).get(SearchViewModel.class);
         this.adapter = new SearchAdapter(this.mediaType, context, this, viewModel);
     }
 
@@ -49,46 +56,30 @@ public class SearchFragment extends Fragment implements RecyclerViewInterface {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.recycler_view, container, false);
-        ProgressBar loadingIndicator = view.findViewById(R.id.loadingSpinner);
+        this.loadingIndicator = view.findViewById(R.id.loadingSpinner);
+        this.noData = view.findViewById(R.id.noData);
 
         // observe search result
         if (this.mediaType == MediaType.ANIME) {
-            viewModel.observeAnimePage().observe(getViewLifecycleOwner(), res -> {
-                adapter.addItems(res);
-                loadingIndicator.setVisibility(View.GONE);
-            });
+            viewModel.observeAnimePage().observe(getViewLifecycleOwner(), this::addItems);
         } else if (this.mediaType == MediaType.MANGA) {
-            viewModel.observeMangaPage().observe(getViewLifecycleOwner(), res -> {
-                adapter.addItems(res);
-                loadingIndicator.setVisibility(View.GONE);
-            });
+            viewModel.observeMangaPage().observe(getViewLifecycleOwner(), this::addItems);
         } else if (this.mediaType == MediaType.VISUAL_NOVEL) {
-            viewModel.observeVNPage().observe(getViewLifecycleOwner(), res -> {
-                adapter.addItems(res);
-                loadingIndicator.setVisibility(View.GONE);
-            });
+            viewModel.observeVNPage().observe(getViewLifecycleOwner(), this::addItems);
         }
 
         // fetch data when list is empty
-        if(adapter.getItemCount() == 0){
-            loadingIndicator.setVisibility(View.VISIBLE);
+        if (adapter.getItemCount() == 0) {
+            this.loadingIndicator.setVisibility(View.VISIBLE);
             viewModel.getSearchPage(this.mediaType);
         }
 
         // observe user search
-        viewModel.observeUserSearch().observe(getViewLifecycleOwner(), res ->{
+        viewModel.observeUserSearch().observe(getViewLifecycleOwner(), res -> {
             adapter.clearItems();
-            adapter.setUserSearch(res);
             viewModel.setLoadedPages(this.mediaType, 1);
-            if (res.isEmpty()) {
-                loadingIndicator.setVisibility(View.VISIBLE);
-                viewModel.getSearchPage(this.mediaType);
-            }
-            else {
-                loadingIndicator.setVisibility(View.VISIBLE);
-                viewModel.getSearchPage(this.mediaType, res);
-            }
-
+            loadingIndicator.setVisibility(View.VISIBLE);
+            viewModel.getSearchPage(this.mediaType, res);
         });
 
         // set up recycler view
@@ -96,7 +87,18 @@ public class SearchFragment extends Fragment implements RecyclerViewInterface {
         recyclerView.setAdapter(adapter);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context);
         recyclerView.setLayoutManager(linearLayoutManager);
+
         return view;
+    }
+
+    private void addItems(List<? extends MediaDetails> mediaDetailsList) {
+        adapter.addItems(mediaDetailsList);
+        loadingIndicator.setVisibility(View.GONE);
+        if (adapter.getItemCount() == 0) {
+            this.noData.setVisibility(View.VISIBLE);
+        } else {
+            this.noData.setVisibility(View.GONE);
+        }
     }
 
     @Override

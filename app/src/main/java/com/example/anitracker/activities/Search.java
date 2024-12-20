@@ -17,14 +17,14 @@ import com.example.anitracker.R;
 import com.example.anitracker.adapters.VPAdapter;
 import com.example.anitracker.fragments.SearchFragment;
 import com.example.anitracker.type.MediaType;
-import com.example.anitracker.viewModels.MainViewModel;
+import com.example.anitracker.viewModels.SearchViewModel;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEvent;
 
 public class Search extends AppCompatActivity {
-    MainViewModel viewModel;
+    SearchViewModel viewModel;
     private final String[] fragmentTitles = {"Anime", "Manga", "Visual Novel"};
 
     @Override
@@ -41,7 +41,7 @@ public class Search extends AppCompatActivity {
         Handler handler = new Handler();
 
         // initialize view model
-        this.viewModel = new ViewModelProvider(this).get(MainViewModel.class);
+        this.viewModel = new ViewModelProvider(this).get(SearchViewModel.class);
 
         // set up error alert dialogue
         AlertDialog.Builder builder1 = new AlertDialog.Builder(this);
@@ -79,7 +79,6 @@ public class Search extends AppCompatActivity {
                 // delay search until user stops typing
                 handler.removeCallbacksAndMessages(null);
                 handler.postDelayed(() -> viewModel.setUserSearch(newText), 500);
-
                 return true;
             }
         });
@@ -97,7 +96,7 @@ public class Search extends AppCompatActivity {
         TabLayout tabLayout = findViewById(R.id.tabs);
         ViewPager2 viewPager = findViewById(R.id.viewpager);
 
-        VPAdapter viewPagerAdapter = new VPAdapter(this);
+        VPAdapter viewPagerAdapter = new VPAdapter(this, this);
 
         // adding fragments to view pager
         viewPagerAdapter.addFragment(new SearchFragment(MediaType.ANIME));
