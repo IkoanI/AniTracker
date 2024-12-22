@@ -42,7 +42,7 @@ public class VNStaff {
 
     }
 
-    private Map<String, String> staffRole = Map.ofEntries(
+    private final Map<String, String> staffRole = Map.ofEntries(
             Map.entry("scenario","Scenario"),
             Map.entry("director","Director"),
             Map.entry("chardesign","Character design"),

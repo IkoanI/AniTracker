@@ -417,7 +417,7 @@ public class ApiRepository {
                 "image{thumbnail}, released, length, length_minutes, length_votes, rating, " +
                 "average, developers{name}, description, devstatus, " +
                 "tags{name, rating, spoiler}, aliases, screenshots{url}, " +
-                "relations{title, relation, image{thumbnail}, devstatus}, " +
+                "relations{title, relation, image{thumbnail}, devstatus}, languages, platforms, " +
                 "editions{name}, staff{role, name, eid, note}, va{note, staff{name}, character{id}}";
 
         List<Object> filters = Arrays.asList("id", "=", vndbID);

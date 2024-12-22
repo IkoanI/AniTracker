@@ -15,6 +15,8 @@ public class VNDetails extends MediaDetails {
     private Screenshots screenshots;
     private int lengthMinutes, lengthVotes;
     private String length;
+    private List<String> languages;
+    private List<String> platforms;
     private List<MediaDetails> relations = new ArrayList<>();
     private List<StaffDetails> staffs = new ArrayList<>();
     private Map<String, StaffDetails> knownVAs = new HashMap<>();
@@ -37,6 +39,14 @@ public class VNDetails extends MediaDetails {
 
     public int getLengthVotes() {
         return this.lengthVotes;
+    }
+
+    public List<String> getLanguages() {
+        return this.languages;
+    }
+
+    public List<String> getPlatforms() {
+        return this.platforms;
     }
 
     public void setStaffs(List<StaffDetails> staffs) {
@@ -81,6 +91,16 @@ public class VNDetails extends MediaDetails {
     public void setLength(String length) {
         this.length = length;
         infoMap.put("Length", this.length);
+    }
+
+    public void setLanguages(List<String> languages) {
+        this.languages = languages;
+        infoMap.put("Languages", String.join("\n\n", this.languages));
+    }
+
+    public void setPlatforms(List<String> platforms) {
+        this.platforms = platforms;
+        infoMap.put("Platforms", String.join("\n\n", this.platforms));
     }
 
     public Screenshots getScreenshots() {

@@ -112,7 +112,7 @@ public class MediaDetails {
         List<Info> infoList = new ArrayList<>();
         String[] infoOrder = {"Format", "Duration", "Chapters", "Volumes", "Length", "Play Time", "Status", "Released", "Finished",
                 "Season", "Average Score", "Mean Score", "Popularity", "Favorites", "Studios", "Producers", "Developers",
-                "Sources", "Hashtag", "Romaji", "English", "Native", "Aliases", "Synonyms"};
+                "Sources", "Hashtag", "Romaji", "English", "Native", "Aliases", "Synonyms", "Languages", "Platforms"};
 
         for (String infoName: infoOrder) {
             if (infoMap.containsKey(infoName)) {

@@ -50,6 +50,10 @@ public class VNResponse {
     private List<String> aliases;
     @SerializedName("role")
     private String role;
+    @SerializedName("languages")
+    private List<String> languages;
+    @SerializedName("platforms")
+    private List<String> platforms;
     @SerializedName("relations")
     private List<VNRelation> relations;
     @SerializedName("staff")
@@ -125,6 +129,16 @@ public class VNResponse {
             default:
                 return "Unknown";
         }
+    }
+
+    public List<String> getLanguages() {
+        this.languages.replaceAll(VNLanguage.languageMap::get);
+        return this.languages;
+    }
+
+    public List<String> getPlatforms() {
+        this.platforms.replaceAll(VNPlatform.platformMap::get);
+        return this.platforms;
     }
 
     public VNDetails convertToMediaObject() {
@@ -243,6 +257,14 @@ public class VNResponse {
             }
 
             vnDetails.setKnownVAs(knownVAs);
+        }
+
+        if (this.languages != null && !this.languages.isEmpty()) {
+            vnDetails.setLanguages(this.getLanguages());
+        }
+
+        if (this.platforms != null && !this.platforms.isEmpty()) {
+            vnDetails.setPlatforms(this.getPlatforms());
         }
 
         vnDetails.setFormat("Visual Novel");
