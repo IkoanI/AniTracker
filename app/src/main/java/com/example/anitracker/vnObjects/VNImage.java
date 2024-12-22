@@ -2,7 +2,7 @@ package com.example.anitracker.vnObjects;
 
 import com.google.gson.annotations.SerializedName;
 
-public class Image {
+public class VNImage {
     @SerializedName("id")
     String id;
     @SerializedName("url")
@@ -29,7 +29,7 @@ public class Image {
 
     public String getUrl() {
         if (url == null) {
-            return Image.defaultImage;
+            return VNImage.defaultImage;
         }
         return url;
     }
@@ -62,7 +62,7 @@ public class Image {
     public String getThumbnail() {
         // String, URL to the thumbnail.
         if (thumbnail == null) {
-            return Image.defaultImage;
+            return VNImage.defaultImage;
         }
         return thumbnail;
     }

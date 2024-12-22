@@ -63,6 +63,7 @@ public class OverviewFragment extends Fragment {
         if (details instanceof VNDetails) {
             detailsViewModel.setVnRelationsList(((VNDetails) details).getRelations());
             detailsViewModel.setVnStaffsList(((VNDetails) details).getStaffs());
+            detailsViewModel.setKnownVAs(((VNDetails) details).getKnownVAs());
         }
         // setting up recyclerView displaying genres
         RecyclerView overviewView = view.findViewById(R.id.recView);

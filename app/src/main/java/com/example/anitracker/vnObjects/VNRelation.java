@@ -21,7 +21,7 @@ public class VNRelation extends VNResponse {
                 break;
 
             case "set":
-                vnDetails.setRelation("Setting");
+                vnDetails.setRelation("Same Setting");
                 break;
 
             case "side":
@@ -46,6 +46,10 @@ public class VNRelation extends VNResponse {
 
             case "orig":
                 vnDetails.setRelation(MediaRelation.SOURCE);
+                break;
+
+            case "par":
+                vnDetails.setRelation(MediaRelation.PARENT);
                 break;
 
             default:

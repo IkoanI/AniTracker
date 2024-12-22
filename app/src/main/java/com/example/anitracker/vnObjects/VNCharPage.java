@@ -1,14 +1,10 @@
 package com.example.anitracker.vnObjects;
 
 import com.example.anitracker.mediaObjects.CharacterDetails;
-import com.example.anitracker.mediaObjects.Name;
 import com.google.gson.annotations.SerializedName;
-
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class VNCharPage {
     @SerializedName("more")
@@ -24,17 +20,7 @@ public class VNCharPage {
     public List<CharacterDetails> getVNCharList(String vndbID) {
         List<CharacterDetails> characterDetails = new ArrayList<>();
         for (VNCharacter character : vnCharacterList) {
-            CharacterDetails newCharacterDetail = new CharacterDetails();
-            newCharacterDetail.setName(new Name(character.getName()));
-
-            newCharacterDetail.setImage(character.getImage().getUrl());
-            for (VNResponse vn : character.getVns()) {
-                if (Objects.equals(vn.getId(), vndbID)) {
-                    newCharacterDetail.setRole(StringUtils.capitalize(vn.getRole()));
-                    break;
-                }
-            }
-            characterDetails.add(newCharacterDetail);
+            characterDetails.add(character.convertToCharacterDetails(vndbID));
         }
         return characterDetails;
     }

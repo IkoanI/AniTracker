@@ -161,7 +161,7 @@ query characterPage($mediaId : Int!, $pageNo : Int!, $language : StaffLanguage!)
 
 query staffPage ($mediaId : Int!, $pageNo : Int!) {
     Media(id: $mediaId) {
-        staff(page: $pageNo, perPage: 25, sort: [RELEVANCE, ID]) {
+        staff(page: $pageNo, perPage: 25, sort: [RELEVANCE, ROLE]) {
             edges {
                 role
                 node {

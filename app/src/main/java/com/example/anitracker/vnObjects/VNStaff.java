@@ -1,5 +1,6 @@
 package com.example.anitracker.vnObjects;
 
+import com.example.anitracker.mediaObjects.Name;
 import com.example.anitracker.mediaObjects.StaffDetails;
 import com.google.gson.annotations.SerializedName;
 
@@ -56,13 +57,13 @@ public class VNStaff {
 
     public StaffDetails convertToStaffDetail() {
         StaffDetails staffDetails = new StaffDetails();
-        staffDetails.setImage(Image.defaultImage);
+        staffDetails.setImage(VNImage.defaultImage);
         if (this.note == null) {
             staffDetails.setRole(staffRole.get(this.role));
         } else {
             staffDetails.setRole(this.note);
         }
-
+        staffDetails.setName(new Name(this.name));
         return staffDetails;
     }
 

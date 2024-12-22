@@ -9,8 +9,6 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.bumptech.glide.Glide;
 import com.example.anitracker.R;
 import com.example.anitracker.animeObjects.AnimeDetails;
 import com.example.anitracker.interfaces.RecyclerViewInterface;
@@ -19,7 +17,7 @@ import com.example.anitracker.mediaObjects.MediaDetails;
 import com.example.anitracker.repository.AnilistObjectMappings;
 import com.example.anitracker.type.MediaStatus;
 import com.example.anitracker.type.MediaType;
-import com.example.anitracker.uiObjects.LoadingCircleDrawable;
+import com.example.anitracker.uiObjects.Image;
 import com.example.anitracker.viewModels.SearchViewModel;
 import com.example.anitracker.vnObjects.Developer;
 import com.example.anitracker.vnObjects.VNDetails;
@@ -103,10 +101,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
     }
 
     public void setDetails(MediaDetails details, SearchViewHolder holder, int position) {
-        Glide.with(context)
-                .load(details.getCoverImg())
-                .placeholder(LoadingCircleDrawable.getLoadingCircle(context))
-                .into(holder.coverImg);
+        Image.loadImage(this.context, details.getCoverImg(), holder.coverImg);
         holder.title.setText(details.getTitles().getUserPref());
         holder.rating.setText(String.format(Locale.ENGLISH, "%d%%", details.getAvgScore()));
         holder.rank.setText(String.valueOf(position+1));

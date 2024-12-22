@@ -17,7 +17,6 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
 import com.example.anitracker.R;
 import com.example.anitracker.animeObjects.Trailer;
 import com.example.anitracker.mediaObjects.Description;
@@ -26,7 +25,7 @@ import com.example.anitracker.mediaObjects.Info;
 import com.example.anitracker.mediaObjects.MediaDetails;
 import com.example.anitracker.mediaObjects.Tag;
 import com.example.anitracker.uiObjects.Header;
-import com.example.anitracker.uiObjects.LoadingCircleDrawable;
+import com.example.anitracker.uiObjects.Image;
 import com.example.anitracker.uiObjects.TagsHeader;
 import com.example.anitracker.vnObjects.Screenshots;
 import com.google.android.flexbox.FlexboxLayoutManager;
@@ -39,20 +38,18 @@ import java.util.List;
 import java.util.Locale;
 
 public class OverviewViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-    List<Object> objectList;
-    Context context;
-    MediaDetails details;
+    private final List<Object> objectList;
+    private final Context context;
+    private final MediaDetails details;
 
-    private final int headerTypeVar = 0;
-    private final int descriptionTypeVar = 1;
-    private final int trailerTypeVar = 2;
-    private final int infoTypeVar = 3;
-    private final int genreListVar = 4;
-    private final int imageCarouselVar = 5;
-    private final int tagsHeaderVar = 6;
-    private final int tagsVar = 7;
-
-
+    private final int headerTypeVar = 0,
+            descriptionTypeVar = 1,
+            trailerTypeVar = 2,
+            infoTypeVar = 3,
+            genreListVar = 4,
+            imageCarouselVar = 5,
+            tagsHeaderVar = 6,
+            tagsVar = 7;
 
     public OverviewViewAdapter(MediaDetails details, List<Object> objectList, Context context) {
         this.objectList = objectList;
@@ -179,10 +176,7 @@ public class OverviewViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             case trailerTypeVar:
                 Trailer trailer = (Trailer) objectList.get(position);
                 TrailerView trailerView = (TrailerView) holder;
-                Glide.with(context)
-                        .load(trailer.getThumbnail())
-                        .placeholder(LoadingCircleDrawable.getLoadingCircle(context))
-                        .into(trailerView.trailerThumbnail);
+                Image.loadImage(this.context, trailer.getThumbnail(), trailerView.trailerThumbnail);
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(trailer.getTrailerLink()));
                 trailerView.playButton.setOnClickListener(v -> context.startActivity(intent));
                 break;

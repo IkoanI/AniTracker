@@ -6,12 +6,13 @@ import com.example.anitracker.mediaObjects.Name;
 import com.example.anitracker.mediaObjects.StaffDetails;
 import com.example.anitracker.mediaObjects.Tag;
 import com.example.anitracker.mediaObjects.Titles;
-import com.example.anitracker.type.MediaStatus;
 import com.example.anitracker.type.MediaType;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class VNResponse {
@@ -22,9 +23,9 @@ public class VNResponse {
     @SerializedName("titles")
     private List<VNTitle> titles;
     @SerializedName("image")
-    private Image image;
+    private VNImage image;
     @SerializedName("screenshots")
-    private List<Image> screenshots;
+    private List<VNImage> screenshots;
     @SerializedName("released")
     private String released;
     @SerializedName("length")
@@ -55,6 +56,8 @@ public class VNResponse {
     private List<VNStaff> staffs;
     @SerializedName("editions")
     private List<VNEdition> editions;
+    @SerializedName("va")
+    private List<VNVoiceActor> knownVoiceActors;
 
 
     public String getId() {
@@ -65,9 +68,9 @@ public class VNResponse {
         return title;
     }
 
-    public Image getImage() {
+    public VNImage getImage() {
         if(image == null){
-            return new Image();
+            return new VNImage();
         }
 
         return image;
@@ -182,11 +185,9 @@ public class VNResponse {
 
         if (this.developers != null && !this.developers.isEmpty()) { vnDetails.setDevelopers(this.developers); }
 
-        if (this.length_minutes > 0) {vnDetails.setLengthMinutes(this.length_minutes);}
+        if (this.length_minutes > 0) {vnDetails.setLengthMinutes(this.length_minutes, this.lengthVotes);}
 
         vnDetails.setLength(this.getLength());
-
-        vnDetails.setLengthVotes(lengthVotes);
 
         if (this.released != null) {
             int[] date = {-1, -1, -1};
@@ -206,7 +207,7 @@ public class VNResponse {
 
         if (this.screenshots != null) {
             List<String> screenshotURLs = new ArrayList<>();
-            for (Image screenshot: this.screenshots) {
+            for (VNImage screenshot: this.screenshots) {
                 screenshotURLs.add(screenshot.url);
             }
             vnDetails.setScreenshots(new Screenshots(screenshotURLs));
@@ -231,6 +232,15 @@ public class VNResponse {
                 staffsList.add(staffDetails);
             }
             vnDetails.setStaffs(staffsList);
+        }
+
+        if (this.knownVoiceActors != null && !this.knownVoiceActors.isEmpty()) {
+            Map<String, StaffDetails> knownVAs = new HashMap<>();
+            for (VNVoiceActor va : this.knownVoiceActors) {
+                knownVAs.put(va.getCharacter().getId(), va.getStaff().convertToStaffDetail());
+            }
+
+            vnDetails.setKnownVAs(knownVAs);
         }
 
         vnDetails.setFormat("Visual Novel");

@@ -10,11 +10,10 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
 import com.example.anitracker.R;
 import com.example.anitracker.interfaces.RecyclerViewInterface;
 import com.example.anitracker.mediaObjects.MediaDetails;
-import com.example.anitracker.uiObjects.LoadingCircleDrawable;
+import com.example.anitracker.uiObjects.Image;
 import com.example.anitracker.viewModels.DetailsViewModel;
 
 import java.util.ArrayList;
@@ -37,21 +36,17 @@ public class RelationsViewAdapter extends RecyclerView.Adapter<RecyclerView.View
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(context);
         View view = inflater.inflate(R.layout.relations_card, parent, false);
-        return new RelationsViewAdapter.RelationsViewItem(view, recyclerViewInterface);
+        return new RelationsViewAdapter.RelationsView(view, recyclerViewInterface);
     }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-
-        RelationsViewItem relationsViewItem = (RelationsViewItem) holder;
-        Glide.with(context)
-                .load(relationsList.get(position).getCoverImg())
-                .placeholder(LoadingCircleDrawable.getLoadingCircle(context))
-                .into(relationsViewItem.coverImg);
-        relationsViewItem.relation.setText(relationsList.get(position).getRelation());
-        relationsViewItem.title.setText(relationsList.get(position).getTitles().getUserPref());
-        relationsViewItem.formatAndStatus.setText(String.format("%s · %s", relationsList.get(position).getFormat(),
-                relationsList.get(position).getStatus()));
+        RelationsView relationsViewItem = (RelationsView) holder;
+        MediaDetails relation = this.getRelation(position);
+        Image.loadImage(this.context, relation.getCoverImg(), relationsViewItem.coverImg);
+        relationsViewItem.relation.setText(relation.getRelation());
+        relationsViewItem.title.setText(relation.getTitles().getUserPref());
+        relationsViewItem.formatAndStatus.setText(String.format("%s · %s", relation.getFormat(), relation.getStatus()));
     }
 
     @Override
@@ -68,10 +63,10 @@ public class RelationsViewAdapter extends RecyclerView.Adapter<RecyclerView.View
         return relationsList.get(pos);
     }
 
-    public static class RelationsViewItem extends RecyclerView.ViewHolder{
+    public static class RelationsView extends RecyclerView.ViewHolder{
         TextView relation, title, formatAndStatus;
         ImageView coverImg;
-        public RelationsViewItem(@NonNull View itemView, RecyclerViewInterface recyclerViewInterface) {
+        public RelationsView(@NonNull View itemView, RecyclerViewInterface recyclerViewInterface) {
             super(itemView);
             relation = itemView.findViewById(R.id.relation);
             title = itemView.findViewById(R.id.mediaTitle);

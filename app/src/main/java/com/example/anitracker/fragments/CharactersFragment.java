@@ -19,9 +19,9 @@ import com.example.anitracker.R;
 import com.example.anitracker.adapters.CharacterViewAdapter;
 import com.example.anitracker.mediaObjects.CharacterDetails;
 import com.example.anitracker.type.MediaType;
-import com.example.anitracker.type.StaffLanguage;
 import com.example.anitracker.uiObjects.LanguageDropdown;
 import com.example.anitracker.viewModels.DetailsViewModel;
+import com.example.anitracker.vnObjects.VNCharPage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +32,7 @@ public class CharactersFragment extends Fragment {
     private CharacterViewAdapter characterViewAdapter;
     private TextView noData;
     private ProgressBar loadingIndicator;
+
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
@@ -56,37 +57,40 @@ public class CharactersFragment extends Fragment {
         List<Object> objectList = new ArrayList<>();
         if (detailsViewModel.getType() == MediaType.ANIME) {
             // if not anime, no need for ability to change language of voice actor
-            objectList.add(new LanguageDropdown());
+            objectList.add(new LanguageDropdown(this.context));
         }
 
-        this.characterViewAdapter = new CharacterViewAdapter(objectList, context, detailsViewModel);
+        this.characterViewAdapter = new CharacterViewAdapter(objectList, this.context, this.detailsViewModel);
 
-        if (detailsViewModel.getType() == MediaType.VISUAL_NOVEL) {
-            detailsViewModel.observeVNCharPage().observe(getViewLifecycleOwner(), res -> {
-                characterViewAdapter.setHasMorePages(res.hasMore());
-                this.addChars(res.getVNCharList(detailsViewModel.getId()));
-            });
-            this.detailsViewModel.getVNCharPage();
+        // observe updates to char list
+        if (this.detailsViewModel.getType() == MediaType.VISUAL_NOVEL) {
+            this.detailsViewModel.observeVNCharPage().observe(getViewLifecycleOwner(), this::addChars);
         } else {
-            detailsViewModel.observeCharPage().observe(getViewLifecycleOwner(), this::addChars);
-            this.detailsViewModel.getCharPage(StaffLanguage.JAPANESE);
+            this.detailsViewModel.observeCharPage().observe(getViewLifecycleOwner(), this::addChars);
         }
+
+        // initial retrieval of characters
+        detailsViewModel.getCharPage();
 
         //initializing recycler view
         RecyclerView characterView = view.findViewById(R.id.recView);
-        characterView.setAdapter(characterViewAdapter);
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context);
+        characterView.setAdapter(this.characterViewAdapter);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this.context);
         characterView.setLayoutManager(linearLayoutManager);
         return view;
     }
 
     public void addChars(List<CharacterDetails> characterDetailsList) {
-        characterViewAdapter.addChars(characterDetailsList);
+        this.characterViewAdapter.addChars(characterDetailsList);
         this.loadingIndicator.setVisibility(View.GONE);
-        if (characterViewAdapter.getItemCount() - (detailsViewModel.getType().equals(MediaType.ANIME) ? 1 : 0) == 0) {
+        if (this.characterViewAdapter.getItemCount() == 0) {
             this.noData.setVisibility(View.VISIBLE);
         } else {
             this.noData.setVisibility(View.GONE);
         }
+    }
+
+    public void addChars(VNCharPage vnCharPage) {
+        this.addChars(vnCharPage.getVNCharList(this.detailsViewModel.getId()));
     }
 }

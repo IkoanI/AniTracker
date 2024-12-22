@@ -306,16 +306,16 @@ public class ApiRepository {
                     assert res.data != null;
                     List<CharacterDetails> charPage = new ArrayList<>();
                     List<CharacterPageQuery.Edge> characters = res.data.Media.characters.edges;
-                    for(CharacterPageQuery.Edge character : characters){
+                    for (CharacterPageQuery.Edge character : characters) {
                         CharacterPageQuery.Node charNode = character.node;
                         List<CharacterPageQuery.VoiceActorRole> voiceActors = character.voiceActorRoles;
-                        if(!voiceActors.isEmpty()){
-                            for(CharacterPageQuery.VoiceActorRole voiceActorRole : voiceActors){
+                        if (!voiceActors.isEmpty()) {
+                            for (CharacterPageQuery.VoiceActorRole voiceActorRole : voiceActors) {
                                 CharacterDetails characterDetails = new CharacterDetails();
                                 characterDetails.setName(new Name(charNode.name.userPreferred));
-                                if(charNode.image.large != null){characterDetails.setImage(charNode.image.large);}
+                                if (charNode.image.large != null) {characterDetails.setImage(charNode.image.large);}
                                 characterDetails.setRole(AnilistObjectMappings.characterRoleToString.get(character.role));
-                                characterDetails.setId(charNode.id);
+                                characterDetails.setId(String.valueOf(charNode.id));
                                 StaffDetails voiceActor = new StaffDetails();
                                 voiceActor.setName(new Name(voiceActorRole.voiceActor.name.userPreferred));
                                 voiceActor.setImage(voiceActorRole.voiceActor.image.large);
@@ -323,13 +323,12 @@ public class ApiRepository {
                                 characterDetails.setNotes(voiceActorRole.roleNotes);
                                 charPage.add(characterDetails);
                             }
-                        }
-                        else{
+                        } else {
                             CharacterDetails characterDetails = new CharacterDetails();
                             characterDetails.setName(new Name(charNode.name.userPreferred));
                             if(charNode.image.large != null){characterDetails.setImage(charNode.image.large);}
                             characterDetails.setRole(AnilistObjectMappings.characterRoleToString.get(character.role));
-                            characterDetails.setId(charNode.id);
+                            characterDetails.setId(String.valueOf(charNode.id));
                             charPage.add(characterDetails);
                         }
                     }
@@ -419,7 +418,7 @@ public class ApiRepository {
                 "average, developers{name}, description, devstatus, " +
                 "tags{name, rating, spoiler}, aliases, screenshots{url}, " +
                 "relations{title, relation, image{thumbnail}, devstatus}, " +
-                "editions{name}, staff{role, name, eid, note}";
+                "editions{name}, staff{role, name, eid, note}, va{staff{name}, character{id}}";
 
         List<Object> filters = Arrays.asList("id", "=", vndbID);
         VNRequestBody body = new VNRequestBody(null, false, 1, 1, fields, filters);

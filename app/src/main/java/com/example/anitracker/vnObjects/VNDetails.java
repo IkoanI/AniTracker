@@ -2,11 +2,12 @@ package com.example.anitracker.vnObjects;
 
 import com.example.anitracker.mediaObjects.MediaDetails;
 import com.example.anitracker.mediaObjects.StaffDetails;
-import com.example.anitracker.type.Media;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class VNDetails extends MediaDetails {
     private List<Developer> developers;
@@ -16,6 +17,7 @@ public class VNDetails extends MediaDetails {
     private String length;
     private List<MediaDetails> relations = new ArrayList<>();
     private List<StaffDetails> staffs = new ArrayList<>();
+    private Map<String, StaffDetails> knownVAs = new HashMap<>();
 
     public List<Developer> getDevelopers() {
         return this.developers;
@@ -63,12 +65,12 @@ public class VNDetails extends MediaDetails {
         infoMap.put("Developers", developerNames.toString().trim());
     }
 
-    public void setLengthMinutes(int lengthMinutes) {
+    public void setLengthMinutes(int lengthMinutes, int lengthVotes) {
         this.lengthMinutes = lengthMinutes;
         int hours = lengthMinutes / 60;
         int minutes = lengthMinutes % 60;
         infoMap.put("Play Time", String.format(Locale.ENGLISH, "%dh %dm\n(from %d votes)",
-                hours, minutes, this.lengthVotes));
+                hours, minutes, lengthVotes));
     }
 
     public void setAliases(List<String> aliases) {
@@ -81,15 +83,19 @@ public class VNDetails extends MediaDetails {
         infoMap.put("Length", this.length);
     }
 
-    public void setLengthVotes(int lengthVotes) {
-        this.lengthVotes = lengthVotes;
-    }
-
     public Screenshots getScreenshots() {
         return this.screenshots;
     }
 
     public void setScreenshots(Screenshots screenshots) {
         this.screenshots = screenshots;
+    }
+
+    public void setKnownVAs(Map<String, StaffDetails> knownVAs) {
+        this.knownVAs = knownVAs;
+    }
+
+    public Map<String, StaffDetails> getKnownVAs() {
+        return this.knownVAs;
     }
 }

@@ -11,13 +11,15 @@ import com.example.anitracker.repository.ApiRepository;
 import com.example.anitracker.type.MediaType;
 import com.example.anitracker.type.StaffLanguage;
 import com.example.anitracker.vnObjects.VNCharPage;
+import com.example.anitracker.vnObjects.VNVoiceActor;
 
 import java.util.List;
+import java.util.Map;
 
 public class DetailsViewModel extends ViewModel {
     private final ApiRepository repository;
     private String id;
-    private MediaType type;
+    private MediaType mediaType;
 
     // error message
     private final MutableLiveData<String> liveErrorMsg;
@@ -29,6 +31,9 @@ public class DetailsViewModel extends ViewModel {
     private final MutableLiveData<List<CharacterDetails>> liveCharPage;
     private final MutableLiveData<VNCharPage> liveVNCharPage;
     private int currCharPage = 1;
+    private StaffLanguage lastSelectedLanguage = StaffLanguage.JAPANESE;
+    private int lastSelectedLanguagePos = 0;
+    private Map<String, StaffDetails> vnKnownVAs;
 
     // used by staff fragment
     private final MutableLiveData<List<StaffDetails>> liveStaffPage;
@@ -57,13 +62,13 @@ public class DetailsViewModel extends ViewModel {
         return this.id;
     }
 
-    public void setType(MediaType type) { this.type = type;}
+    public void setType(MediaType type) { this.mediaType = type;}
 
-    public MediaType getType() { return this.type;}
+    public MediaType getType() { return this.mediaType;}
 
     // overview fragment
     public void getDetails() {
-        repository.fetchData(this.type, this.id);
+        repository.fetchData(this.mediaType, this.id);
     }
 
     public LiveData<MediaDetails> observeMediaDetails(){
@@ -71,18 +76,17 @@ public class DetailsViewModel extends ViewModel {
     }
 
     // character fragment
+    public void getCharPage() {
+        if (this.mediaType == MediaType.VISUAL_NOVEL) {
+            repository.fetchVNChars(this.id, this.currCharPage);
+        } else {
+            repository.fetchCharPage(Integer.parseInt(this.id), this.currCharPage, this.lastSelectedLanguage);
+        }
 
-    public void getCharPage(StaffLanguage language) {
-        repository.fetchCharPage(Integer.parseInt(this.id), this.currCharPage, language);
         this.currCharPage++;
     }
 
-    public void getVNCharPage() {
-        repository.fetchVNChars(this.id, this.currCharPage);
-        this.currCharPage++;
-    }
-
-    public LiveData<List<CharacterDetails>> observeCharPage(){
+    public LiveData<List<CharacterDetails>> observeCharPage() {
         return liveCharPage;
     }
 
@@ -92,6 +96,14 @@ public class DetailsViewModel extends ViewModel {
 
     public void setCurrCharPage(int pageNo) {
         this.currCharPage = pageNo;
+    }
+
+    public void setKnownVAs(Map<String, StaffDetails> knownVAs) {
+        this.vnKnownVAs = knownVAs;
+    }
+
+    public Map<String, StaffDetails> getKnownVAs() {
+        return this.vnKnownVAs;
     }
 
     // staff fragment
@@ -128,6 +140,22 @@ public class DetailsViewModel extends ViewModel {
 
     public List<MediaDetails> getVnRelationsList() {
         return this.vnRelationsList;
+    }
+
+    public void setLastSelectedLanguage(StaffLanguage selectedLanguage) {
+        this.lastSelectedLanguage = selectedLanguage;
+    }
+
+    public StaffLanguage getLastSelectedLanguage() {
+        return this.lastSelectedLanguage;
+    }
+
+    public void setLastSelectedLanguagePos(int pos) {
+        this.lastSelectedLanguagePos = pos;
+    }
+
+    public int getLastSelectedLanguagePos() {
+        return this.lastSelectedLanguagePos;
     }
 
     // clear requests

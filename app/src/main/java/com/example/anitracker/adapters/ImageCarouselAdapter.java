@@ -9,9 +9,8 @@ import android.widget.ImageView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
 import com.example.anitracker.R;
-import com.example.anitracker.uiObjects.LoadingCircleDrawable;
+import com.example.anitracker.uiObjects.Image;
 
 import java.util.List;
 
@@ -34,9 +33,7 @@ public class ImageCarouselAdapter extends RecyclerView.Adapter<ImageCarouselAdap
 
     @Override
     public void onBindViewHolder(@NonNull ImageCarouselAdapter.MyViewHolder holder, int position) {
-        Glide.with(context).load(images.get(position))
-                .placeholder(LoadingCircleDrawable.getLoadingCircle(context))
-                .into(holder.imageView);
+        Image.loadImage(this.context, images.get(position), holder.imageView);
     }
 
     @Override

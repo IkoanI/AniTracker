@@ -3,7 +3,7 @@ package com.example.anitracker.mediaObjects;
 public class CharacterDetails {
     String image, role, notes;
     Name name;
-    int id;
+    String id;
     StaffDetails voiceActor;
 
     public Name getName() {
@@ -38,11 +38,11 @@ public class CharacterDetails {
         this.voiceActor = voiceActor;
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 
