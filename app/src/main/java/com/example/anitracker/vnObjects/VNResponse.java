@@ -237,7 +237,9 @@ public class VNResponse {
         if (this.knownVoiceActors != null && !this.knownVoiceActors.isEmpty()) {
             Map<String, StaffDetails> knownVAs = new HashMap<>();
             for (VNVoiceActor va : this.knownVoiceActors) {
-                knownVAs.put(va.getCharacter().getId(), va.getStaff().convertToStaffDetail());
+                StaffDetails vaDetails = va.getStaff().convertToStaffDetail();
+                vaDetails.setRole(va.getNote());
+                knownVAs.put(va.getCharacter().getId(), vaDetails);
             }
 
             vnDetails.setKnownVAs(knownVAs);

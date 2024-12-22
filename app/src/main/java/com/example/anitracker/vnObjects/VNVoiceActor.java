@@ -7,6 +7,8 @@ public class VNVoiceActor {
     private VNStaff staff;
     @SerializedName("character")
     private VNCharacter character;
+    @SerializedName("notes")
+    private String note;
 
 
     public VNStaff getStaff() {
@@ -15,5 +17,9 @@ public class VNVoiceActor {
 
     public VNCharacter getCharacter() {
         return this.character;
+    }
+
+    public String getNote() {
+        return this.note;
     }
 }

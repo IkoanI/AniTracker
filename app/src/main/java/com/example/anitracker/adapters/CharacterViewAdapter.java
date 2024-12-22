@@ -124,7 +124,10 @@ public class CharacterViewAdapter extends RecyclerView.Adapter<RecyclerView.View
                 CharacterView characterView = (CharacterView) holder;
 
                 if (this.vnKnownVAs != null && character.getVoiceActor() == null && vnKnownVAs.containsKey(character.getId())) {
-                    character.setVoiceActor(vnKnownVAs.get(character.getId()));
+                    StaffDetails va = vnKnownVAs.get(character.getId());
+                    character.setVoiceActor(va);
+                    assert va != null;
+                    character.setNotes(va.getRole());
                 }
 
                 if (character.getNotes() != null) {

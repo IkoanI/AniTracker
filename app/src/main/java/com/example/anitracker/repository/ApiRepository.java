@@ -418,7 +418,7 @@ public class ApiRepository {
                 "average, developers{name}, description, devstatus, " +
                 "tags{name, rating, spoiler}, aliases, screenshots{url}, " +
                 "relations{title, relation, image{thumbnail}, devstatus}, " +
-                "editions{name}, staff{role, name, eid, note}, va{staff{name}, character{id}}";
+                "editions{name}, staff{role, name, eid, note}, va{note, staff{name}, character{id}}";
 
         List<Object> filters = Arrays.asList("id", "=", vndbID);
         VNRequestBody body = new VNRequestBody(null, false, 1, 1, fields, filters);

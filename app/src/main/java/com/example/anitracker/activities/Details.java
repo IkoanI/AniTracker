@@ -1,5 +1,6 @@
 package com.example.anitracker.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
@@ -8,20 +9,20 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.viewpager2.widget.ViewPager2;
 
-import com.bumptech.glide.Glide;
 import com.example.anitracker.adapters.VPAdapter;
 import com.example.anitracker.R;
 import com.example.anitracker.fragments.CharactersFragment;
 import com.example.anitracker.fragments.RelationsFragment;
 import com.example.anitracker.mediaObjects.MediaDetails;
 import com.example.anitracker.type.MediaType;
-import com.example.anitracker.uiObjects.LoadingCircleDrawable;
+import com.example.anitracker.uiObjects.Image;
 import com.example.anitracker.viewModels.DetailsViewModel;
 import com.example.anitracker.fragments.OverviewFragment;
 import com.example.anitracker.fragments.StaffFragment;
@@ -45,6 +46,12 @@ public class Details extends AppCompatActivity {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
+        });
+
+        // set up back button
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setNavigationOnClickListener(e -> {
+            finish();
         });
 
         // set up view model which holds all info used by all fragments
@@ -95,18 +102,12 @@ public class Details extends AppCompatActivity {
             // insert banner image
             ImageView banner = this.findViewById(R.id.banner);
             if (details.getBanner() != null) {
-                Glide.with(this)
-                        .load(details.getBanner())
-                        .placeholder(LoadingCircleDrawable.getLoadingCircle(this))
-                        .into(banner);
+                Image.loadImage(this, details.getBanner(), banner);
             }
 
             //insert cover image
             ImageView cover = this.findViewById(R.id.cover);
-            Glide.with(this)
-                    .load(details.getCoverImg())
-                    .placeholder(LoadingCircleDrawable.getLoadingCircle(this))
-                    .into(cover);
+            Image.loadImage(this, details.getCoverImg(), cover);
 
             // insert title
             TextView title = this.findViewById(R.id.title);
