@@ -34,7 +34,7 @@ public class MediaDetails {
         return format;
     }
 
-    public String getCoverImg() {
+    public String getImage() {
         return coverImg;
     }
 

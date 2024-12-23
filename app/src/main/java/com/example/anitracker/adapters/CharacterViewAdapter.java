@@ -1,6 +1,7 @@
 package com.example.anitracker.adapters;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,11 +9,14 @@ import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.anitracker.R;
+import com.example.anitracker.activities.Details;
+import com.example.anitracker.activities.EntityDetails;
 import com.example.anitracker.mediaObjects.CharacterDetails;
 import com.example.anitracker.mediaObjects.StaffDetails;
 import com.example.anitracker.repository.AnilistObjectMappings;
@@ -137,6 +141,13 @@ public class CharacterViewAdapter extends RecyclerView.Adapter<RecyclerView.View
                 }
                 characterView.role.setText(character.getRole());
                 Image.loadImage(this.context, character.getImage(), characterView.charImage);
+
+                characterView.charImage.setOnClickListener(e -> {
+                    Intent intent = new Intent(context, EntityDetails.class);
+                    intent.putExtra("ID", character.getId());
+                    intent.putExtra("Type", viewModel.getType().rawValue);
+                    context.startActivity(intent);
+                });
 
                 if (character.getVoiceActor() == null) {
                     characterView.hideVoiceActor();

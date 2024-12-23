@@ -15,25 +15,23 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.viewpager2.widget.ViewPager2;
 
-import com.example.anitracker.adapters.VPAdapter;
 import com.example.anitracker.R;
-import com.example.anitracker.fragments.CharactersFragment;
+import com.example.anitracker.adapters.VPAdapter;
+import com.example.anitracker.fragments.CharacterOverviewFragment;
 import com.example.anitracker.fragments.RelationsFragment;
-import com.example.anitracker.mediaObjects.MediaDetails;
+import com.example.anitracker.mediaObjects.CharacterDetails;
 import com.example.anitracker.type.MediaType;
 import com.example.anitracker.uiObjects.Image;
-import com.example.anitracker.viewModels.DetailsViewModel;
-import com.example.anitracker.fragments.OverviewFragment;
-import com.example.anitracker.fragments.StaffFragment;
+import com.example.anitracker.viewModels.EntityViewModel;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 import java.util.Objects;
 
-public class Details extends AppCompatActivity {
-    private final String[] fragmentTitles = {"Overview", "Characters", "Staff", "Relations"};
-    DetailsViewModel detailsViewModel;
+public class EntityDetails extends AppCompatActivity {
+    private final String[] fragmentTitles = {"Overview"};
+    EntityViewModel viewModel;
     AppBarLayout appBarLayout;
 
     @Override
@@ -52,16 +50,28 @@ public class Details extends AppCompatActivity {
         toolbar.setNavigationOnClickListener(e -> finish());
 
         // set up view model which holds all info used by all fragments
-        this.detailsViewModel = new ViewModelProvider(this).get(DetailsViewModel.class);
-        this.detailsViewModel.setType(MediaType.safeValueOf(Objects.requireNonNull(Objects.requireNonNull(getIntent().getExtras()).getString("Type"))));
-        this.detailsViewModel.setId(Objects.requireNonNull(getIntent().getExtras()).getString("ID"));
+        this.viewModel = new ViewModelProvider(this).get(EntityViewModel.class);
+        this.viewModel.setId(Objects.requireNonNull(getIntent().getExtras()).getString("ID"));
+        this.viewModel.setMediaType(MediaType.safeValueOf(Objects.requireNonNull(Objects.requireNonNull(getIntent().getExtras()).getString("Type"))));
+
 
         // observe any errors from repository
-        this.detailsViewModel.observeErrorMsg().observe(this, errorMsg -> Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show());
+        this.viewModel.observeErrorMsg().observe(this, errorMsg -> Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show());
 
         // get and observe details from repository
-        this.detailsViewModel.getDetails();
-        this.detailsViewModel.observeMediaDetails().observe(this, this::populateActivity);
+        if (this.viewModel.getMediaType() != MediaType.VISUAL_NOVEL) {
+            this.viewModel.observeCharacterDetail().observe(this, res -> {
+                viewModel.setLastFetchedDetail(res);
+                this.populateActivity(viewModel.getLastFetchedDetail());
+            });
+        } else {
+            this.viewModel.observeVNCharDetail().observe(this, res-> {
+                viewModel.setLastFetchedDetail(res.getVNCharList(viewModel.getId()).get(0));
+                this.populateActivity(viewModel.getLastFetchedDetail());
+            });
+        }
+
+        this.viewModel.getCharacterDetail();
 
         // hide ui while data is loading
         this.appBarLayout = findViewById(R.id.appBarLayout);
@@ -74,16 +84,12 @@ public class Details extends AppCompatActivity {
         VPAdapter viewPagerAdapter = new VPAdapter(this, this);
         
         // creating fragments
-        OverviewFragment overviewFragment = new OverviewFragment();
-        CharactersFragment charactersFragment = new CharactersFragment();
-        StaffFragment staffFragment = new StaffFragment();
-        RelationsFragment relationsFragment = new RelationsFragment();
+        CharacterOverviewFragment overviewFragment = new CharacterOverviewFragment();
+        //RelationsFragment relationsFragment = new RelationsFragment();
         
         // adding fragments to view pager
         viewPagerAdapter.addFragment(overviewFragment);
-        viewPagerAdapter.addFragment(charactersFragment);
-        viewPagerAdapter.addFragment(staffFragment);
-        viewPagerAdapter.addFragment(relationsFragment);
+        //viewPagerAdapter.addFragment(relationsFragment);
 
         viewPager.setAdapter(viewPagerAdapter);
         new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> tab.setText(fragmentTitles[position])).attach();
@@ -92,23 +98,17 @@ public class Details extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        this.detailsViewModel.clearComposite();
+        this.viewModel.clearComposite();
     }
 
-    private void populateActivity(MediaDetails details) {
-            // insert banner image
-            ImageView banner = this.findViewById(R.id.banner);
-            if (details.getBanner() != null) {
-                Image.loadImage(this, details.getBanner(), banner);
-            }
-
+    private void populateActivity(CharacterDetails details) {
             //insert cover image
             ImageView cover = this.findViewById(R.id.cover);
             Image.loadImage(this, details.getImage(), cover);
 
-            // insert title
+            // insert name
             TextView title = this.findViewById(R.id.title);
-            title.setText(details.getTitles().getUserPref());
+            title.setText(details.getName().getUserPref());
 
             this.appBarLayout.setVisibility(View.VISIBLE);
     }

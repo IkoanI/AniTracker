@@ -22,7 +22,6 @@ import com.example.anitracker.animeObjects.Trailer;
 import com.example.anitracker.mediaObjects.Description;
 import com.example.anitracker.mediaObjects.Genres;
 import com.example.anitracker.mediaObjects.Info;
-import com.example.anitracker.mediaObjects.MediaDetails;
 import com.example.anitracker.mediaObjects.Tag;
 import com.example.anitracker.uiObjects.Header;
 import com.example.anitracker.uiObjects.Image;
@@ -40,7 +39,6 @@ import java.util.Locale;
 public class OverviewViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private final List<Object> objectList;
     private final Context context;
-    private final MediaDetails details;
 
     private final int headerTypeVar = 0,
             descriptionTypeVar = 1,
@@ -51,10 +49,9 @@ public class OverviewViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             tagsHeaderVar = 6,
             tagsVar = 7;
 
-    public OverviewViewAdapter(MediaDetails details, List<Object> objectList, Context context) {
+    public OverviewViewAdapter(List<Object> objectList, Context context) {
         this.objectList = objectList;
         this.context = context;
-        this.details = details;
     }
 
     @Override
@@ -153,22 +150,14 @@ public class OverviewViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 Description description = (Description) objectList.get(position);
                 DescriptionView descriptionView = (DescriptionView) holder;
                 descriptionView.description.setText(description.getDescription());
-                descriptionView.description.setText(description.getDescription());
+                if (description.isExpanded()) {
+                    descriptionView.setExpanded();
+                } else {
+                    descriptionView.setNotExpanded();
+                }
                 descriptionView.expandButton.setOnClickListener(v -> {
-                    if(!descriptionView.expanded){
-                        // clicked when description not yet expanded
-                        descriptionView.expandButton.setImageResource(R.drawable.baseline_keyboard_arrow_up_24);
-                        descriptionView.description.setMaxLines(Integer.MAX_VALUE);
-                        descriptionView.description.setEllipsize(null);
-                        descriptionView.expanded = true;
-                    }
-                    else{
-                        // clicked when description already expanded
-                        descriptionView.expandButton.setImageResource(R.drawable.baseline_keyboard_arrow_down_24);
-                        descriptionView.description.setMaxLines(3);
-                        descriptionView.description.setEllipsize(TextUtils.TruncateAt.END);
-                        descriptionView.expanded = false;
-                    }
+                    description.setExpanded(!description.isExpanded());
+                    notifyItemChanged(position);
                 });
                 break;
 
@@ -219,7 +208,7 @@ public class OverviewViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 // set up show spoiler tag button
                 TextView showSpoilerTags = tagsHeaderView.showSpoilers;
 
-                if (this.details.getAllTags().size() == details.getNoSpoilerTags().size()) {
+                if (!tagsHeader.hasSpoilers()) {
                     // no spoiler tags, hide show spoiler button
                     showSpoilerTags.setVisibility(View.GONE);
                 } else {
@@ -229,11 +218,11 @@ public class OverviewViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                         if (tagsHeader.getSpoilersShown()) {
                             showSpoilerTags.setText(R.string.show_spoilers);
                             tagsHeader.setSpoilersShown(false);
-                            objectList.addAll(details.getNoSpoilerTags());
+                            objectList.addAll(tagsHeader.getNoSpoilerTags());
                         } else {
                             showSpoilerTags.setText(R.string.hide_spoilers);
                             tagsHeader.setSpoilersShown(true);
-                            objectList.addAll(details.getAllTags());
+                            objectList.addAll(tagsHeader.getAllTags());
                         }
 
                         notifyItemRangeChanged(position + 1, objectList.size());
@@ -246,7 +235,13 @@ public class OverviewViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 TagsView tagsView = (TagsView) holder;
                 Tag tag = (Tag) objectList.get(position);
                 tagsView.tagName.setText(tag.getTagName());
-                tagsView.tagRanking.setText(String.format(Locale.ENGLISH,"%d%%", tag.getTagRanking()));
+                if (tag.getTagRanking() != 0) {
+                    tagsView.tagRanking.setText(String.format(Locale.ENGLISH,"%d%%", tag.getTagRanking()));
+                    tagsView.tagRanking.setVisibility(View.VISIBLE);
+                } else {
+                    tagsView.tagRanking.setVisibility(View.GONE);
+                }
+
                 if (tag.getSpoiler()) {
                     tagsView.tagName.setTextColor(ContextCompat.getColor(context, R.color.red));
                     tagsView.tagRanking.setTextColor(ContextCompat.getColor(context, R.color.red));
@@ -276,11 +271,22 @@ public class OverviewViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     public static class DescriptionView extends RecyclerView.ViewHolder{
         TextView description;
         ImageView expandButton;
-        Boolean expanded = false;
         public DescriptionView(@NonNull View itemView) {
             super(itemView);
             description = itemView.findViewById(R.id.description);
             expandButton = itemView.findViewById(R.id.expand);
+        }
+
+        public void setExpanded() {
+            this.expandButton.setImageResource(R.drawable.baseline_keyboard_arrow_up_24);
+            this.description.setMaxLines(Integer.MAX_VALUE);
+            this.description.setEllipsize(null);
+        }
+
+        public void setNotExpanded() {
+            this.expandButton.setImageResource(R.drawable.baseline_keyboard_arrow_down_24);
+            this.description.setMaxLines(3);
+            this.description.setEllipsize(TextUtils.TruncateAt.END);
         }
     }
 
@@ -329,13 +335,11 @@ public class OverviewViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     }
 
     public class TagsView extends RecyclerView.ViewHolder {
-        ConstraintLayout mainLayout;
         TextView tagName, tagRanking;
         public TagsView(@NonNull View itemView) {
             super(itemView);
             tagName = itemView.findViewById(R.id.tagName);
             tagRanking = itemView.findViewById(R.id.tagRanking);
-            mainLayout = itemView.findViewById(R.id.tagLayout);
             itemView.setOnClickListener(view -> Toast.makeText(context, tagName.getText(), Toast.LENGTH_SHORT).show());
         }
     }

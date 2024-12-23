@@ -14,6 +14,7 @@ fragment shortDetail on Media {
     startDate {
         year
     }
+    type
 }
 
 fragment animeShortDetail on Media {
@@ -26,8 +27,6 @@ fragment animeShortDetail on Media {
         timeUntilAiring
         episode
     }
-
-    type
 }
 
 fragment mangaShortDetail on Media {
@@ -129,6 +128,26 @@ query MangaMoreDetails($id : Int!) {
     }
 }
 
+fragment shortCharDetail on Character {
+    name {
+        userPreferred
+    }
+    id
+    image {
+        large
+    }
+}
+
+fragment shortStaffDetail on Staff {
+    id
+    name {
+        userPreferred
+    }
+    image{
+        large
+    }
+}
+
 query characterPage($mediaId : Int!, $pageNo : Int!, $language : StaffLanguage!) {
     Media(id: $mediaId) {
         characters(page: $pageNo, perPage: 25, sort: [ROLE, RELEVANCE, ID]) {
@@ -137,22 +156,11 @@ query characterPage($mediaId : Int!, $pageNo : Int!, $language : StaffLanguage!)
                 voiceActorRoles(language: $language) {
                     roleNotes
                     voiceActor {
-                        name {
-                            userPreferred
-                        }
-                        image{
-                            large
-                        }
+                        ...shortStaffDetail
                     }
                 }
                 node {
-                    name {
-                        userPreferred
-                    }
-                    id
-                    image {
-                        large
-                    }
+                    ...shortCharDetail
                 }
             }
         }
@@ -165,12 +173,7 @@ query staffPage ($mediaId : Int!, $pageNo : Int!) {
             edges {
                 role
                 node {
-                    name {
-                        userPreferred
-                    }
-                    image {
-                        large
-                    }
+                    ...shortStaffDetail
                 }
             }
         }
@@ -183,18 +186,39 @@ query relationsPage($mediaId : Int!) {
             edges {
                 relationType
                 node {
-                    title {
-                        userPreferred
-                    }
-                    coverImage {
-                        large
-                    }
-                    format
-                    status
-                    type
-                    id
+                    ...shortDetail
                 }
             }
         }
+    }
+}
+
+fragment charDetail on Character {
+    ...shortCharDetail
+    name {
+        first
+        middle
+        last
+        full
+        native
+        userPreferred
+        alternative
+        alternativeSpoiler
+    }
+    description(asHtml: true)
+    gender
+    dateOfBirth {
+        year
+        month
+        day
+    }
+    age
+    bloodType
+    favourites
+}
+
+query CharacterDetail($id : Int!) {
+    Character(id: $id) {
+       ...charDetail
     }
 }

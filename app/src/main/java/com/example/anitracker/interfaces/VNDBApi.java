@@ -20,10 +20,6 @@ public interface VNDBApi {
     Call<VNPage> fetchVNDetails(@Body VNRequestBody body);
 
     @Headers({"Content-Type: application/json"})
-    @POST("vn")
-    Call<VNPage> fetchVNChars(@Body VNRequestBody body);
-
-    @Headers({"Content-Type: application/json"})
     @POST("character")
-    Call<VNCharPage> fetchVNCharsTest(@Body VNRequestBody body);
+    Call<VNCharPage> fetchVNChars(@Body VNRequestBody body);
 }

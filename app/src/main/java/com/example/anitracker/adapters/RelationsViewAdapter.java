@@ -43,7 +43,7 @@ public class RelationsViewAdapter extends RecyclerView.Adapter<RecyclerView.View
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         RelationsView relationsViewItem = (RelationsView) holder;
         MediaDetails relation = this.getRelation(position);
-        Image.loadImage(this.context, relation.getCoverImg(), relationsViewItem.coverImg);
+        Image.loadImage(this.context, relation.getImage(), relationsViewItem.coverImg);
         relationsViewItem.relation.setText(relation.getRelation());
         relationsViewItem.title.setText(relation.getTitles().getUserPref());
         relationsViewItem.formatAndStatus.setText(String.format("%s · %s", relation.getFormat(), relation.getStatus()));

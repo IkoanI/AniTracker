@@ -180,20 +180,8 @@ public class VNResponse {
         vnDetails.setMeanScore(Math.round(this.average));
 
         if (this.tags != null) {
-            List<Tag> noSpoilerTags = new ArrayList<>();
-            List<Tag> allTags = new ArrayList<>();
-            for(VNTag vnTag : this.tags){
-                int rating = Math.round((vnTag.getRating() / 3) * 100 );
-                Tag tag = new Tag(vnTag.getName(), rating, vnTag.isSpoiler());
-                if (!tag.getSpoiler()) {
-                    noSpoilerTags.add(tag);
-                }
-                allTags.add(tag);
-            }
-            allTags.sort(this::compareTags);
-            noSpoilerTags.sort(this::compareTags);
-            vnDetails.setAllTags(allTags);
-            vnDetails.setNoSpoilerTags(noSpoilerTags);
+            vnDetails.setAllTags(VNTag.getAllTags(this.tags));
+            vnDetails.setNoSpoilerTags(VNTag.getAllTags(this.tags));
         }
 
 
@@ -272,15 +260,6 @@ public class VNResponse {
         vnDetails.setType(MediaType.VISUAL_NOVEL);
 
         return vnDetails;
-    }
-
-    public int compareTags (Tag tag, Tag t1) {
-        if (tag.getTagRanking() < t1.getTagRanking()) {
-            return 1;
-        } else if (tag.getTagRanking() > t1.getTagRanking()) {
-            return -1;
-        }
-        return 0;
     }
 
     public String getRole() {

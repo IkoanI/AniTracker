@@ -15,22 +15,21 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.anitracker.R;
 import com.example.anitracker.adapters.OverviewViewAdapter;
+import com.example.anitracker.mediaObjects.CharacterDetails;
 import com.example.anitracker.mediaObjects.Description;
-import com.example.anitracker.mediaObjects.MediaDetails;
+import com.example.anitracker.type.MediaType;
 import com.example.anitracker.uiObjects.Header;
 import com.example.anitracker.uiObjects.TagsHeader;
-import com.example.anitracker.viewModels.DetailsViewModel;
-import com.example.anitracker.vnObjects.VNDetails;
+import com.example.anitracker.viewModels.EntityViewModel;
 import com.google.android.flexbox.FlexWrap;
 import com.google.android.flexbox.FlexboxLayoutManager;
-
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class OverviewFragment extends Fragment {
+public class CharacterOverviewFragment extends Fragment {
     private Context context;
-    private DetailsViewModel detailsViewModel;
+    private EntityViewModel viewModel;
     private View view;
     private ProgressBar progressBar;
 
@@ -43,8 +42,7 @@ public class OverviewFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.detailsViewModel = new ViewModelProvider(requireActivity()).get(DetailsViewModel.class);
-
+        this.viewModel = new ViewModelProvider(requireActivity()).get(EntityViewModel.class);
     }
 
     @Nullable
@@ -53,45 +51,34 @@ public class OverviewFragment extends Fragment {
         this.view = inflater.inflate(R.layout.recycler_view, container, false);
         this.progressBar = view.findViewById(R.id.loadingSpinner);
         this.progressBar.setVisibility(View.VISIBLE);
-        this.detailsViewModel.observeMediaDetails().observe(getViewLifecycleOwner(), this::insertDetails);
+        // get and observe details from repository
+        if (this.viewModel.getMediaType() != MediaType.VISUAL_NOVEL) {
+            this.viewModel.observeCharacterDetail().observe(getViewLifecycleOwner(), this::insertDetails);
+        } else {
+            this.viewModel.observeVNCharDetail().observe(getViewLifecycleOwner(), res-> {
+                this.insertDetails(res.getVNCharList(viewModel.getId()).get(0));
+            });
+        }
         return view;
     }
 
-    public void insertDetails(MediaDetails details) {
-        // relations list for vn is fetched in the big api call in the overview fragment and kept in viewmodel for usage in relations fragment
-        if (details instanceof VNDetails) {
-            detailsViewModel.setVnRelationsList(((VNDetails) details).getRelations());
-            detailsViewModel.setVnStaffsList(((VNDetails) details).getStaffs());
-            detailsViewModel.setKnownVAs(((VNDetails) details).getKnownVAs());
-        }
+    private void insertDetails(CharacterDetails details) {
         // setting up recyclerView displaying genres
         RecyclerView overviewView = view.findViewById(R.id.recView);
         List<Object> overviewViewObjects = new ArrayList<>();
 
-        if (details.getGenres() != null) {
-            overviewViewObjects.add(details.getGenres());
-        }
-        if (details.getDesc() != null) {
-            overviewViewObjects.add(new Header("Synopsis"));
-            overviewViewObjects.add(new Description(details.getDesc()));
+        if (details.getDescription() != null && !details.getDescription().isBlank()) {
+            overviewViewObjects.add(new Header("Description"));
+            overviewViewObjects.add(new Description(details.getDescription()));
         }
 
-        if (details.getTrailer() != null) {
-            overviewViewObjects.add(details.getTrailer());
-        }
-
-        if(details instanceof VNDetails){
-            if (!((VNDetails) details).getScreenshots().getScreenshotURLs().isEmpty()) {
-                overviewViewObjects.add(new Header("Screenshots"));
-                overviewViewObjects.add(((VNDetails) details).getScreenshots());
-            }
-        }
         overviewViewObjects.add(new Header("Info"));
         overviewViewObjects.addAll(details.getInfo());
 
-        overviewViewObjects.add(new TagsHeader(details));
-
-        overviewViewObjects.addAll(details.getNoSpoilerTags());
+        if (viewModel.getMediaType().equals(MediaType.VISUAL_NOVEL)) {
+            overviewViewObjects.add(new TagsHeader(details));
+            overviewViewObjects.addAll(details.getNoSpoilerTraits());
+        }
 
         OverviewViewAdapter overviewViewAdapter = new OverviewViewAdapter(overviewViewObjects, context);
 

@@ -19,6 +19,10 @@
             android:exported="false"
             android:configChanges="orientation|screenSize|keyboardHidden" />
         <activity
+            android:name=".activities.EntityDetails"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity
             android:name=".activities.Search"
             android:exported="true"
             android:configChanges="orientation|screenSize|keyboardHidden">

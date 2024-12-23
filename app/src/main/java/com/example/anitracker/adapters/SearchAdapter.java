@@ -101,7 +101,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
     }
 
     public void setDetails(MediaDetails details, SearchViewHolder holder, int position) {
-        Image.loadImage(this.context, details.getCoverImg(), holder.coverImg);
+        Image.loadImage(this.context, details.getImage(), holder.coverImg);
         holder.title.setText(details.getTitles().getUserPref());
         holder.rating.setText(String.format(Locale.ENGLISH, "%d%%", details.getAvgScore()));
         holder.rank.setText(String.valueOf(position+1));
