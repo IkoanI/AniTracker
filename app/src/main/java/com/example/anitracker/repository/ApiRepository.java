@@ -1,19 +1,17 @@
 package com.example.anitracker.repository;
 
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 import androidx.lifecycle.MutableLiveData;
 
 import com.apollographql.apollo3.ApolloCall;
 import com.apollographql.apollo3.ApolloClient;
 import com.apollographql.apollo3.api.Optional;
-import com.apollographql.apollo3.api.Query;
 import com.apollographql.apollo3.rx3.Rx3Apollo;
 import com.example.anitracker.AnimeMoreDetailsQuery;
 import com.example.anitracker.AnimeSearchPageQuery;
 import com.example.anitracker.CharacterDetailQuery;
 import com.example.anitracker.CharacterPageQuery;
+import com.example.anitracker.CharacterRolesQuery;
 import com.example.anitracker.MangaMoreDetailsQuery;
 import com.example.anitracker.MangaSearchPageQuery;
 import com.example.anitracker.RelationsPageQuery;
@@ -29,6 +27,7 @@ import com.example.anitracker.fragment.CharDetail;
 import com.example.anitracker.fragment.Detail;
 import com.example.anitracker.fragment.MangaDetail;
 import com.example.anitracker.fragment.MangaShortDetail;
+import com.example.anitracker.fragment.MediumDetail;
 import com.example.anitracker.fragment.ShortCharDetail;
 import com.example.anitracker.fragment.ShortDetail;
 import com.example.anitracker.fragment.ShortStaffDetail;
@@ -47,12 +46,10 @@ import com.example.anitracker.mediaObjects.Titles;
 import com.example.anitracker.type.MediaType;
 import com.example.anitracker.type.StaffLanguage;
 import com.example.anitracker.vnObjects.VNPage;
-import com.example.anitracker.vnObjects.VNResponse;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
@@ -85,11 +82,12 @@ public class ApiRepository {
     private final MutableLiveData<String> mutableErrorMsg = new MutableLiveData<>();
     // help clear requests upon activity death
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
-
     public void clearComposite(){
         compositeDisposable.dispose();
     }
 
+
+    // getters
     public MutableLiveData<MediaDetails>  getMutableLiveData() { return mutableLiveData; }
 
     public MutableLiveData<List<AnimeDetails>> getMutableAnimePage() {
@@ -120,35 +118,7 @@ public class ApiRepository {
 
     public MutableLiveData<String> getMutableErrorMsg() { return mutableErrorMsg; }
 
-    private void setShortDetail(MediaDetails mediaDetails, ShortDetail commonDetails) {
-        mediaDetails.setTitles(new Titles(null, null, null, commonDetails.title.userPreferred));
-        mediaDetails.setCoverImg(commonDetails.coverImage.large);
-        if (commonDetails.averageScore != null) {mediaDetails.setAvgScore(commonDetails.averageScore);}
-        mediaDetails.setFormat(AnilistObjectMappings.mediaFormatToString.get(commonDetails.format));
-        if(commonDetails.startDate.year != null){mediaDetails.setStartDate(new Date(commonDetails.startDate.year, -1, -1));}
-        if (!commonDetails.genres.isEmpty()) {mediaDetails.setGenres(commonDetails.genres);}
-        mediaDetails.setFavorites(commonDetails.favourites);
-        mediaDetails.setId(String.valueOf(commonDetails.id));
-        if (commonDetails.status != null) {mediaDetails.setStatus(commonDetails.status);}
-        mediaDetails.setType(commonDetails.type);
-
-    }
-
-    private void setAnimeShortDetail(AnimeDetails animeDetails, AnimeShortDetail animeShortDetail) {
-        if (animeShortDetail.season != null) {animeDetails.setSeason(AnilistObjectMappings.mediaSeasonToString.get(animeShortDetail.season));}
-        if (animeShortDetail.duration != null) {animeDetails.setDuration(animeShortDetail.duration);}
-        if (animeShortDetail.episodes != null) {animeDetails.setEpisodes(animeShortDetail.episodes);}
-        if (animeShortDetail.nextAiringEpisode != null) {animeDetails.setAiringSchedule(new AiringSchedule(animeShortDetail.nextAiringEpisode.episode, animeShortDetail.nextAiringEpisode.timeUntilAiring));}
-        animeDetails.setType(MediaType.ANIME);
-    }
-
-    private void setMangaShortDetail(MangaDetails mangaDetails, MangaShortDetail mangaShortDetail) {
-        if(mangaShortDetail.endDate.year != null){mangaDetails.setEndDate(new Date(mangaShortDetail.endDate.year, -1, -1));}
-        mangaDetails.setType(MediaType.MANGA);
-        if (mangaShortDetail.volumes != null){mangaDetails.setVolumes(mangaShortDetail.volumes);}
-
-    }
-
+    // fetch data functions
     public void fetchSearchResults(MediaType mediaType, int page, String userSearch, List<MediaSort> sort) {
         Optional<String> opUserSearch = Optional.present(userSearch);
         Optional<List<MediaSort>> opSort = Optional.present(sort);
@@ -164,7 +134,7 @@ public class ApiRepository {
                                 List<AnimeSearchPageQuery.Medium> results = res.data.Page.media;
                                 for (AnimeSearchPageQuery.Medium result : results) {
                                     AnimeDetails animeDetails = new AnimeDetails();
-                                    this.setShortDetail(animeDetails, result.animeShortDetail.shortDetail);
+                                    this.setMediumDetail(animeDetails, result.animeShortDetail.mediumDetail);
                                     this.setAnimeShortDetail(animeDetails, result.animeShortDetail);
                                     if (!result.studios.nodes.isEmpty()) {
                                         Studios studios = new Studios();
@@ -190,7 +160,7 @@ public class ApiRepository {
                                 List<MangaSearchPageQuery.Medium> results = res.data.Page.media;
                                 for (MangaSearchPageQuery.Medium result : results) {
                                     MangaDetails mangaDetails = new MangaDetails();
-                                    this.setShortDetail(mangaDetails, result.mangaShortDetail.shortDetail);
+                                    this.setMediumDetail(mangaDetails, result.mangaShortDetail.mediumDetail);
                                     this.setMangaShortDetail(mangaDetails, result.mangaShortDetail);
                                     mangaList.add(mangaDetails);
                                 }
@@ -206,51 +176,6 @@ public class ApiRepository {
                 this.fetchVNSearchPage(userSearch, "searchrank", fields, page);
             }
         }
-    }
-
-    private void setCommonDetails(MediaDetails mediaDetails, Detail commonDetails) {
-        this.setShortDetail(mediaDetails, commonDetails.shortDetail);
-        mediaDetails.setTitles(new Titles(commonDetails.title.english, commonDetails.title.native_, commonDetails.title.romaji, commonDetails.title.userPreferred));
-        if(commonDetails.startDate.year != null){
-            int startMonth = commonDetails.startDate.month == null ? -1 : commonDetails.startDate.month;
-            int startDate = commonDetails.startDate.day == null ? -1 : commonDetails.startDate.day;
-            mediaDetails.setStartDate(new Date(commonDetails.startDate.year, startMonth, startDate));
-        }
-        if(commonDetails.endDate.year != null){
-            int endMonth = commonDetails.endDate.month == null ? -1 : commonDetails.endDate.month;
-            int endDay = commonDetails.endDate.day == null ? -1 : commonDetails.endDate.day;
-            mediaDetails.setEndDate(new Date(commonDetails.endDate.year, endMonth, endDay));
-        }
-        mediaDetails.setDesc(commonDetails.description);
-        if(commonDetails.bannerImage != null){mediaDetails.setBanner(commonDetails.bannerImage);}
-        if(commonDetails.meanScore != null){mediaDetails.setMeanScore(commonDetails.meanScore);}
-        mediaDetails.setPopularity(commonDetails.popularity);
-        if(commonDetails.source != null){mediaDetails.setSource(AnilistObjectMappings.mediaSourceToString.get(commonDetails.source));}
-        if(commonDetails.hashtag != null){mediaDetails.setHashtags(commonDetails.hashtag);}
-        if(commonDetails.trailer != null){mediaDetails.setTrailer(commonDetails.trailer);}
-        if(!commonDetails.synonyms.isEmpty()) {mediaDetails.setSynonyms(commonDetails.synonyms);}
-        if(commonDetails.tags != null){mediaDetails.setTags(commonDetails.tags);}
-    }
-
-    private void setAnimeDetail(AnimeDetails animeDetails, AnimeDetail animeDetail) {
-        this.setAnimeShortDetail(animeDetails, animeDetail.animeShortDetail);
-        if(!animeDetail.studios.edges.isEmpty()){
-            Studios studios = new Studios();
-            for(AnimeDetail.Edge studio : animeDetail.studios.edges){
-                if (studio.isMain){
-                    studios.addAnimationStudio(studio.node.name);
-                }
-                else{
-                    studios.addProducer(studio.node.name);
-                }
-            }
-            animeDetails.setStudios(studios);
-        }
-    }
-
-    private void setMangaDetail(MangaDetails mangaDetails, MangaDetail mangaDetail) {
-        this.setMangaShortDetail(mangaDetails, mangaDetail.mangaShortDetail);
-        if(mangaDetail.chapters != null){mangaDetails.setChapters(mangaDetail.chapters);}
     }
 
     private void fetchAnimeData (int id){
@@ -297,17 +222,6 @@ public class ApiRepository {
         } else if (mediaType == MediaType.VISUAL_NOVEL) {
             this.fetchVNData(id);
         }
-    }
-
-    public void setShortCharDetails(ShortCharDetail detail, CharacterDetails characterDetails) {
-        characterDetails.setName(new Name(detail.name.userPreferred));
-        if (detail.image.large != null) {characterDetails.setImage(detail.image.large);}
-        characterDetails.setId(String.valueOf(detail.id));
-    }
-
-    public void setShortStaffDetails(ShortStaffDetail detail, StaffDetails staffDetails) {
-        staffDetails.setName(new Name(detail.name.userPreferred));
-        staffDetails.setImage(detail.image.large);
     }
 
     public void fetchCharPage(int mediaId, int pageNo, StaffLanguage language) {
@@ -394,28 +308,6 @@ public class ApiRepository {
                 ));
     }
 
-    public void setCharDetails (CharDetail detail, CharacterDetails characterDetails) {
-        this.setShortCharDetails(detail.shortCharDetail, characterDetails);
-        Name name = new Name(detail.name.userPreferred);
-        name.setFirst(detail.name.first);
-        name.setMiddle(detail.name.middle);
-        name.setLast(detail.name.last);
-        name.setFull(detail.name.full);
-        name.setNativeName(detail.name.native_);
-        name.setAlternatives(detail.name.alternative);
-        name.setAlternativeSpoilers(detail.name.alternativeSpoiler);
-        characterDetails.setName(name);
-        characterDetails.setDescription(detail.description);
-        characterDetails.setAge(detail.age);
-        characterDetails.setGender(detail.gender);
-        int year = detail.dateOfBirth.year == null ? -1 : detail.dateOfBirth.year;
-        int month = detail.dateOfBirth.month == null ? -1 : detail.dateOfBirth.month;
-        int day = detail.dateOfBirth.day == null ? -1 : detail.dateOfBirth.day;
-        characterDetails.setDateOfbirth(new Date(year, month, day, true));
-        characterDetails.setBloodtype(detail.bloodType);
-        characterDetails.setFavorites(detail.favourites);
-    }
-
     public void fetchCharDetails(int id) {
         ApolloCall<CharacterDetailQuery.Data> charDetailCall = aniClient.query(new CharacterDetailQuery(id));
         CharacterDetails characterDetails = new CharacterDetails();
@@ -427,6 +319,27 @@ public class ApiRepository {
                     this.setCharDetails(res.data.Character.charDetail, characterDetails);
                     mutableCharacterDetail.setValue(characterDetails);
                 },
+                        error -> mutableErrorMsg.setValue(error.getMessage()))
+        );
+    }
+
+    public void fetchCharRoles(int id, int page) {
+        ApolloCall<CharacterRolesQuery.Data> charRolesCall = aniClient.query(new CharacterRolesQuery(id, page));
+        List<MediaDetails> roles = new ArrayList<>();
+        compositeDisposable.add(Rx3Apollo.single(charRolesCall)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.newThread())
+                .subscribe(res -> {
+                            assert res.data != null;
+                            for (CharacterRolesQuery.Edge media : res.data.Character.media.edges) {
+                                MediaDetails mediaDetails = new MediaDetails();
+                                this.setShortDetail(mediaDetails, media.node.shortDetail);
+                                if (media.characterRole != null) {mediaDetails.setRelation(media.characterRole);}
+                                roles.add(mediaDetails);
+                            }
+
+                            mutableRelationsPage.setValue(roles);
+                        },
                         error -> mutableErrorMsg.setValue(error.getMessage()))
         );
     }
@@ -511,10 +424,122 @@ public class ApiRepository {
 
     public void fetchVNCharDetails(String id) {
         String fields = "name, original, aliases, description, image{url}, blood_type, " +
-                "height, weight, bust, waist, hips, cup, age, birthday, sex, vns{role}, " +
+                "height, weight, bust, waist, hips, cup, age, birthday, sex, vns{role, title, image{thumbnail}, devstatus}, " +
                 "traits{name, spoiler, group_name}";
 
         List<Object> filters = Arrays.asList("id", "=", id);
         this.fetchVNCharPage(null, false, 1, 1, fields, filters);
+    }
+
+    // setter helper functions
+
+    private void setShortDetail(MediaDetails mediaDetails, ShortDetail commonDetails) {
+        mediaDetails.setTitles(new Titles(null, null, null, commonDetails.title.userPreferred));
+        mediaDetails.setCoverImg(commonDetails.coverImage.large);
+        mediaDetails.setFormat(AnilistObjectMappings.mediaFormatToString.get(commonDetails.format));
+        mediaDetails.setId(String.valueOf(commonDetails.id));
+        if (commonDetails.status != null) {mediaDetails.setStatus(commonDetails.status);}
+        mediaDetails.setType(commonDetails.type);
+    }
+
+    private void setMediumDetail(MediaDetails mediaDetails, MediumDetail commonDetails) {
+        this.setShortDetail(mediaDetails, commonDetails.shortDetail);
+        if (commonDetails.averageScore != null) {mediaDetails.setAvgScore(commonDetails.averageScore);}
+        if (!commonDetails.genres.isEmpty()) {mediaDetails.setGenres(commonDetails.genres);}
+        mediaDetails.setFavorites(commonDetails.favourites);
+        if(commonDetails.startDate.year != null){mediaDetails.setStartDate(new Date(commonDetails.startDate.year, -1, -1));}
+    }
+
+    private void setCommonDetails(MediaDetails mediaDetails, Detail commonDetails) {
+        this.setMediumDetail(mediaDetails, commonDetails.mediumDetail);
+        mediaDetails.setTitles(new Titles(commonDetails.title.english, commonDetails.title.native_, commonDetails.title.romaji, commonDetails.title.userPreferred));
+        if(commonDetails.startDate.year != null){
+            int startMonth = commonDetails.startDate.month == null ? -1 : commonDetails.startDate.month;
+            int startDate = commonDetails.startDate.day == null ? -1 : commonDetails.startDate.day;
+            mediaDetails.setStartDate(new Date(commonDetails.startDate.year, startMonth, startDate));
+        }
+        if(commonDetails.endDate.year != null){
+            int endMonth = commonDetails.endDate.month == null ? -1 : commonDetails.endDate.month;
+            int endDay = commonDetails.endDate.day == null ? -1 : commonDetails.endDate.day;
+            mediaDetails.setEndDate(new Date(commonDetails.endDate.year, endMonth, endDay));
+        }
+        mediaDetails.setDesc(commonDetails.description);
+        if(commonDetails.bannerImage != null){mediaDetails.setBanner(commonDetails.bannerImage);}
+        if(commonDetails.meanScore != null){mediaDetails.setMeanScore(commonDetails.meanScore);}
+        mediaDetails.setPopularity(commonDetails.popularity);
+        if(commonDetails.source != null){mediaDetails.setSource(AnilistObjectMappings.mediaSourceToString.get(commonDetails.source));}
+        if(commonDetails.hashtag != null){mediaDetails.setHashtags(commonDetails.hashtag);}
+        if(commonDetails.trailer != null){mediaDetails.setTrailer(commonDetails.trailer);}
+        if(!commonDetails.synonyms.isEmpty()) {mediaDetails.setSynonyms(commonDetails.synonyms);}
+        if(commonDetails.tags != null){mediaDetails.setTags(commonDetails.tags);}
+    }
+
+    private void setAnimeShortDetail(AnimeDetails animeDetails, AnimeShortDetail animeShortDetail) {
+        if (animeShortDetail.season != null) {animeDetails.setSeason(AnilistObjectMappings.mediaSeasonToString.get(animeShortDetail.season));}
+        if (animeShortDetail.duration != null) {animeDetails.setDuration(animeShortDetail.duration);}
+        if (animeShortDetail.episodes != null) {animeDetails.setEpisodes(animeShortDetail.episodes);}
+        if (animeShortDetail.nextAiringEpisode != null) {animeDetails.setAiringSchedule(new AiringSchedule(animeShortDetail.nextAiringEpisode.episode, animeShortDetail.nextAiringEpisode.timeUntilAiring));}
+        animeDetails.setType(MediaType.ANIME);
+    }
+
+    private void setAnimeDetail(AnimeDetails animeDetails, AnimeDetail animeDetail) {
+        this.setAnimeShortDetail(animeDetails, animeDetail.animeShortDetail);
+        if(!animeDetail.studios.edges.isEmpty()){
+            Studios studios = new Studios();
+            for(AnimeDetail.Edge studio : animeDetail.studios.edges){
+                if (studio.isMain){
+                    studios.addAnimationStudio(studio.node.name);
+                }
+                else{
+                    studios.addProducer(studio.node.name);
+                }
+            }
+            animeDetails.setStudios(studios);
+        }
+    }
+
+    private void setMangaShortDetail(MangaDetails mangaDetails, MangaShortDetail mangaShortDetail) {
+        if(mangaShortDetail.endDate.year != null){mangaDetails.setEndDate(new Date(mangaShortDetail.endDate.year, -1, -1));}
+        mangaDetails.setType(MediaType.MANGA);
+        if (mangaShortDetail.volumes != null){mangaDetails.setVolumes(mangaShortDetail.volumes);}
+
+    }
+
+    private void setMangaDetail(MangaDetails mangaDetails, MangaDetail mangaDetail) {
+        this.setMangaShortDetail(mangaDetails, mangaDetail.mangaShortDetail);
+        if(mangaDetail.chapters != null){mangaDetails.setChapters(mangaDetail.chapters);}
+    }
+
+    private void setShortCharDetails(ShortCharDetail detail, CharacterDetails characterDetails) {
+        characterDetails.setName(new Name(detail.name.userPreferred));
+        if (detail.image.large != null) {characterDetails.setImage(detail.image.large);}
+        characterDetails.setId(String.valueOf(detail.id));
+    }
+
+    private void setCharDetails (CharDetail detail, CharacterDetails characterDetails) {
+        this.setShortCharDetails(detail.shortCharDetail, characterDetails);
+        Name name = new Name(detail.name.userPreferred);
+        name.setFirst(detail.name.first);
+        name.setMiddle(detail.name.middle);
+        name.setLast(detail.name.last);
+        name.setFull(detail.name.full);
+        name.setNativeName(detail.name.native_);
+        name.setAlternatives(detail.name.alternative);
+        name.setAlternativeSpoilers(detail.name.alternativeSpoiler);
+        characterDetails.setName(name);
+        characterDetails.setDescription(detail.description);
+        characterDetails.setAge(detail.age);
+        characterDetails.setGender(detail.gender);
+        int year = detail.dateOfBirth.year == null ? -1 : detail.dateOfBirth.year;
+        int month = detail.dateOfBirth.month == null ? -1 : detail.dateOfBirth.month;
+        int day = detail.dateOfBirth.day == null ? -1 : detail.dateOfBirth.day;
+        characterDetails.setDateOfbirth(new Date(year, month, day, true));
+        characterDetails.setBloodtype(detail.bloodType);
+        characterDetails.setFavorites(detail.favourites);
+    }
+
+    private void setShortStaffDetails(ShortStaffDetail detail, StaffDetails staffDetails) {
+        staffDetails.setName(new Name(detail.name.userPreferred));
+        staffDetails.setImage(detail.image.large);
     }
 }

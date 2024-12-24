@@ -9,13 +9,10 @@ import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.anitracker.R;
-import com.example.anitracker.activities.Details;
 import com.example.anitracker.activities.EntityDetails;
 import com.example.anitracker.mediaObjects.CharacterDetails;
 import com.example.anitracker.mediaObjects.StaffDetails;
@@ -25,34 +22,36 @@ import com.example.anitracker.uiObjects.Image;
 import com.example.anitracker.uiObjects.LanguageDropdown;
 import com.example.anitracker.viewModels.DetailsViewModel;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class CharacterViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private final List<Object> objectList;
     private final Context context;
+
     private final DetailsViewModel viewModel;
     private Map<String, StaffDetails> vnKnownVAs;
 
-    private Boolean loading = false;
+    private boolean loading = false;
 
     private final int languageDropdownVar = 0,
             characterViewVar = 1;
 
 
-    public CharacterViewAdapter(List<Object> objectList, Context context, DetailsViewModel viewModel) {
+    public CharacterViewAdapter(Context context, DetailsViewModel viewModel) {
         this.context = context;
         this.viewModel = viewModel;
-        this.objectList = objectList;
+        this.objectList = new ArrayList<>();
         if (viewModel.getType().equals(MediaType.VISUAL_NOVEL)) {
             this.vnKnownVAs = viewModel.getKnownVAs();
         }
     }
 
-    public void addChars(List<CharacterDetails> newItems){
+    public void addObjects(List<?> objects) {
         this.loading = true;
-        objectList.addAll(newItems);
-        notifyItemRangeInserted(this.getItemCount()-newItems.size(), newItems.size());
+        objectList.addAll(objects);
+        notifyItemRangeInserted(this.getItemCount()-objects.size(), objects.size());
         this.loading = false;
     }
 
@@ -163,7 +162,7 @@ public class CharacterViewAdapter extends RecyclerView.Adapter<RecyclerView.View
 
     @Override
     public int getItemCount() {
-        return objectList.size() - (viewModel.getType().equals(MediaType.ANIME) ? 1 : 0);
+        return Math.max(0, objectList.size() - (viewModel.getType().equals(MediaType.ANIME) ? 1 : 0));
     }
 
     private static class CharacterView extends RecyclerView.ViewHolder {

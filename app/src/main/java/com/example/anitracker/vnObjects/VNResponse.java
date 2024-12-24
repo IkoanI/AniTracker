@@ -9,6 +9,8 @@ import com.example.anitracker.mediaObjects.Titles;
 import com.example.anitracker.type.MediaType;
 import com.google.gson.annotations.SerializedName;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -181,7 +183,7 @@ public class VNResponse {
 
         if (this.tags != null) {
             vnDetails.setAllTags(VNTag.getAllTags(this.tags));
-            vnDetails.setNoSpoilerTags(VNTag.getAllTags(this.tags));
+            vnDetails.setNoSpoilerTags(VNTag.getNoSpoilerTags(this.tags));
         }
 
 
@@ -263,6 +265,6 @@ public class VNResponse {
     }
 
     public String getRole() {
-        return role;
+        return StringUtils.capitalize(this.role);
     }
 }

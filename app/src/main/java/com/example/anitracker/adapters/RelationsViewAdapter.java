@@ -8,27 +8,30 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.lifecycle.ViewModel;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.anitracker.R;
 import com.example.anitracker.interfaces.RecyclerViewInterface;
 import com.example.anitracker.mediaObjects.MediaDetails;
+import com.example.anitracker.type.MediaType;
 import com.example.anitracker.uiObjects.Image;
-import com.example.anitracker.viewModels.DetailsViewModel;
+import com.example.anitracker.viewModels.EntityViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class RelationsViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private final Context context;
-    private final DetailsViewModel viewModel;
     private final List<MediaDetails> relationsList = new ArrayList<>();
     private final RecyclerViewInterface recyclerViewInterface;
+    private boolean loading = false;
+    private final ViewModel viewModel;
 
-    public RelationsViewAdapter(Context context, DetailsViewModel viewModel, RecyclerViewInterface recyclerViewInterface) {
+    public RelationsViewAdapter(Context context, RecyclerViewInterface recyclerViewInterface, ViewModel viewModel) {
         this.context = context;
-        this.viewModel = viewModel;
         this.recyclerViewInterface = recyclerViewInterface;
+        this.viewModel = viewModel;
     }
 
     @NonNull
@@ -41,6 +44,12 @@ public class RelationsViewAdapter extends RecyclerView.Adapter<RecyclerView.View
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        if (viewModel instanceof EntityViewModel
+                && !loading && position >= getItemCount()-1
+                && !((EntityViewModel) viewModel).getMediaType().equals(MediaType.VISUAL_NOVEL)) {
+
+            ((EntityViewModel) viewModel).getEntityRoles();
+        }
         RelationsView relationsViewItem = (RelationsView) holder;
         MediaDetails relation = this.getRelation(position);
         Image.loadImage(this.context, relation.getImage(), relationsViewItem.coverImg);
@@ -54,9 +63,11 @@ public class RelationsViewAdapter extends RecyclerView.Adapter<RecyclerView.View
         return relationsList.size();
     }
 
-    public void addRelations(List<MediaDetails> newItems){
+    public void addRelations(List<MediaDetails> newItems) {
+        this.loading = true;
         relationsList.addAll(newItems);
         notifyItemRangeInserted(relationsList.size()-newItems.size(), newItems.size());
+        this.loading = false;
     }
 
     public MediaDetails getRelation(int pos){

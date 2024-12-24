@@ -1,14 +1,15 @@
 package com.example.anitracker.mediaObjects;
 
-import android.text.Html;
 import android.text.Spanned;
+
+import androidx.core.text.HtmlCompat;
 
 public class Description {
     private final Spanned description;
     private boolean expanded;
 
-    public Description(String description){
-        this.description = Html.fromHtml(description, Html.FROM_HTML_MODE_LEGACY);
+    public Description(String description) {
+        this.description = HtmlCompat.fromHtml(description, HtmlCompat.FROM_HTML_MODE_LEGACY);
         this.expanded = false;
     }
 

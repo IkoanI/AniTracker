@@ -43,15 +43,31 @@ public class CharactersFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.detailsViewModel = new ViewModelProvider(requireActivity()).get(DetailsViewModel.class);
+        this.characterViewAdapter = new CharacterViewAdapter(this.context, this.detailsViewModel);
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        // observe updates to char list
+        if (this.detailsViewModel.getType() == MediaType.VISUAL_NOVEL) {
+            this.detailsViewModel.observeVNCharPage().observe(getViewLifecycleOwner(), this::addChars);
+        } else {
+            this.detailsViewModel.observeCharPage().observe(getViewLifecycleOwner(), this::addChars);
+        }
+        // initial retrieval of characters
+        detailsViewModel.getCharPage();
+
+
         View view = inflater.inflate(R.layout.recycler_view, container, false);
         this.noData = view.findViewById(R.id.noData);
         this.loadingIndicator = view.findViewById(R.id.loadingSpinner);
         this.loadingIndicator.setVisibility(View.VISIBLE);
+        //initializing recycler view
+        RecyclerView characterView = view.findViewById(R.id.recView);
+        characterView.setAdapter(this.characterViewAdapter);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this.context);
+        characterView.setLayoutManager(linearLayoutManager);
 
         // creating list of objects to populate recycler view
         List<Object> objectList = new ArrayList<>();
@@ -59,29 +75,12 @@ public class CharactersFragment extends Fragment {
             // if not anime, no need for ability to change language of voice actor
             objectList.add(new LanguageDropdown(this.context));
         }
-
-        this.characterViewAdapter = new CharacterViewAdapter(objectList, this.context, this.detailsViewModel);
-
-        // observe updates to char list
-        if (this.detailsViewModel.getType() == MediaType.VISUAL_NOVEL) {
-            this.detailsViewModel.observeVNCharPage().observe(getViewLifecycleOwner(), this::addChars);
-        } else {
-            this.detailsViewModel.observeCharPage().observe(getViewLifecycleOwner(), this::addChars);
-        }
-
-        // initial retrieval of characters
-        detailsViewModel.getCharPage();
-
-        //initializing recycler view
-        RecyclerView characterView = view.findViewById(R.id.recView);
-        characterView.setAdapter(this.characterViewAdapter);
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this.context);
-        characterView.setLayoutManager(linearLayoutManager);
+        this.characterViewAdapter.addObjects(objectList);
         return view;
     }
 
     public void addChars(List<CharacterDetails> characterDetailsList) {
-        this.characterViewAdapter.addChars(characterDetailsList);
+        this.characterViewAdapter.addObjects(characterDetailsList);
         this.loadingIndicator.setVisibility(View.GONE);
         if (this.characterViewAdapter.getItemCount() == 0) {
             this.noData.setVisibility(View.VISIBLE);

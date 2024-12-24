@@ -17,49 +17,18 @@ fragment shortDetail on Media {
     type
 }
 
-fragment animeShortDetail on Media {
+fragment mediumDetail on Media {
     ...shortDetail
-    season
-    episodes
-    duration
-
-    nextAiringEpisode {
-        timeUntilAiring
-        episode
-    }
-}
-
-fragment mangaShortDetail on Media {
-    ...shortDetail
-    endDate {
+    averageScore
+    genres
+    favourites
+    startDate {
         year
-    }
-    volumes
-}
-
-query AnimeSearchPage ($pageNo : Int!, $userSearch : String, $sort:[MediaSort]){
-    Page (page: $pageNo, perPage: 50){
-        media (search: $userSearch, sort: $sort, type: ANIME){
-            ...animeShortDetail
-            studios(isMain:true){
-                nodes{
-                    name
-                }
-            }
-        }
-    }
-}
-
-query MangaSearchPage ($pageNo : Int!, $userSearch : String, $sort:[MediaSort]){
-    Page (page: $pageNo, perPage: 50){
-        media (search: $userSearch, sort: $sort, type: MANGA){
-            ...mangaShortDetail
-        }
     }
 }
 
 fragment detail on Media {
-    ...shortDetail
+    ...mediumDetail
     title {
         userPreferred
         romaji
@@ -76,7 +45,7 @@ fragment detail on Media {
         month
         day
     }
-    description
+    description(asHtml: true)
     bannerImage
     trailer {
         id
@@ -96,6 +65,18 @@ fragment detail on Media {
     }
 }
 
+fragment animeShortDetail on Media {
+    ...mediumDetail
+    season
+    episodes
+    duration
+
+    nextAiringEpisode {
+        timeUntilAiring
+        episode
+    }
+}
+
 fragment animeDetail on Media {
     ...detail
     ...animeShortDetail
@@ -110,22 +91,18 @@ fragment animeDetail on Media {
     }
 }
 
+fragment mangaShortDetail on Media {
+    ...mediumDetail
+    endDate {
+        year
+    }
+    volumes
+}
+
 fragment mangaDetail on Media {
     ...detail
     ...mangaShortDetail
     chapters
-}
-
-query AnimeMoreDetails($id : Int!){
-    Media(id: $id, type: ANIME) {
-        ...animeDetail
-    }
-}
-
-query MangaMoreDetails($id : Int!) {
-    Media(id: $id, type: MANGA){
-        ...mangaDetail
-    }
 }
 
 fragment shortCharDetail on Character {
@@ -138,6 +115,30 @@ fragment shortCharDetail on Character {
     }
 }
 
+fragment charDetail on Character {
+    ...shortCharDetail
+    name {
+        first
+        middle
+        last
+        full
+        native
+        userPreferred
+        alternative
+        alternativeSpoiler
+    }
+    description(asHtml: true)
+    gender
+    dateOfBirth {
+        year
+        month
+        day
+    }
+    age
+    bloodType
+    favourites
+}
+
 fragment shortStaffDetail on Staff {
     id
     name {
@@ -145,6 +146,39 @@ fragment shortStaffDetail on Staff {
     }
     image{
         large
+    }
+}
+
+query AnimeSearchPage ($pageNo : Int!, $userSearch : String, $sort:[MediaSort]) {
+    Page (page: $pageNo, perPage: 50){
+        media (search: $userSearch, sort: $sort, type: ANIME) {
+            ...animeShortDetail
+            studios(isMain:true){
+                nodes{
+                    name
+                }
+            }
+        }
+    }
+}
+
+query MangaSearchPage ($pageNo : Int!, $userSearch : String, $sort:[MediaSort]) {
+    Page (page: $pageNo, perPage: 50){
+        media (search: $userSearch, sort: $sort, type: MANGA){
+            ...mangaShortDetail
+        }
+    }
+}
+
+query AnimeMoreDetails($id : Int!){
+    Media(id: $id, type: ANIME) {
+        ...animeDetail
+    }
+}
+
+query MangaMoreDetails($id : Int!) {
+    Media(id: $id, type: MANGA) {
+        ...mangaDetail
     }
 }
 
@@ -193,32 +227,21 @@ query relationsPage($mediaId : Int!) {
     }
 }
 
-fragment charDetail on Character {
-    ...shortCharDetail
-    name {
-        first
-        middle
-        last
-        full
-        native
-        userPreferred
-        alternative
-        alternativeSpoiler
-    }
-    description(asHtml: true)
-    gender
-    dateOfBirth {
-        year
-        month
-        day
-    }
-    age
-    bloodType
-    favourites
-}
-
 query CharacterDetail($id : Int!) {
     Character(id: $id) {
        ...charDetail
+    }
+}
+
+query CharacterRoles ($id : Int!, $page : Int!) {
+    Character(id: $id) {
+        media(sort: POPULARITY_DESC, page: $page, perPage: 25) {
+            edges {
+                characterRole
+                node {
+                    ...shortDetail
+                }
+            }
+        }
     }
 }

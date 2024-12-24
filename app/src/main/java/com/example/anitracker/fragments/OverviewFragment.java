@@ -29,10 +29,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class OverviewFragment extends Fragment {
-    private Context context;
+    protected Context context;
+    protected ProgressBar progressBar;
+    protected OverviewViewAdapter overviewViewAdapter;
+
     private DetailsViewModel detailsViewModel;
-    private View view;
-    private ProgressBar progressBar;
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -43,17 +44,26 @@ public class OverviewFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.detailsViewModel = new ViewModelProvider(requireActivity()).get(DetailsViewModel.class);
-
+        this.overviewViewAdapter = new OverviewViewAdapter(context);
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        this.view = inflater.inflate(R.layout.recycler_view, container, false);
+        this.detailsViewModel = new ViewModelProvider(requireActivity()).get(DetailsViewModel.class);
+        this.detailsViewModel.observeMediaDetails().observe(getViewLifecycleOwner(), this::insertDetails);
+        return this.uiSetup(inflater, container);
+    }
+
+    public View uiSetup(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
+        View view = inflater.inflate(R.layout.recycler_view, container, false);
         this.progressBar = view.findViewById(R.id.loadingSpinner);
         this.progressBar.setVisibility(View.VISIBLE);
-        this.detailsViewModel.observeMediaDetails().observe(getViewLifecycleOwner(), this::insertDetails);
+        RecyclerView overviewView = view.findViewById(R.id.recView);
+        overviewView.setAdapter(overviewViewAdapter);
+        FlexboxLayoutManager layoutManager = new FlexboxLayoutManager(context);
+        layoutManager.setFlexWrap(FlexWrap.WRAP);
+        overviewView.setLayoutManager(layoutManager);
         return view;
     }
 
@@ -65,7 +75,6 @@ public class OverviewFragment extends Fragment {
             detailsViewModel.setKnownVAs(((VNDetails) details).getKnownVAs());
         }
         // setting up recyclerView displaying genres
-        RecyclerView overviewView = view.findViewById(R.id.recView);
         List<Object> overviewViewObjects = new ArrayList<>();
 
         if (details.getGenres() != null) {
@@ -93,13 +102,7 @@ public class OverviewFragment extends Fragment {
 
         overviewViewObjects.addAll(details.getNoSpoilerTags());
 
-        OverviewViewAdapter overviewViewAdapter = new OverviewViewAdapter(overviewViewObjects, context);
-
-        FlexboxLayoutManager layoutManager = new FlexboxLayoutManager(context);
-        layoutManager.setFlexWrap(FlexWrap.WRAP);
-
-        overviewView.setAdapter(overviewViewAdapter);
-        overviewView.setLayoutManager(layoutManager);
+        overviewViewAdapter.addObjects(overviewViewObjects);
         this.progressBar.setVisibility(View.GONE);
     }
 }

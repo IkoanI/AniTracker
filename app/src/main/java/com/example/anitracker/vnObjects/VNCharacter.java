@@ -1,7 +1,10 @@
 package com.example.anitracker.vnObjects;
 
+import android.util.Log;
+
 import com.example.anitracker.mediaObjects.CharacterDetails;
 import com.example.anitracker.mediaObjects.Date;
+import com.example.anitracker.mediaObjects.MediaDetails;
 import com.example.anitracker.mediaObjects.Name;
 import com.example.anitracker.mediaObjects.Tag;
 import com.google.gson.annotations.SerializedName;
@@ -94,6 +97,16 @@ public class VNCharacter {
             }
             characterDetails.setAllTraits(allTraits);
             characterDetails.setNoSpoilerTraits(noSpoilerTraits);
+        }
+
+        if (this.vns != null && !this.vns.isEmpty()) {
+            List<MediaDetails> roles = new ArrayList<>();
+            for (VNResponse vn : this.vns) {
+                MediaDetails details = vn.convertToMediaObject();;
+                details.setRelation(vn.getRole());
+                roles.add(details);
+            }
+            characterDetails.setVnRoles(roles);
         }
         return characterDetails;
     }

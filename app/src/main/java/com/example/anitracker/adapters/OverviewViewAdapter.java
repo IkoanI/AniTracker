@@ -12,7 +12,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -25,6 +24,7 @@ import com.example.anitracker.mediaObjects.Info;
 import com.example.anitracker.mediaObjects.Tag;
 import com.example.anitracker.uiObjects.Header;
 import com.example.anitracker.uiObjects.Image;
+import com.example.anitracker.uiObjects.LinkClickHandler;
 import com.example.anitracker.uiObjects.TagsHeader;
 import com.example.anitracker.vnObjects.Screenshots;
 import com.google.android.flexbox.FlexboxLayoutManager;
@@ -33,6 +33,7 @@ import com.google.android.material.carousel.CarouselSnapHelper;
 import com.google.android.material.carousel.HeroCarouselStrategy;
 
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -49,9 +50,14 @@ public class OverviewViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             tagsHeaderVar = 6,
             tagsVar = 7;
 
-    public OverviewViewAdapter(List<Object> objectList, Context context) {
-        this.objectList = objectList;
+    public OverviewViewAdapter(Context context) {
+        this.objectList = new ArrayList<>();
         this.context = context;
+    }
+
+    public void addObjects(List<Object> objects) {
+        this.objectList.addAll(objects);
+        notifyItemRangeChanged(0, objects.size());
     }
 
     @Override
@@ -150,6 +156,7 @@ public class OverviewViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 Description description = (Description) objectList.get(position);
                 DescriptionView descriptionView = (DescriptionView) holder;
                 descriptionView.description.setText(description.getDescription());
+                descriptionView.description.setMovementMethod(LinkClickHandler.getInstance());
                 if (description.isExpanded()) {
                     descriptionView.setExpanded();
                 } else {

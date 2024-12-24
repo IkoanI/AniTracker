@@ -1,5 +1,11 @@
 package com.example.anitracker.mediaObjects;
 
+import android.util.Log;
+
+import com.example.anitracker.vnObjects.VNResponse;
+
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +24,7 @@ public class CharacterDetails {
     private int height, weight, bust, waist, hips;
     private String cup;
     private List<Tag> allTraits, noSpoilerTraits;
+    private List<MediaDetails> vnRoles = new ArrayList<>();
 
     public List<Info> getInfo() {
         List<Info> infoList = new ArrayList<>();
@@ -39,23 +46,23 @@ public class CharacterDetails {
 
     public void setName(Name name) {
         this.name = name;
-        if (this.name.getFirst() != null) {
+        if (!StringUtils.isEmpty(this.name.getFirst())) {
             infoMap.put("First Name", this.name.getFirst());
         }
 
-        if (this.name.getMiddle() != null) {
+        if (!StringUtils.isEmpty(this.name.getMiddle())) {
             infoMap.put("Middle Name", this.name.getMiddle());
         }
 
-        if (this.name.getLast() != null) {
+        if (!StringUtils.isEmpty(this.name.getLast())) {
             infoMap.put("Last Name", this.name.getLast());
         }
 
-        if (this.name.getFull() != null) {
+        if (!StringUtils.isEmpty(this.name.getFull())) {
             infoMap.put("Full Name", this.name.getFull());
         }
 
-        if (this.name.getNativeName() != null) {
+        if (!StringUtils.isEmpty(this.name.getNativeName())) {
             infoMap.put("Native Name", this.name.getNativeName());
         }
 
@@ -234,5 +241,13 @@ public class CharacterDetails {
 
     public void setNoSpoilerTraits(List<Tag> traits) {
         this.noSpoilerTraits = traits;
+    }
+
+    public void setVnRoles(List<MediaDetails> vnRoles) {
+        this.vnRoles = vnRoles;
+    }
+
+    public List<MediaDetails> getVnRoles() {
+        return this.vnRoles;
     }
 }

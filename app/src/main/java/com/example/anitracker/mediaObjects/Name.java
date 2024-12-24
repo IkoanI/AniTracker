@@ -3,8 +3,8 @@ package com.example.anitracker.mediaObjects;
 import java.util.List;
 
 public class Name {
-    String first, middle, last, full, nativeName, userPref;
-    List<String> alternatives, alternativeSpoilers;
+    private String first, middle, last, full, nativeName, userPref;
+    private List<String> alternatives, alternativeSpoilers;
 
     public Name(String userPref){
         this.userPref = userPref;

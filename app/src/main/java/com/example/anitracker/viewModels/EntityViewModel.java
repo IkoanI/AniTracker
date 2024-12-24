@@ -6,28 +6,31 @@ import androidx.lifecycle.ViewModel;
 
 import com.example.anitracker.mediaObjects.CharacterDetails;
 import com.example.anitracker.mediaObjects.MediaDetails;
-import com.example.anitracker.mediaObjects.StaffDetails;
 import com.example.anitracker.repository.ApiRepository;
 import com.example.anitracker.type.MediaType;
-import com.example.anitracker.type.StaffLanguage;
 import com.example.anitracker.vnObjects.VNCharPage;
 
 import java.util.List;
-import java.util.Map;
 
 public class EntityViewModel extends ViewModel {
     private final ApiRepository repository;
     private String id;
-    private final MutableLiveData<CharacterDetails> liveCharDetail;
-
-    private final MutableLiveData<VNCharPage> liveVNCharDetail;
     private MediaType mediaType;
+
+    // overview fragment
+    private final MutableLiveData<CharacterDetails> liveEntityDetail;
+    private final MutableLiveData<VNCharPage> liveVNEntityDetail;
+
+    // roles fragment
+    private final MutableLiveData<List<MediaDetails>> liveEntityRoles;
+    private int currRolePage = 1;
 
     public EntityViewModel() {
         this.repository = new ApiRepository();
         this.liveErrorMsg = repository.getMutableErrorMsg();
-        this.liveCharDetail = repository.getMutableCharacterDetail();
-        this.liveVNCharDetail = repository.getMutableVNCharPage();
+        this.liveEntityDetail = repository.getMutableCharacterDetail();
+        this.liveVNEntityDetail = repository.getMutableVNCharPage();
+        this.liveEntityRoles = repository.getMutableRelationsPage();
     }
 
     public MediaType getMediaType() {
@@ -51,21 +54,29 @@ public class EntityViewModel extends ViewModel {
     // error message
     private final MutableLiveData<String> liveErrorMsg;
 
-    public void getCharacterDetail() {
+    public void getEntityDetail() {
         if (this.mediaType == MediaType.VISUAL_NOVEL) {
             this.repository.fetchVNCharDetails(this.id);
         } else {
             this.repository.fetchCharDetails(Integer.parseInt(this.id));
         }
-
     }
 
-    public LiveData<CharacterDetails> observeCharacterDetail() {
-        return this.liveCharDetail;
+    public void getEntityRoles() {
+        this.repository.fetchCharRoles(Integer.parseInt(this.id), this.currRolePage);
+        this.currRolePage++;
     }
 
-    public LiveData<VNCharPage> observeVNCharDetail() {
-        return this.liveVNCharDetail;
+    public LiveData<CharacterDetails> observeEntityDetail() {
+        return this.liveEntityDetail;
+    }
+
+    public LiveData<VNCharPage> observeVNEntityDetail() {
+        return this.liveVNEntityDetail;
+    }
+
+    public LiveData<List<MediaDetails>> observeEntityRoles() {
+        return this.liveEntityRoles;
     }
 
     public LiveData<String> observeErrorMsg() { return liveErrorMsg; }

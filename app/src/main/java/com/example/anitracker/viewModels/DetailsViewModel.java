@@ -11,7 +11,6 @@ import com.example.anitracker.repository.ApiRepository;
 import com.example.anitracker.type.MediaType;
 import com.example.anitracker.type.StaffLanguage;
 import com.example.anitracker.vnObjects.VNCharPage;
-import com.example.anitracker.vnObjects.VNVoiceActor;
 
 import java.util.List;
 import java.util.Map;
@@ -56,12 +55,6 @@ public class DetailsViewModel extends ViewModel {
 
     public LiveData<String> observeErrorMsg() { return liveErrorMsg; }
 
-    public void setId(String id) { this.id = id;}
-
-    public String getId() {
-        return this.id;
-    }
-
     public void setType(MediaType type) { this.mediaType = type;}
 
     public MediaType getType() { return this.mediaType;}
@@ -76,6 +69,7 @@ public class DetailsViewModel extends ViewModel {
     }
 
     // character fragment
+
     public void getCharPage() {
         if (this.mediaType == MediaType.VISUAL_NOVEL) {
             repository.fetchVNChars(this.id, this.currCharPage);
@@ -90,7 +84,7 @@ public class DetailsViewModel extends ViewModel {
         return liveCharPage;
     }
 
-    public LiveData<VNCharPage> observeVNCharPage(){
+    public LiveData<VNCharPage> observeVNCharPage() {
         return liveVNCharPage;
     }
 
@@ -126,6 +120,7 @@ public class DetailsViewModel extends ViewModel {
     }
 
     // relation fragment
+
     public void getRelationsPage() {
         repository.fetchRelationsPage(Integer.parseInt(this.id));
     }
@@ -142,6 +137,8 @@ public class DetailsViewModel extends ViewModel {
         return this.vnRelationsList;
     }
 
+    // general getter and setters
+
     public void setLastSelectedLanguage(StaffLanguage selectedLanguage) {
         this.lastSelectedLanguage = selectedLanguage;
     }
@@ -156,6 +153,12 @@ public class DetailsViewModel extends ViewModel {
 
     public int getLastSelectedLanguagePos() {
         return this.lastSelectedLanguagePos;
+    }
+
+    public void setId(String id) { this.id = id;}
+
+    public String getId() {
+        return this.id;
     }
 
     // clear requests

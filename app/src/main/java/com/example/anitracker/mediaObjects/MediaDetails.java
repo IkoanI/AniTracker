@@ -3,6 +3,7 @@ package com.example.anitracker.mediaObjects;
 import com.example.anitracker.animeObjects.Trailer;
 import com.example.anitracker.fragment.Detail;
 import com.example.anitracker.repository.AnilistObjectMappings;
+import com.example.anitracker.type.CharacterRole;
 import com.example.anitracker.type.MediaRelation;
 import com.example.anitracker.type.MediaStatus;
 import com.example.anitracker.type.MediaType;
@@ -230,6 +231,10 @@ public class MediaDetails {
 
     public void setRelation(MediaRelation relation) {
         this.setRelation(AnilistObjectMappings.mediaRelationsToString.get(relation));
+    }
+
+    public void setRelation(CharacterRole relation) {
+        this.setRelation(AnilistObjectMappings.characterRoleToString.get(relation));
     }
 
     public void setRelation(String relation) {
