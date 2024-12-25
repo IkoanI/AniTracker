@@ -1,7 +1,5 @@
 package com.example.anitracker.mediaObjects;
 
-import androidx.core.text.HtmlCompat;
-
 import com.example.anitracker.vnObjects.VNLink;
 
 import java.util.ArrayList;

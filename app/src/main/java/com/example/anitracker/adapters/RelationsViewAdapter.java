@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.anitracker.R;
 import com.example.anitracker.interfaces.RecyclerViewInterface;
 import com.example.anitracker.mediaObjects.MediaDetails;
+import com.example.anitracker.repository.AnilistObjectMappings;
 import com.example.anitracker.type.MediaType;
 import com.example.anitracker.uiObjects.Image;
 import com.example.anitracker.viewModels.EntityViewModel;
@@ -55,7 +56,7 @@ public class RelationsViewAdapter extends RecyclerView.Adapter<RecyclerView.View
         Image.loadImage(this.context, relation.getImage(), relationsViewItem.coverImg);
         relationsViewItem.relation.setText(relation.getRelation());
         relationsViewItem.title.setText(relation.getTitles().getUserPref());
-        relationsViewItem.formatAndStatus.setText(String.format("%s · %s", relation.getFormat(), relation.getStatus()));
+        relationsViewItem.formatAndStatus.setText(String.format("%s · %s", relation.getFormat(), AnilistObjectMappings.mediaStatusToString.get(relation.getStatus())));
     }
 
     @Override
@@ -84,9 +85,9 @@ public class RelationsViewAdapter extends RecyclerView.Adapter<RecyclerView.View
             formatAndStatus = itemView.findViewById(R.id.formatAndStatus);
             coverImg = itemView.findViewById(R.id.mediaImage);
             itemView.setOnClickListener(view -> {
-                if(recyclerViewInterface != null){
+                if (recyclerViewInterface != null) {
                     int pos = getBindingAdapterPosition();
-                    if(pos != RecyclerView.NO_POSITION){
+                    if (pos != RecyclerView.NO_POSITION) {
                         recyclerViewInterface.onItemClick(pos);
                     }
                 }

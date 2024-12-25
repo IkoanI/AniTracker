@@ -591,7 +591,7 @@ public class ApiRepository {
         staffDetails.setDateOfDeath(new Date(detail.dateOfDeath.year,
                 detail.dateOfDeath.month,
                 detail.dateOfDeath.day));
-        staffDetails.setAge(String.valueOf(detail.age));
+        staffDetails.setAge(detail.age);
         staffDetails.setYearsActive(detail.yearsActive);
         staffDetails.setHomeTown(detail.homeTown);
         staffDetails.setBloodtype(detail.bloodType);

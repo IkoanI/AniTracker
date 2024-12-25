@@ -42,7 +42,7 @@ public abstract class Entity {
         }
 
         if (this.name.getAlternatives() != null && !this.name.getAlternatives().isEmpty()) {
-            infoMap.put("Alternative Names", String.join("\n\n", this.name.getNativeName()));
+            infoMap.put("Alternative Names", String.join("\n\n", this.name.getAlternatives()));
         }
     }
 
@@ -123,6 +123,12 @@ public abstract class Entity {
         if (StringUtils.isNotBlank(age)) {
             this.age = age;
             this.infoMap.put("Age", this.age);
+        }
+    }
+
+    public void setAge(Integer age) {
+        if (age != null) {
+            this.setAge(String.valueOf(age));
         }
     }
 
