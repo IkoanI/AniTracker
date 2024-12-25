@@ -1,41 +1,103 @@
 package com.example.anitracker.mediaObjects;
 
-public class StaffDetails {
-    String image, role, lang;
-    Name name;
+import androidx.core.text.HtmlCompat;
 
-    public StaffDetails(){}
+import com.example.anitracker.vnObjects.VNLink;
 
-    public Name getName() {
-        return name;
-    }
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
-    public void setName(Name name) {
-        this.name = name;
-    }
+public class StaffDetails extends Entity {
+    private String lang, homeTown, yearsActive;
+    private List<String> primaryOccupations;
+    private Date dateOfDeath;
 
-    public String getImage() {
-        return image;
-    }
+    private List<VNLink> links;
 
-    public void setImage(String image) {
-        this.image = image;
-    }
+    @Override
+    public List<Info> getInfo() {
+        List<Info> infoList = new ArrayList<>();
+        String[] infoOrder = {"Full Name", "Native Name", "First Name", "Middle Name",
+                "Last Name", "Alternative Names", "Language", "Birthday", "Age",
+                "Gender", "Years Active", "Date of Death", "Hometown", "Blood Type",
+                "Primary Occupations", "Favorites", "Links"};
 
+        for (String infoName: infoOrder) {
+            if (this.infoMap.containsKey(infoName)) {
+                infoList.add(new Info(infoName, infoMap.get(infoName)));
+            }
+        }
 
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
+        return infoList;
     }
 
     public String getLang() {
-        return lang;
+        return this.lang;
     }
 
     public void setLang(String lang) {
-        this.lang = lang;
+        if (lang != null) {
+            this.lang = lang;
+            this.infoMap.put("Language", this.lang);
+        }
+    }
+
+    public String getHomeTown() {
+        return this.homeTown;
+    }
+
+    public void setHomeTown(String homeTown) {
+        if (homeTown != null) {
+            this.homeTown = homeTown;
+            this.infoMap.put("Hometown", this.homeTown);
+        }
+    }
+
+    public List<String> getPrimaryOccupations() {
+        return this.primaryOccupations;
+    }
+
+    public void setPrimaryOccupations(List<String> primaryOccupations) {
+        this.primaryOccupations = primaryOccupations;
+        this.infoMap.put("Primary Occupations", String.join("\n\n", this.primaryOccupations));
+    }
+
+    public Date getDateOfDeath() {
+        return this.dateOfDeath;
+    }
+
+    public void setDateOfDeath(Date dateOfDeath) {
+        this.dateOfDeath = dateOfDeath;
+        if (!this.dateOfDeath.toString().isBlank()) {
+            this.infoMap.put("Date of Death", this.dateOfDeath.toString());
+        }
+    }
+
+    public String getYearsActive() {
+        return this.yearsActive;
+    }
+
+    public void setYearsActive(List<Integer> yearsActive) {
+        if (yearsActive != null && !yearsActive.isEmpty()) {
+            this.yearsActive = String.format(Locale.ENGLISH, "%d - ", yearsActive.get(0));
+            if (yearsActive.size() == 2) {
+                this.yearsActive += String.valueOf(yearsActive.get(1));
+            } else {
+                this.yearsActive += "Present";
+            }
+
+            infoMap.put("Years Active", this.yearsActive);
+        }
+    }
+
+    public void setLinks(List<VNLink> links) {
+        if (links != null && !links.isEmpty()) {
+            this.links = links;
+        }
+    }
+
+    public List<VNLink> getLinks() {
+        return this.links;
     }
 }

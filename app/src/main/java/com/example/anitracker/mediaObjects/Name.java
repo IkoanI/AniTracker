@@ -1,5 +1,10 @@
 package com.example.anitracker.mediaObjects;
 
+import androidx.annotation.NonNull;
+
+import com.example.anitracker.vnObjects.VNAlias;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class Name {
@@ -15,7 +20,9 @@ public class Name {
     }
 
     public void setFirst(String first) {
-        this.first = first;
+        if (first != null) {
+            this.first = first;
+        }
     }
 
     public String getMiddle() {
@@ -23,7 +30,9 @@ public class Name {
     }
 
     public void setMiddle(String middle) {
-        this.middle = middle;
+        if (middle != null) {
+            this.middle = middle;
+        }
     }
 
     public String getLast() {
@@ -31,7 +40,9 @@ public class Name {
     }
 
     public void setLast(String last) {
-        this.last = last;
+        if (last != null){
+            this.last = last;
+        }
     }
 
     public String getFull() {
@@ -39,7 +50,9 @@ public class Name {
     }
 
     public void setFull(String full) {
-        this.full = full;
+        if (full != null) {
+            this.full = full;
+        }
     }
 
     public String getNativeName() {
@@ -47,7 +60,9 @@ public class Name {
     }
 
     public void setNativeName(String nativeName) {
-        this.nativeName = nativeName;
+        if (nativeName != null) {
+            this.nativeName = nativeName;
+        }
     }
 
     public String getUserPref() {
@@ -55,7 +70,9 @@ public class Name {
     }
 
     public void setUserPref(String userPref) {
-        this.userPref = userPref;
+        if (userPref != null) {
+            this.userPref = userPref;
+        }
     }
 
     public List<String> getAlternatives() {
@@ -63,7 +80,9 @@ public class Name {
     }
 
     public void setAlternatives(List<String> alternatives) {
-        this.alternatives = alternatives;
+        if (alternatives != null && !alternatives.isEmpty()) {
+            this.alternatives = alternatives;
+        }
     }
 
     public List<String> getAlternativeSpoilers() {
@@ -71,6 +90,8 @@ public class Name {
     }
 
     public void setAlternativeSpoilers(List<String> alternativeSpoilers) {
-        this.alternativeSpoilers = alternativeSpoilers;
+        if (alternativeSpoilers != null && !alternativeSpoilers.isEmpty()) {
+            this.alternativeSpoilers = alternativeSpoilers;
+        }
     }
 }

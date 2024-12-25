@@ -1,5 +1,7 @@
 package com.example.anitracker.repository;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.lifecycle.MutableLiveData;
 
@@ -15,8 +17,8 @@ import com.example.anitracker.CharacterRolesQuery;
 import com.example.anitracker.MangaMoreDetailsQuery;
 import com.example.anitracker.MangaSearchPageQuery;
 import com.example.anitracker.RelationsPageQuery;
+import com.example.anitracker.StaffDetailQuery;
 import com.example.anitracker.StaffPageQuery;
-import com.example.anitracker.animeObjects.AiringSchedule;
 import com.example.anitracker.animeObjects.AnimeDetails;
 import com.example.anitracker.animeObjects.Studios;
 import com.example.anitracker.clients.AniClient;
@@ -31,6 +33,7 @@ import com.example.anitracker.fragment.MediumDetail;
 import com.example.anitracker.fragment.ShortCharDetail;
 import com.example.anitracker.fragment.ShortDetail;
 import com.example.anitracker.fragment.ShortStaffDetail;
+import com.example.anitracker.fragment.StaffDetail;
 import com.example.anitracker.type.MediaSort;
 import com.example.anitracker.vnObjects.VNCharPage;
 import com.example.anitracker.vnObjects.VNDetails;
@@ -46,6 +49,7 @@ import com.example.anitracker.mediaObjects.Titles;
 import com.example.anitracker.type.MediaType;
 import com.example.anitracker.type.StaffLanguage;
 import com.example.anitracker.vnObjects.VNPage;
+import com.example.anitracker.vnObjects.VNStaffPage;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -71,13 +75,14 @@ public class ApiRepository {
     private final MutableLiveData<MediaDetails> mutableLiveData = new MutableLiveData<>();
     // character fragment
     private final MutableLiveData<List<CharacterDetails>> mutableCharPage = new MutableLiveData<>();
-    private final MutableLiveData<VNCharPage> mutableVNCharPage = new MutableLiveData<>();
     // staff fragment
     private final MutableLiveData<List<StaffDetails>> mutableStaffPage = new MutableLiveData<>();
     // relations fragment
     private final MutableLiveData<List<MediaDetails>> mutableRelationsPage = new MutableLiveData<>();
     // character overview
     private final MutableLiveData<CharacterDetails> mutableCharacterDetail = new MutableLiveData<>();
+    // staff overview
+    private final MutableLiveData<StaffDetails> mutableStaffDetail = new MutableLiveData<>();
     // error message
     private final MutableLiveData<String> mutableErrorMsg = new MutableLiveData<>();
     // help clear requests upon activity death
@@ -85,7 +90,6 @@ public class ApiRepository {
     public void clearComposite(){
         compositeDisposable.dispose();
     }
-
 
     // getters
     public MutableLiveData<MediaDetails>  getMutableLiveData() { return mutableLiveData; }
@@ -104,17 +108,15 @@ public class ApiRepository {
         return mutableCharPage;
     }
 
-    public MutableLiveData<VNCharPage> getMutableVNCharPage() {
-        return mutableVNCharPage;
-    }
-
     public MutableLiveData<List<StaffDetails>> getMutableStaffPage() {
         return mutableStaffPage;
     }
 
     public MutableLiveData<List<MediaDetails>> getMutableRelationsPage() {return mutableRelationsPage;}
 
-    public MutableLiveData<CharacterDetails> getMutableCharacterDetail() {return  this.mutableCharacterDetail;}
+    public MutableLiveData<CharacterDetails> getMutableCharacterDetail() {return this.mutableCharacterDetail;}
+
+    public MutableLiveData<StaffDetails> getMutableStaffDetail() {return this.mutableStaffDetail;}
 
     public MutableLiveData<String> getMutableErrorMsg() { return mutableErrorMsg; }
 
@@ -276,7 +278,7 @@ public class ApiRepository {
                     List<StaffDetails> staffPage = new ArrayList<>();
                     for(StaffPageQuery.Edge edge : res.data.Media.staff.edges){
                         StaffDetails staffDetails = new StaffDetails();
-                        if(edge.role != null){ staffDetails.setRole(edge.role);}
+                        staffDetails.setRole(edge.role);
                         ShortStaffDetail staffDetail = edge.node.shortStaffDetail;
                         this.setShortStaffDetails(staffDetail, staffDetails);
                         staffPage.add(staffDetails);
@@ -344,24 +346,32 @@ public class ApiRepository {
         );
     }
 
-    public void fetchDefaultVNPage(String sort, String fields, int page){
-        VNRequestBody body = new VNRequestBody(sort, true, 50, page, fields, null);
-        fetchVNPage(body);
+    public void fetchStaffDetail(int id) {
+        ApolloCall<StaffDetailQuery.Data> staffDetailCall = aniClient.query(new StaffDetailQuery(id));
+        StaffDetails staffDetails = new StaffDetails();
+        compositeDisposable.add(Rx3Apollo.single(staffDetailCall)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.newThread())
+                .subscribe(res -> {
+                            assert res.data != null;
+                            this.setStaffDetails(res.data.Staff.staffDetail, staffDetails);
+                            mutableStaffDetail.setValue(staffDetails);
+                        },
+                        error -> mutableErrorMsg.setValue(error.getMessage()))
+        );
     }
 
-    public void fetchVNSearchPage(String search, String sort, String fields, int page){
-        List<Object> filters = Arrays.asList("search", "=", search);
-        VNRequestBody body = new VNRequestBody(sort, false, 50, page, fields, filters);
-        fetchVNPage(body);
-    }
-
-    public void fetchVNPage(VNRequestBody body){
+    private void fetchVNPage(VNRequestBody body){
         Call<VNPage> call = VNClient.fetchVNPage(body);
         call.enqueue(new Callback<VNPage>() {
             @Override
             public void onResponse(@NonNull Call<VNPage> call, @NonNull Response<VNPage> response) {
                 assert response.body() != null;
-                mutableVNPage.setValue(response.body().getVnDetailsList());
+                if (response.body().getSize() > 1) {
+                    mutableVNPage.setValue(response.body().getVnDetailsList());
+                } else if (response.body().getSize() == 1) {
+                    mutableLiveData.setValue(response.body().getVnDetailsList().get(0));
+                }
             }
 
             @Override
@@ -371,41 +381,41 @@ public class ApiRepository {
         });
     }
 
+    public void fetchDefaultVNPage(String sort, String fields, int page) {
+        VNRequestBody body = new VNRequestBody(sort, true, 50, page, fields, null);
+        this.fetchVNPage(body);
+    }
+
+    public void fetchVNSearchPage(String search, String sort, String fields, int page){
+        List<Object> filters = Arrays.asList("search", "=", search);
+        VNRequestBody body = new VNRequestBody(sort, false, 50, page, fields, filters);
+        this.fetchVNPage(body);
+    }
+
     private void fetchVNData(String vndbID) {
         String fields = "title, titles{lang, title, latin, official, main}, " +
                 "image{thumbnail}, released, length, length_minutes, length_votes, rating, " +
-                "average, developers{name}, description, devstatus, " +
+                "average, developers{name}, description, devstatus, extlinks{label, url}, " +
                 "tags{name, rating, spoiler}, aliases, screenshots{url}, " +
                 "relations{title, relation, image{thumbnail}, devstatus}, languages, platforms, " +
                 "editions{name}, staff{role, name, eid, note}, va{note, staff{name}, character{id}}";
 
         List<Object> filters = Arrays.asList("id", "=", vndbID);
         VNRequestBody body = new VNRequestBody(null, false, 1, 1, fields, filters);
-        Call<VNPage> call = VNClient.fetchVNDetails(body);
-        call.enqueue(new Callback<VNPage>() {
-            @Override
-            public void onResponse(@NonNull Call<VNPage> call, @NonNull Response<VNPage> response) {
-                assert response.body() != null;
-                mutableLiveData.setValue(response.body().getVnDetailsList().get(0));
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<VNPage> call, @NonNull Throwable throwable) {
-                mutableErrorMsg.setValue(throwable.getMessage());
-            }
-        });
+        this.fetchVNPage(body);
     }
 
-    public void fetchVNCharPage(String sort, boolean reverse, int results, int page,
-                                String fields, List<Object> filters) {
-
-        VNRequestBody body = new VNRequestBody(sort, reverse, results, page, fields, filters);
+    private void fetchVNCharPage(String vndbID, VNRequestBody body) {
         Call<VNCharPage> call = VNClient.fetchVNChars(body);
         call.enqueue(new Callback<VNCharPage>() {
             @Override
             public void onResponse(@NonNull Call<VNCharPage> call, @NonNull Response<VNCharPage> response) {
                 assert response.body() != null;
-                mutableVNCharPage.setValue(response.body());
+                if (response.body().getSize() > 1) {
+                    mutableCharPage.setValue(response.body().getVNCharList(vndbID));
+                } else if (response.body().getSize() == 1){
+                    mutableCharacterDetail.setValue(response.body().getVNCharList(vndbID).get(0));
+                }
             }
 
             @Override
@@ -418,17 +428,46 @@ public class ApiRepository {
     public void fetchVNChars(String vndbID, int page) {
         String fields = "name, image{url}, vns{role}";
         List<Object> filters = Arrays.asList("vn","=", new String[]{"id","=",vndbID});
-        this.fetchVNCharPage("name", false, 50, page, fields, filters);
+        VNRequestBody body = new VNRequestBody("name", false, 50, page, fields, filters);
+        this.fetchVNCharPage(vndbID,  body);
 
     }
 
-    public void fetchVNCharDetails(String id) {
+    public void fetchVNCharDetails(String vndbID) {
         String fields = "name, original, aliases, description, image{url}, blood_type, " +
                 "height, weight, bust, waist, hips, cup, age, birthday, sex, vns{role, title, image{thumbnail}, devstatus}, " +
                 "traits{name, spoiler, group_name}";
 
-        List<Object> filters = Arrays.asList("id", "=", id);
-        this.fetchVNCharPage(null, false, 1, 1, fields, filters);
+        List<Object> filters = Arrays.asList("id", "=", vndbID);
+        VNRequestBody body = new VNRequestBody(null, false, 1, 1, fields, filters);
+        this.fetchVNCharPage(vndbID, body);
+    }
+
+    private void fetchVNStaffPage(VNRequestBody body) {
+        Call<VNStaffPage> call = VNClient.fetchVNStaffs(body);
+        call.enqueue(new Callback<VNStaffPage>() {
+            @Override
+            public void onResponse(@NonNull Call<VNStaffPage> call, @NonNull Response<VNStaffPage> response) {
+                assert response.body() != null;
+                if (response.body().getSize() > 1) {
+                    mutableStaffPage.setValue(response.body().getVnStaffList());
+                } else if (response.body().getSize() == 1){
+                    mutableStaffDetail.setValue(response.body().getVnStaffList().get(0));
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<VNStaffPage> call, @NonNull Throwable throwable) {
+                mutableErrorMsg.setValue(throwable.getMessage());
+            }
+        });
+    }
+
+    public void fetchVNStaffDetail(String vndbID) {
+        String fields = "name, original, lang, gender, description, aliases{name}, extlinks{label, url}";
+        List<Object> filters = Arrays.asList("id", "=", vndbID);
+        VNRequestBody body = new VNRequestBody(null, false, 1, 1, fields, filters);
+        this.fetchVNStaffPage(body);
     }
 
     // setter helper functions
@@ -438,59 +477,49 @@ public class ApiRepository {
         mediaDetails.setCoverImg(commonDetails.coverImage.large);
         mediaDetails.setFormat(AnilistObjectMappings.mediaFormatToString.get(commonDetails.format));
         mediaDetails.setId(String.valueOf(commonDetails.id));
-        if (commonDetails.status != null) {mediaDetails.setStatus(commonDetails.status);}
+        mediaDetails.setStatus(commonDetails.status);
         mediaDetails.setType(commonDetails.type);
     }
 
     private void setMediumDetail(MediaDetails mediaDetails, MediumDetail commonDetails) {
         this.setShortDetail(mediaDetails, commonDetails.shortDetail);
-        if (commonDetails.averageScore != null) {mediaDetails.setAvgScore(commonDetails.averageScore);}
-        if (!commonDetails.genres.isEmpty()) {mediaDetails.setGenres(commonDetails.genres);}
+        mediaDetails.setAvgScore(commonDetails.averageScore);
+        mediaDetails.setGenres(commonDetails.genres);
         mediaDetails.setFavorites(commonDetails.favourites);
-        if(commonDetails.startDate.year != null){mediaDetails.setStartDate(new Date(commonDetails.startDate.year, -1, -1));}
+        mediaDetails.setStartDate(new Date(commonDetails.startDate.year, -1, -1));
     }
 
     private void setCommonDetails(MediaDetails mediaDetails, Detail commonDetails) {
         this.setMediumDetail(mediaDetails, commonDetails.mediumDetail);
         mediaDetails.setTitles(new Titles(commonDetails.title.english, commonDetails.title.native_, commonDetails.title.romaji, commonDetails.title.userPreferred));
-        if(commonDetails.startDate.year != null){
-            int startMonth = commonDetails.startDate.month == null ? -1 : commonDetails.startDate.month;
-            int startDate = commonDetails.startDate.day == null ? -1 : commonDetails.startDate.day;
-            mediaDetails.setStartDate(new Date(commonDetails.startDate.year, startMonth, startDate));
-        }
-        if(commonDetails.endDate.year != null){
-            int endMonth = commonDetails.endDate.month == null ? -1 : commonDetails.endDate.month;
-            int endDay = commonDetails.endDate.day == null ? -1 : commonDetails.endDate.day;
-            mediaDetails.setEndDate(new Date(commonDetails.endDate.year, endMonth, endDay));
-        }
+        mediaDetails.setStartDate(new Date(commonDetails.startDate.year, commonDetails.startDate.month, commonDetails.startDate.day));
+        mediaDetails.setEndDate(new Date(commonDetails.endDate.year, commonDetails.endDate.month, commonDetails.endDate.day));
         mediaDetails.setDesc(commonDetails.description);
-        if(commonDetails.bannerImage != null){mediaDetails.setBanner(commonDetails.bannerImage);}
-        if(commonDetails.meanScore != null){mediaDetails.setMeanScore(commonDetails.meanScore);}
+        mediaDetails.setBanner(commonDetails.bannerImage);
+        mediaDetails.setMeanScore(commonDetails.meanScore);
         mediaDetails.setPopularity(commonDetails.popularity);
-        if(commonDetails.source != null){mediaDetails.setSource(AnilistObjectMappings.mediaSourceToString.get(commonDetails.source));}
-        if(commonDetails.hashtag != null){mediaDetails.setHashtags(commonDetails.hashtag);}
-        if(commonDetails.trailer != null){mediaDetails.setTrailer(commonDetails.trailer);}
-        if(!commonDetails.synonyms.isEmpty()) {mediaDetails.setSynonyms(commonDetails.synonyms);}
-        if(commonDetails.tags != null){mediaDetails.setTags(commonDetails.tags);}
+        mediaDetails.setSource(AnilistObjectMappings.mediaSourceToString.get(commonDetails.source));
+        mediaDetails.setHashtags(commonDetails.hashtag);
+        mediaDetails.setTrailer(commonDetails.trailer);
+        mediaDetails.setSynonyms(commonDetails.synonyms);
+        mediaDetails.setTags(commonDetails.tags);
     }
 
     private void setAnimeShortDetail(AnimeDetails animeDetails, AnimeShortDetail animeShortDetail) {
-        if (animeShortDetail.season != null) {animeDetails.setSeason(AnilistObjectMappings.mediaSeasonToString.get(animeShortDetail.season));}
-        if (animeShortDetail.duration != null) {animeDetails.setDuration(animeShortDetail.duration);}
-        if (animeShortDetail.episodes != null) {animeDetails.setEpisodes(animeShortDetail.episodes);}
-        if (animeShortDetail.nextAiringEpisode != null) {animeDetails.setAiringSchedule(new AiringSchedule(animeShortDetail.nextAiringEpisode.episode, animeShortDetail.nextAiringEpisode.timeUntilAiring));}
+        animeDetails.setSeason(AnilistObjectMappings.mediaSeasonToString.get(animeShortDetail.season));
+        animeDetails.setDuration(animeShortDetail.duration);
+        animeDetails.setEpisodes(animeShortDetail.episodes, animeShortDetail.nextAiringEpisode);
         animeDetails.setType(MediaType.ANIME);
     }
 
     private void setAnimeDetail(AnimeDetails animeDetails, AnimeDetail animeDetail) {
         this.setAnimeShortDetail(animeDetails, animeDetail.animeShortDetail);
-        if(!animeDetail.studios.edges.isEmpty()){
+        if (!animeDetail.studios.edges.isEmpty()) {
             Studios studios = new Studios();
-            for(AnimeDetail.Edge studio : animeDetail.studios.edges){
-                if (studio.isMain){
+            for (AnimeDetail.Edge studio : animeDetail.studios.edges) {
+                if (studio.isMain) {
                     studios.addAnimationStudio(studio.node.name);
-                }
-                else{
+                } else {
                     studios.addProducer(studio.node.name);
                 }
             }
@@ -499,20 +528,19 @@ public class ApiRepository {
     }
 
     private void setMangaShortDetail(MangaDetails mangaDetails, MangaShortDetail mangaShortDetail) {
-        if(mangaShortDetail.endDate.year != null){mangaDetails.setEndDate(new Date(mangaShortDetail.endDate.year, -1, -1));}
+        mangaDetails.setEndDate(new Date(mangaShortDetail.endDate.year, -1, -1));
         mangaDetails.setType(MediaType.MANGA);
-        if (mangaShortDetail.volumes != null){mangaDetails.setVolumes(mangaShortDetail.volumes);}
-
+        mangaDetails.setVolumes(mangaShortDetail.volumes);
     }
 
     private void setMangaDetail(MangaDetails mangaDetails, MangaDetail mangaDetail) {
         this.setMangaShortDetail(mangaDetails, mangaDetail.mangaShortDetail);
-        if(mangaDetail.chapters != null){mangaDetails.setChapters(mangaDetail.chapters);}
+        mangaDetails.setChapters(mangaDetail.chapters);
     }
 
     private void setShortCharDetails(ShortCharDetail detail, CharacterDetails characterDetails) {
         characterDetails.setName(new Name(detail.name.userPreferred));
-        if (detail.image.large != null) {characterDetails.setImage(detail.image.large);}
+        characterDetails.setImage(detail.image.large);
         characterDetails.setId(String.valueOf(detail.id));
     }
 
@@ -530,10 +558,9 @@ public class ApiRepository {
         characterDetails.setDescription(detail.description);
         characterDetails.setAge(detail.age);
         characterDetails.setGender(detail.gender);
-        int year = detail.dateOfBirth.year == null ? -1 : detail.dateOfBirth.year;
-        int month = detail.dateOfBirth.month == null ? -1 : detail.dateOfBirth.month;
-        int day = detail.dateOfBirth.day == null ? -1 : detail.dateOfBirth.day;
-        characterDetails.setDateOfbirth(new Date(year, month, day, true));
+        characterDetails.setDateOfbirth(new Date(detail.dateOfBirth.year,
+                detail.dateOfBirth.month,
+                detail.dateOfBirth.day));
         characterDetails.setBloodtype(detail.bloodType);
         characterDetails.setFavorites(detail.favourites);
     }
@@ -541,5 +568,33 @@ public class ApiRepository {
     private void setShortStaffDetails(ShortStaffDetail detail, StaffDetails staffDetails) {
         staffDetails.setName(new Name(detail.name.userPreferred));
         staffDetails.setImage(detail.image.large);
+        staffDetails.setId(String.valueOf(detail.id));
+    }
+    
+    private void setStaffDetails(StaffDetail detail, StaffDetails staffDetails) {
+        this.setShortStaffDetails(detail.shortStaffDetail, staffDetails);
+        Name name = new Name(detail.name.userPreferred);
+        name.setFirst(detail.name.first);
+        name.setMiddle(detail.name.middle);
+        name.setLast(detail.name.last);
+        name.setFull(detail.name.full);
+        name.setNativeName(detail.name.native_);
+        name.setAlternatives(detail.name.alternative);
+        staffDetails.setName(name);
+        staffDetails.setLang(detail.languageV2);
+        staffDetails.setDescription(detail.description);
+        staffDetails.setPrimaryOccupations(detail.primaryOccupations);
+        staffDetails.setGender(detail.gender);
+        staffDetails.setDateOfbirth(new Date(detail.dateOfBirth.year,
+                detail.dateOfBirth.month,
+                detail.dateOfBirth.day));
+        staffDetails.setDateOfDeath(new Date(detail.dateOfDeath.year,
+                detail.dateOfDeath.month,
+                detail.dateOfDeath.day));
+        staffDetails.setAge(String.valueOf(detail.age));
+        staffDetails.setYearsActive(detail.yearsActive);
+        staffDetails.setHomeTown(detail.homeTown);
+        staffDetails.setBloodtype(detail.bloodType);
+        staffDetails.setFavorites(detail.favourites);
     }
 }

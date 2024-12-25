@@ -24,4 +24,8 @@ public class VNPage {
         return vnDetailsList;
     }
 
+    public int getSize() {
+        return this.vnResponseList.size();
+    }
+
 }

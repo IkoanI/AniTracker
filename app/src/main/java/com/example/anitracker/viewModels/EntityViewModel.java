@@ -6,8 +6,10 @@ import androidx.lifecycle.ViewModel;
 
 import com.example.anitracker.mediaObjects.CharacterDetails;
 import com.example.anitracker.mediaObjects.MediaDetails;
+import com.example.anitracker.mediaObjects.StaffDetails;
 import com.example.anitracker.repository.ApiRepository;
 import com.example.anitracker.type.MediaType;
+import com.example.anitracker.type.Page;
 import com.example.anitracker.vnObjects.VNCharPage;
 
 import java.util.List;
@@ -15,22 +17,26 @@ import java.util.List;
 public class EntityViewModel extends ViewModel {
     private final ApiRepository repository;
     private String id;
+
+    private String entityType;
     private MediaType mediaType;
+    private CharacterDetails lastFetchedCharDetail;
+    private StaffDetails lastFetchedStaffDetail;
 
     // overview fragment
-    private final MutableLiveData<CharacterDetails> liveEntityDetail;
-    private final MutableLiveData<VNCharPage> liveVNEntityDetail;
+    private final MutableLiveData<CharacterDetails> liveCharDetail;
+    private final MutableLiveData<StaffDetails> liveStaffDetail;
 
     // roles fragment
-    private final MutableLiveData<List<MediaDetails>> liveEntityRoles;
+    private final MutableLiveData<List<MediaDetails>> liveCharRoles;
     private int currRolePage = 1;
 
     public EntityViewModel() {
         this.repository = new ApiRepository();
         this.liveErrorMsg = repository.getMutableErrorMsg();
-        this.liveEntityDetail = repository.getMutableCharacterDetail();
-        this.liveVNEntityDetail = repository.getMutableVNCharPage();
-        this.liveEntityRoles = repository.getMutableRelationsPage();
+        this.liveCharDetail = repository.getMutableCharacterDetail();
+        this.liveStaffDetail = repository.getMutableStaffDetail();
+        this.liveCharRoles = repository.getMutableRelationsPage();
     }
 
     public MediaType getMediaType() {
@@ -41,20 +47,26 @@ public class EntityViewModel extends ViewModel {
         this.mediaType = mediaType;
     }
 
-    public CharacterDetails getLastFetchedDetail() {
-        return lastFetchedDetail;
+    public CharacterDetails getLastFetchedCharDetail() {
+        return this.lastFetchedCharDetail;
     }
 
-    public void setLastFetchedDetail(CharacterDetails lastFetchedDetail) {
-        this.lastFetchedDetail = lastFetchedDetail;
+    public void setLastFetchedCharDetail(CharacterDetails lastFetchedDetail) {
+        this.lastFetchedCharDetail = lastFetchedDetail;
     }
 
-    private CharacterDetails lastFetchedDetail;
+    public StaffDetails getLastFetchedStaffDetail() {
+        return this.lastFetchedStaffDetail;
+    }
+
+    public void setLastFetchedStaffDetail(StaffDetails lastFetchedDetail) {
+        this.lastFetchedStaffDetail = lastFetchedDetail;
+    }
 
     // error message
     private final MutableLiveData<String> liveErrorMsg;
 
-    public void getEntityDetail() {
+    public void getCharDetail() {
         if (this.mediaType == MediaType.VISUAL_NOVEL) {
             this.repository.fetchVNCharDetails(this.id);
         } else {
@@ -62,21 +74,29 @@ public class EntityViewModel extends ViewModel {
         }
     }
 
-    public void getEntityRoles() {
+    public void getCharRoles() {
         this.repository.fetchCharRoles(Integer.parseInt(this.id), this.currRolePage);
         this.currRolePage++;
     }
 
-    public LiveData<CharacterDetails> observeEntityDetail() {
-        return this.liveEntityDetail;
+    public void getStaffDetail() {
+        if (this.mediaType == MediaType.VISUAL_NOVEL) {
+            this.repository.fetchVNStaffDetail(this.id);
+        } else {
+            this.repository.fetchStaffDetail(Integer.parseInt(this.id));
+        }
     }
 
-    public LiveData<VNCharPage> observeVNEntityDetail() {
-        return this.liveVNEntityDetail;
+    public LiveData<CharacterDetails> observeCharDetail() {
+        return this.liveCharDetail;
     }
 
-    public LiveData<List<MediaDetails>> observeEntityRoles() {
-        return this.liveEntityRoles;
+    public LiveData<List<MediaDetails>> observeCharRoles() {
+        return this.liveCharRoles;
+    }
+
+    public LiveData<StaffDetails> observeStaffDetail() {
+        return this.liveStaffDetail;
     }
 
     public LiveData<String> observeErrorMsg() { return liveErrorMsg; }
@@ -85,6 +105,14 @@ public class EntityViewModel extends ViewModel {
 
     public String getId() {
         return this.id;
+    }
+
+    public String getEntityType() {
+        return entityType;
+    }
+
+    public void setEntityType(String entityType) {
+        this.entityType = entityType;
     }
 
     // clear requests

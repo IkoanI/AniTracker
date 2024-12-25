@@ -105,7 +105,7 @@ public class SearchFragment extends Fragment implements RecyclerViewInterface {
     public void onItemClick(int position) {
         Intent intent = new Intent(context, Details.class);
         intent.putExtra("ID", adapter.getItem(position).getId());
-        intent.putExtra("Type", adapter.getItem(position).getType());
+        intent.putExtra("Type", adapter.getItem(position).getType().rawValue);
         startActivity(intent);
     }
 }

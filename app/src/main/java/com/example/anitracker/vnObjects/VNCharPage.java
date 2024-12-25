@@ -24,4 +24,8 @@ public class VNCharPage {
         }
         return characterDetails;
     }
+
+    public int getSize() {
+        return this.vnCharacterList.size();
+    }
 }

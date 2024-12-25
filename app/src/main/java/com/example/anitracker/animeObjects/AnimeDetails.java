@@ -1,7 +1,7 @@
 package com.example.anitracker.animeObjects;
 
+import com.example.anitracker.fragment.AnimeShortDetail;
 import com.example.anitracker.mediaObjects.MediaDetails;
-import com.example.anitracker.type.MediaStatus;
 
 import java.util.Locale;
 
@@ -37,24 +37,28 @@ public class AnimeDetails extends MediaDetails {
     // Setters
 
     public void setSeason(String season) {
-        this.season = season;
-
-        // set start date first before setting season
-        if (this.startDate != null) {infoMap.put("Season", String.format(Locale.ENGLISH,"%s %d", this.season, this.startDate.getYear()));}
+        if (season != null) {
+            this.season = season;
+            infoMap.put("Season", String.format(Locale.ENGLISH,"%s %d",
+                    this.season, this.startDate.getYear()));
+        }
     }
 
-    public void setDuration(int duration) {
-        this.duration = duration;
-        infoMap.put("Duration", String.format(Locale.ENGLISH, "%d mins", this.duration));
+    public void setDuration(Integer duration) {
+        if (duration != null) {
+            this.duration = duration;
+            infoMap.put("Duration", String.format(Locale.ENGLISH, "%d mins",
+                    this.duration));
+        }
     }
 
-    public void setEpisodes(int episodes) {
-        this.episodes = episodes;
-
-        if (this.status.equals(MediaStatus.FINISHED.rawValue)) {
-            infoMap.put("Episodes", String.valueOf(this.episodes));
-        } else if (this.airingSchedule != null && this.status.equals(MediaStatus.RELEASING.rawValue)) {
+    public void setEpisodes(Integer episodes, AnimeShortDetail.NextAiringEpisode nextAiringEpisode) {
+        this.episodes = episodes == null ? 0 : episodes;
+        if (nextAiringEpisode != null) {
+            this.setAiringSchedule(new AiringSchedule(nextAiringEpisode.episode, nextAiringEpisode.timeUntilAiring));
             infoMap.put("Episodes", this.airingSchedule.daysHoursMinutesToNextEp());
+        } else {
+            infoMap.put("Episodes", String.valueOf(this.episodes));
         }
     }
 

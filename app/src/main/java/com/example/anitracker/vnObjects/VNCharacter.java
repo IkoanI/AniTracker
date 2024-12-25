@@ -33,19 +33,19 @@ public class VNCharacter {
     @SerializedName("blood_type")
     private String bloodType;
     @SerializedName("height")
-    private int height;
+    private Integer height;
     @SerializedName("weight")
-    private int weight;
+    private Integer weight;
     @SerializedName("bust")
-    private int bust;
+    private Integer bust;
     @SerializedName("waist")
-    private int waist;
+    private Integer waist;
     @SerializedName("hips")
-    private int hips;
+    private Integer hips;
     @SerializedName("cup")
     private String cup;
     @SerializedName("age")
-    private int age;
+    private Integer age;
     @SerializedName("birthday")
     private List<Integer> birthday;
     @SerializedName("sex")
@@ -56,14 +56,8 @@ public class VNCharacter {
     public CharacterDetails convertToCharacterDetails(String vndbID) {
         CharacterDetails characterDetails = new CharacterDetails();
         Name name = new Name(this.getName());
-        if (this.original != null) {
-            name.setNativeName(this.original);
-        }
-
-        if (this.aliases != null && !this.aliases.isEmpty()) {
-            name.setAlternatives(this.aliases);
-        }
-
+        name.setNativeName(this.original);
+        name.setAlternatives(this.aliases);
         characterDetails.setName(name);
         characterDetails.setId(this.id);
         characterDetails.setImage(this.getImage().getUrl());
@@ -73,41 +67,19 @@ public class VNCharacter {
                 break;
             }
         }
-
         characterDetails.setDescription(this.description);
-        if (this.bloodType != null) {characterDetails.setBloodtype(this.getBloodType());}
-        if (this.height != 0) {characterDetails.setHeight(this.height);}
-        if (this.weight != 0) {characterDetails.setWeight(this.weight);}
-        if (this.bust != 0) {characterDetails.setBust(this.bust);}
-        if (this.waist != 0) {characterDetails.setWaist(this.waist);}
-        if (this.hips != 0) {characterDetails.setHips(this.hips);}
-        if (this.cup != null) {characterDetails.setCup(this.cup);}
-        if (this.age != 0) {characterDetails.setAge(String.valueOf(this.age));}
-        if (this.birthday != null) {characterDetails.setDateOfbirth(this.getBirthday());}
-        if (this.sex != null) {characterDetails.setGender(this.getSex());}
-        if (this.traits != null) {
-            List<Tag> allTraits = new ArrayList<>();
-            List<Tag> noSpoilerTraits = new ArrayList<>();
-            for (VNTrait trait : this.traits) {
-                Tag tag = trait.convertToMediaTag();
-                if (!tag.getSpoiler()) {
-                    noSpoilerTraits.add(tag);
-                }
-                allTraits.add(tag);
-            }
-            characterDetails.setAllTraits(allTraits);
-            characterDetails.setNoSpoilerTraits(noSpoilerTraits);
-        }
-
-        if (this.vns != null && !this.vns.isEmpty()) {
-            List<MediaDetails> roles = new ArrayList<>();
-            for (VNResponse vn : this.vns) {
-                MediaDetails details = vn.convertToMediaObject();;
-                details.setRelation(vn.getRole());
-                roles.add(details);
-            }
-            characterDetails.setVnRoles(roles);
-        }
+        characterDetails.setBloodtype(this.getBloodType());
+        characterDetails.setHeight(this.height);
+        characterDetails.setWeight(this.weight);
+        characterDetails.setBust(this.bust);
+        characterDetails.setWaist(this.waist);
+        characterDetails.setHips(this.hips);
+        characterDetails.setCup(this.cup);
+        characterDetails.setAge(String.valueOf(this.age));
+        characterDetails.setDateOfbirth(this.getBirthday());
+        characterDetails.setGender(this.getSex());
+        characterDetails.setTraits(this.traits);
+        characterDetails.setVnRoles(this.vns);
         return characterDetails;
     }
 
@@ -143,7 +115,10 @@ public class VNCharacter {
     }
 
     public String getBloodType() {
-        return bloodType.toUpperCase();
+        if (this.bloodType != null) {
+            return StringUtils.capitalize(bloodType);
+        }
+        return null;
     }
 
     public int getHeight() {
@@ -176,7 +151,7 @@ public class VNCharacter {
             month = this.birthday.get(0);
             day = this.birthday.get(1);
         }
-        return new Date(-1, month, day, true);
+        return new Date(-1, month, day);
     }
 
     public int getAge() {
@@ -184,6 +159,9 @@ public class VNCharacter {
     }
 
     public String getSex() {
+        if (this.sex == null) {
+            return null;
+        }
         switch (this.sex.get(0)) {
             case "m":
                 return "Male";

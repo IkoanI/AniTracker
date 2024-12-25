@@ -145,6 +145,7 @@ public class CharacterViewAdapter extends RecyclerView.Adapter<RecyclerView.View
                     Intent intent = new Intent(context, EntityDetails.class);
                     intent.putExtra("ID", character.getId());
                     intent.putExtra("Type", viewModel.getType().rawValue);
+                    intent.putExtra("Entity", "Char");
                     context.startActivity(intent);
                 });
 
@@ -155,6 +156,13 @@ public class CharacterViewAdapter extends RecyclerView.Adapter<RecyclerView.View
                     characterView.showVoiceActor();
                     characterView.vaName.setText(character.getVoiceActor().getName().getUserPref());
                     Image.loadImage(this.context, character.getVoiceActor().getImage(), characterView.vaImage);
+                    characterView.vaImage.setOnClickListener(e -> {
+                        Intent intent = new Intent(context, EntityDetails.class);
+                        intent.putExtra("ID", character.getVoiceActor().getId());
+                        intent.putExtra("Type", viewModel.getType().rawValue);
+                        intent.putExtra("Entity", "Staff");
+                        context.startActivity(intent);
+                    });
                     characterView.language.setText(AnilistObjectMappings.staffLanguageToString.get(viewModel.getLastSelectedLanguage()));
                 }
         }

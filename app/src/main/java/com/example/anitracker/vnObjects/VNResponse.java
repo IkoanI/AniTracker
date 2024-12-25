@@ -64,6 +64,8 @@ public class VNResponse {
     private List<VNEdition> editions;
     @SerializedName("va")
     private List<VNVoiceActor> knownVoiceActors;
+    @SerializedName("extlinks")
+    private List<VNLink> links;
 
 
     public String getId() {
@@ -257,6 +259,8 @@ public class VNResponse {
             vnDetails.setPlatforms(this.getPlatforms());
         }
 
+        vnDetails.setLinks(this.links);
+
         vnDetails.setFormat("Visual Novel");
 
         vnDetails.setType(MediaType.VISUAL_NOVEL);
@@ -266,5 +270,10 @@ public class VNResponse {
 
     public String getRole() {
         return StringUtils.capitalize(this.role);
+    }
+
+
+    public List<VNLink> getLinks() {
+        return links;
     }
 }

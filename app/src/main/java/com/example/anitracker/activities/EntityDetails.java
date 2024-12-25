@@ -1,7 +1,6 @@
 package com.example.anitracker.activities;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -20,7 +19,7 @@ import com.example.anitracker.R;
 import com.example.anitracker.adapters.VPAdapter;
 import com.example.anitracker.fragments.EntityOverviewFragment;
 import com.example.anitracker.fragments.EntityRolesFragment;
-import com.example.anitracker.mediaObjects.CharacterDetails;
+import com.example.anitracker.mediaObjects.Entity;
 import com.example.anitracker.type.MediaType;
 import com.example.anitracker.uiObjects.Image;
 import com.example.anitracker.viewModels.EntityViewModel;
@@ -54,25 +53,28 @@ public class EntityDetails extends AppCompatActivity {
         this.viewModel = new ViewModelProvider(this).get(EntityViewModel.class);
         this.viewModel.setId(Objects.requireNonNull(getIntent().getExtras()).getString("ID"));
         this.viewModel.setMediaType(MediaType.safeValueOf(Objects.requireNonNull(Objects.requireNonNull(getIntent().getExtras()).getString("Type"))));
-
+        this.viewModel.setEntityType(getIntent().getExtras().getString("Entity"));
 
         // observe any errors from repository
         this.viewModel.observeErrorMsg().observe(this, errorMsg -> Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show());
 
         // get and observe details from repository
-        if (this.viewModel.getMediaType() != MediaType.VISUAL_NOVEL) {
-            this.viewModel.observeEntityDetail().observe(this, res -> {
-                viewModel.setLastFetchedDetail(res);
-                this.populateActivity(viewModel.getLastFetchedDetail());
+        if (Objects.equals(viewModel.getEntityType(), "Char")) {
+            this.viewModel.observeCharDetail().observe(this, res -> {
+                viewModel.setLastFetchedCharDetail(res);
+                this.populateActivity(res);
             });
-        } else {
-            this.viewModel.observeVNEntityDetail().observe(this, res-> {
-                viewModel.setLastFetchedDetail(res.getVNCharList(viewModel.getId()).get(0));
-                this.populateActivity(viewModel.getLastFetchedDetail());
+
+            this.viewModel.getCharDetail();
+        } else if (Objects.equals(viewModel.getEntityType(), "Staff")){
+            this.viewModel.observeStaffDetail().observe(this, res -> {
+                viewModel.setLastFetchedStaffDetail(res);
+                this.populateActivity(res);
             });
+
+            this.viewModel.getStaffDetail();
         }
 
-        this.viewModel.getEntityDetail();
 
         // hide ui while data is loading
         this.appBarLayout = findViewById(R.id.appBarLayout);
@@ -102,7 +104,7 @@ public class EntityDetails extends AppCompatActivity {
         this.viewModel.clearComposite();
     }
 
-    private void populateActivity(CharacterDetails details) {
+    private void populateActivity(Entity details) {
             //insert cover image
             ImageView cover = this.findViewById(R.id.cover);
             Image.loadImage(this, details.getImage(), cover);

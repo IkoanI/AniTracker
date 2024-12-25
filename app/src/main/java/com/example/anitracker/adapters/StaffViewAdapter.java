@@ -1,6 +1,7 @@
 package com.example.anitracker.adapters;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.anitracker.R;
+import com.example.anitracker.activities.EntityDetails;
 import com.example.anitracker.mediaObjects.StaffDetails;
 import com.example.anitracker.type.MediaType;
 import com.example.anitracker.uiObjects.Image;
@@ -47,6 +49,13 @@ public class StaffViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         StaffDetails staff = staffDetailsList.get(position);
 
         Image.loadImage(this.context, staff.getImage(), staffViewItem.staffImage);
+        staffViewItem.staffImage.setOnClickListener(e -> {
+            Intent intent = new Intent(context, EntityDetails.class);
+            intent.putExtra("ID", staff.getId());
+            intent.putExtra("Type", viewModel.getType().rawValue);
+            intent.putExtra("Entity", "Staff");
+            context.startActivity(intent);
+        });
         staffViewItem.staffName.setText(staff.getName().getUserPref());
         staffViewItem.staffRole.setText(staff.getRole());
     }

@@ -136,77 +136,104 @@ public class MediaDetails {
     }
 
     public void setDesc(String desc) {
-        this.desc = desc;
+        if (desc != null) {
+            this.desc = desc;
+        }
     }
 
     public void setStatus(String status) {
-        this.status = status;
-        infoMap.put("Status", this.status);
+        if (status != null) {
+            this.status = status;
+            infoMap.put("Status", this.status);
+        }
     }
 
     public void setStatus(MediaStatus status) {
-        this.setStatus(AnilistObjectMappings.mediaStatusToString.get(status.rawValue));
+        if (status != null) {
+            this.status = status.rawValue;
+            infoMap.put("Status", AnilistObjectMappings.mediaStatusToString.get(this.status));
+        }
     }
 
     public void setBanner(String banner) {
-        this.banner = banner;
+        if (banner != null) {
+            this.banner = banner;
+        }
     }
 
     public void setHashtags(String hashtags) {
-        this.hashtags = hashtags;
-        infoMap.put("Hashtag", this.hashtags);
+        if (hashtags != null) {
+            this.hashtags = hashtags;
+            infoMap.put("Hashtag", this.hashtags);
+        }
     }
 
     public void setSource(String source) {
-        this.source = source;
-        infoMap.put("Sources", this.source);
+        if (source != null) {
+            this.source = source;
+            infoMap.put("Sources", this.source);
+        }
     }
 
     public void setId(String id) {
         this.id = id;
     }
 
-    public void setAvgScore(int avgScore) {
-        this.avgScore = avgScore;
-        infoMap.put("Average Score", String.format(Locale.ENGLISH,"%d%%", this.avgScore));
+    public void setAvgScore(Integer avgScore) {
+        if (avgScore != null) {
+            this.avgScore = avgScore;
+            infoMap.put("Average Score", String.format(Locale.ENGLISH,"%d%%", this.avgScore));
+        }
     }
 
-    public void setMeanScore(int meanScore) {
-        this.meanScore = meanScore;
-        infoMap.put("Mean Score", String.format(Locale.ENGLISH,"%d%%", this.meanScore));
+    public void setMeanScore(Integer meanScore) {
+        if (meanScore != null) {
+            this.meanScore = meanScore;
+            infoMap.put("Mean Score", String.format(Locale.ENGLISH,"%d%%", this.meanScore));
+        }
     }
 
-    public void setFavorites(int favorites) {
-        this.favorites = favorites;
-        infoMap.put("Favorites", String.valueOf(this.favorites));
+    public void setFavorites(Integer favorites) {
+        if (favorites != null) {
+            this.favorites = favorites;
+            infoMap.put("Favorites", String.valueOf(this.favorites));
+        }
     }
 
-    public void setPopularity(int popularity) {
-        this.popularity = popularity;
-        infoMap.put("Popularity", String.valueOf(this.popularity));
+    public void setPopularity(Integer popularity) {
+        if (popularity != null) {
+            this.popularity = popularity;
+            infoMap.put("Popularity", String.valueOf(this.popularity));
+        }
     }
 
     public void setGenres(List<String> genres) {
-        this.genres = new Genres(genres);
+        if (genres != null && !genres.isEmpty()) {
+            this.genres = new Genres(genres);
+        }
     }
 
     public void setSynonyms(List<String> synonyms) {
-        this.synonyms = synonyms;
-        infoMap.put("Synonyms", String.join("\n\n", this.synonyms));
+        if (synonyms != null && !synonyms.isEmpty()) {
+            this.synonyms = synonyms;
+            infoMap.put("Synonyms", String.join("\n\n", this.synonyms));
+        }
     }
 
     public void setTags(List<Detail.Tag> tags){
-        List<Tag> newAllTags = new ArrayList<>();
-        List<Tag> newNoSpoilerTags = new ArrayList<>();
-        for(Detail.Tag tag : tags){
-            Tag toAdd = new Tag(tag.name, tag.rank, tag.isGeneralSpoiler || tag.isMediaSpoiler);
-            if(!toAdd.getSpoiler()){
-                newNoSpoilerTags.add(toAdd);
+        if (tags != null) {
+            List<Tag> newAllTags = new ArrayList<>();
+            List<Tag> newNoSpoilerTags = new ArrayList<>();
+            for(Detail.Tag tag : tags){
+                Tag toAdd = new Tag(tag.name, tag.rank, tag.isGeneralSpoiler || tag.isMediaSpoiler);
+                if(!toAdd.getSpoiler()){
+                    newNoSpoilerTags.add(toAdd);
+                }
+                newAllTags.add(toAdd);
             }
-            newAllTags.add(toAdd);
+            this.allTags = newAllTags;
+            this.noSpoilerTags = newNoSpoilerTags;
         }
-        this.allTags = newAllTags;
-        this.noSpoilerTags = newNoSpoilerTags;
     }
 
     public void setTitles(Titles titles){
@@ -221,12 +248,14 @@ public class MediaDetails {
 
     public void setStartDate(Date date){
         this.startDate = date;
-        infoMap.put("Released", this.startDate.toString());
+        String startDate = this.startDate.toString();
+        infoMap.put("Released", startDate.isEmpty() ? "TBA" : startDate);
     }
 
     public void setEndDate(Date date) {
         this.endDate = date;
-        infoMap.put("Finished", this.endDate.toString());
+        String endDate = this.endDate.toString();
+        infoMap.put("Finished", endDate.isBlank() ? "TBA" : endDate);
     }
 
     public void setRelation(MediaRelation relation) {
@@ -242,11 +271,13 @@ public class MediaDetails {
     }
 
     public void setTrailer(Detail.Trailer trailer) {
-        this.trailer = new Trailer(trailer.id, trailer.site, trailer.thumbnail);
+        if (trailer != null) {
+            this.trailer = new Trailer(trailer.id, trailer.site, trailer.thumbnail);
+        }
     }
 
-    public String getType() {
-        return type.rawValue;
+    public MediaType getType() {
+        return type;
     }
 
     public void setType(MediaType type) {

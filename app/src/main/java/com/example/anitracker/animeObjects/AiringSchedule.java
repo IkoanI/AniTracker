@@ -6,9 +6,9 @@ import java.util.concurrent.TimeUnit;
 public class AiringSchedule {
     private final int airingEp, timeUntilAiring;
 
-    public AiringSchedule(int airingEp, int timeUntilAiring) {
-        this.airingEp = airingEp;
-        this.timeUntilAiring = timeUntilAiring;
+    public AiringSchedule(Integer airingEp, Integer timeUntilAiring) {
+        this.airingEp = airingEp == null ? 0 : airingEp;
+        this.timeUntilAiring = timeUntilAiring == null ? 0 : timeUntilAiring;
     }
 
     public int getAiringEp() {

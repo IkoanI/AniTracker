@@ -48,7 +48,7 @@ public class RelationsViewAdapter extends RecyclerView.Adapter<RecyclerView.View
                 && !loading && position >= getItemCount()-1
                 && !((EntityViewModel) viewModel).getMediaType().equals(MediaType.VISUAL_NOVEL)) {
 
-            ((EntityViewModel) viewModel).getEntityRoles();
+            ((EntityViewModel) viewModel).getCharRoles();
         }
         RelationsView relationsViewItem = (RelationsView) holder;
         MediaDetails relation = this.getRelation(position);

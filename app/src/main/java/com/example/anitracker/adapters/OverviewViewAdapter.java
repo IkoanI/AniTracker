@@ -27,6 +27,7 @@ import com.example.anitracker.uiObjects.Image;
 import com.example.anitracker.uiObjects.LinkClickHandler;
 import com.example.anitracker.uiObjects.TagsHeader;
 import com.example.anitracker.vnObjects.Screenshots;
+import com.example.anitracker.vnObjects.VNLink;
 import com.google.android.flexbox.FlexboxLayoutManager;
 import com.google.android.material.carousel.CarouselLayoutManager;
 import com.google.android.material.carousel.CarouselSnapHelper;
@@ -48,7 +49,8 @@ public class OverviewViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             genreListVar = 4,
             imageCarouselVar = 5,
             tagsHeaderVar = 6,
-            tagsVar = 7;
+            tagsVar = 7,
+            linksVar = 8;
 
     public OverviewViewAdapter(Context context) {
         this.objectList = new ArrayList<>();
@@ -62,22 +64,25 @@ public class OverviewViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
     @Override
     public int getItemViewType(int position) {
-        if (objectList.get(position) instanceof Header) {
+        Object object = objectList.get(position);
+        if (object instanceof Header) {
             return headerTypeVar;
-        } else if (objectList.get(position) instanceof Description) {
+        } else if (object instanceof Description) {
             return descriptionTypeVar;
-        } else if (objectList.get(position) instanceof Trailer) {
+        } else if (object instanceof Trailer) {
             return trailerTypeVar;
-        } else if (objectList.get(position) instanceof Info) {
+        } else if (object instanceof Info) {
             return infoTypeVar;
-        } else if (objectList.get(position) instanceof Genres) {
+        } else if (object instanceof Genres) {
             return genreListVar;
-        } else if (objectList.get(position) instanceof Screenshots) {
+        } else if (object instanceof Screenshots) {
             return imageCarouselVar;
-        } else if (objectList.get(position) instanceof TagsHeader) {
+        } else if (object instanceof TagsHeader) {
             return tagsHeaderVar;
-        } else if (objectList.get(position) instanceof Tag) {
+        } else if (object instanceof Tag) {
             return tagsVar;
+        } else if (object instanceof VNLink) {
+            return linksVar;
         }
         return -1;
     }
@@ -136,6 +141,12 @@ public class OverviewViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 view = inflater.inflate(R.layout.tag_view_layout, parent, false);
                 setSpan(view, 0.5f);
                 viewHolder = new TagsView(view);
+                break;
+
+            case linksVar:
+                view = inflater.inflate(R.layout.text_view_layout, parent, false);
+                setSpan(view, 0.5f);
+                viewHolder = new LinkView(view);
                 break;
         }
 
@@ -258,6 +269,13 @@ public class OverviewViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                     tagsView.tagRanking.setTextColor(ContextCompat.getColor(context, R.color.white));
                 }
                 break;
+
+            case linksVar:
+                LinkView linkView = (LinkView) holder;
+                VNLink vnLink = (VNLink) objectList.get(position);
+                linkView.link.setText(vnLink.getLink());
+                linkView.link.setMovementMethod(LinkClickHandler.getInstance());
+                break;
         }
 
     }
@@ -348,6 +366,14 @@ public class OverviewViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             tagName = itemView.findViewById(R.id.tagName);
             tagRanking = itemView.findViewById(R.id.tagRanking);
             itemView.setOnClickListener(view -> Toast.makeText(context, tagName.getText(), Toast.LENGTH_SHORT).show());
+        }
+    }
+
+    public static class LinkView extends RecyclerView.ViewHolder {
+        TextView link;
+        public LinkView(@NonNull View itemView) {
+            super(itemView);
+            link = itemView.findViewById(R.id.text);
         }
     }
 }

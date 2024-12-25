@@ -149,6 +149,38 @@ fragment shortStaffDetail on Staff {
     }
 }
 
+fragment staffDetail on Staff {
+    ...shortStaffDetail
+    name {
+        first
+        middle
+        last
+        full
+        native
+        alternative
+        userPreferred
+    }
+    languageV2
+    description(asHtml: true)
+    primaryOccupations
+    gender
+    dateOfBirth {
+        year
+        month
+        day
+    }
+    dateOfDeath {
+        year
+        month
+        day
+    }
+    age
+    yearsActive
+    homeTown
+    bloodType
+    favourites
+}
+
 query AnimeSearchPage ($pageNo : Int!, $userSearch : String, $sort:[MediaSort]) {
     Page (page: $pageNo, perPage: 50){
         media (search: $userSearch, sort: $sort, type: ANIME) {
@@ -182,7 +214,7 @@ query MangaMoreDetails($id : Int!) {
     }
 }
 
-query characterPage($mediaId : Int!, $pageNo : Int!, $language : StaffLanguage!) {
+query CharacterPage($mediaId : Int!, $pageNo : Int!, $language : StaffLanguage!) {
     Media(id: $mediaId) {
         characters(page: $pageNo, perPage: 25, sort: [ROLE, RELEVANCE, ID]) {
             edges {
@@ -201,7 +233,7 @@ query characterPage($mediaId : Int!, $pageNo : Int!, $language : StaffLanguage!)
     }
 }
 
-query staffPage ($mediaId : Int!, $pageNo : Int!) {
+query StaffPage ($mediaId : Int!, $pageNo : Int!) {
     Media(id: $mediaId) {
         staff(page: $pageNo, perPage: 25, sort: [RELEVANCE, ROLE]) {
             edges {
@@ -214,7 +246,13 @@ query staffPage ($mediaId : Int!, $pageNo : Int!) {
     }
 }
 
-query relationsPage($mediaId : Int!) {
+query StaffDetail($id : Int!) {
+    Staff(id : $id) {
+        ...staffDetail
+    }
+}
+
+query RelationsPage($mediaId : Int!) {
     Media(id: $mediaId) {
         relations {
             edges {

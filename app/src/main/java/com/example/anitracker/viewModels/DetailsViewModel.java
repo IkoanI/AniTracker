@@ -10,7 +10,6 @@ import com.example.anitracker.mediaObjects.StaffDetails;
 import com.example.anitracker.repository.ApiRepository;
 import com.example.anitracker.type.MediaType;
 import com.example.anitracker.type.StaffLanguage;
-import com.example.anitracker.vnObjects.VNCharPage;
 
 import java.util.List;
 import java.util.Map;
@@ -28,7 +27,6 @@ public class DetailsViewModel extends ViewModel {
 
     // used by character fragment
     private final MutableLiveData<List<CharacterDetails>> liveCharPage;
-    private final MutableLiveData<VNCharPage> liveVNCharPage;
     private int currCharPage = 1;
     private StaffLanguage lastSelectedLanguage = StaffLanguage.JAPANESE;
     private int lastSelectedLanguagePos = 0;
@@ -46,7 +44,6 @@ public class DetailsViewModel extends ViewModel {
     public DetailsViewModel() {
         this.repository = new ApiRepository();
         this.liveCharPage = repository.getMutableCharPage();
-        this.liveVNCharPage = repository.getMutableVNCharPage();
         this.liveErrorMsg = repository.getMutableErrorMsg();
         this.mediaDetails = repository.getMutableLiveData();
         this.liveStaffPage = repository.getMutableStaffPage();
@@ -82,10 +79,6 @@ public class DetailsViewModel extends ViewModel {
 
     public LiveData<List<CharacterDetails>> observeCharPage() {
         return liveCharPage;
-    }
-
-    public LiveData<VNCharPage> observeVNCharPage() {
-        return liveVNCharPage;
     }
 
     public void setCurrCharPage(int pageNo) {

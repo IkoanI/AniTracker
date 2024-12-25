@@ -88,7 +88,7 @@ public class RelationsFragment extends Fragment implements RecyclerViewInterface
         MediaDetails selected = relationsViewAdapter.getRelation(position);
         Intent intent = new Intent(context, Details.class);
         intent.putExtra("ID", selected.getId());
-        intent.putExtra("Type", selected.getType());
+        intent.putExtra("Type", selected.getType().rawValue);
         startActivity(intent);
     }
 }

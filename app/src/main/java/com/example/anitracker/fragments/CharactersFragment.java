@@ -21,7 +21,6 @@ import com.example.anitracker.mediaObjects.CharacterDetails;
 import com.example.anitracker.type.MediaType;
 import com.example.anitracker.uiObjects.LanguageDropdown;
 import com.example.anitracker.viewModels.DetailsViewModel;
-import com.example.anitracker.vnObjects.VNCharPage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,11 +49,7 @@ public class CharactersFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         // observe updates to char list
-        if (this.detailsViewModel.getType() == MediaType.VISUAL_NOVEL) {
-            this.detailsViewModel.observeVNCharPage().observe(getViewLifecycleOwner(), this::addChars);
-        } else {
-            this.detailsViewModel.observeCharPage().observe(getViewLifecycleOwner(), this::addChars);
-        }
+        this.detailsViewModel.observeCharPage().observe(getViewLifecycleOwner(), this::addChars);
         // initial retrieval of characters
         detailsViewModel.getCharPage();
 
@@ -87,9 +82,5 @@ public class CharactersFragment extends Fragment {
         } else {
             this.noData.setVisibility(View.GONE);
         }
-    }
-
-    public void addChars(VNCharPage vnCharPage) {
-        this.addChars(vnCharPage.getVNCharList(this.detailsViewModel.getId()));
     }
 }

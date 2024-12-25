@@ -21,6 +21,8 @@ public class VNDetails extends MediaDetails {
     private List<StaffDetails> staffs = new ArrayList<>();
     private Map<String, StaffDetails> knownVAs = new HashMap<>();
 
+    private List<VNLink> links;
+
     public List<Developer> getDevelopers() {
         return this.developers;
     }
@@ -117,5 +119,15 @@ public class VNDetails extends MediaDetails {
 
     public Map<String, StaffDetails> getKnownVAs() {
         return this.knownVAs;
+    }
+
+    public List<VNLink> getLinks() {
+        return links;
+    }
+
+    public void setLinks(List<VNLink> links) {
+        if (links != null && !links.isEmpty()) {
+            this.links = links;
+        }
     }
 }

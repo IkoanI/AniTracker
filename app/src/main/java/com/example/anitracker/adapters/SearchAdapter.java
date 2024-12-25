@@ -108,17 +108,9 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
     }
 
     public void setAnimeDetails(AnimeDetails animeDetails, AnimeSearchViewHolder holder) {
-        String airedSeason = "";
-        if (animeDetails.getSeason() != null) {
-            airedSeason = animeDetails.getSeason();
-        }
-
-        String airedYear = "TBA";
-        if (animeDetails.getStartDate() != null) {
-            airedYear = String.valueOf(animeDetails.getStartDate().getYear());
-        }
-        String airedSeasonAndYear = String.format(Locale.ENGLISH, "%s %s", airedSeason, airedYear).trim();
-
+        String airedSeason = animeDetails.getSeason() == null ? "" : animeDetails.getSeason();
+        String airedYear = animeDetails.getStartDate().getYear() == -1 ? "TBA" : String.valueOf(animeDetails.getStartDate().getYear());
+        String airedSeasonAndYear = String.format("%s %s", airedSeason, airedYear).trim();
         if (animeDetails.getAiringSchedule() != null) {
             // currently airing show, display time to next episode
             holder.seasonAndFormat.setText(String.format(Locale.ENGLISH,"%s · %s (Ep %d airs in %d days)",
@@ -128,7 +120,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
             // show with only 1 episode, display duration of episode in minutes
             holder.seasonAndFormat.setText(String.format("%s · %s (%s mins)",
                     airedSeasonAndYear, animeDetails.getFormat() , animeDetails.getDuration()));
-        } else if (animeDetails.getStartDate() == null) {
+        } else if (animeDetails.getStatus().equals(MediaStatus.NOT_YET_RELEASED.rawValue)) {
             // show to be announced
             holder.seasonAndFormat.setText(String.format("%s · %s",
                     airedSeasonAndYear, animeDetails.getFormat()));
@@ -155,35 +147,29 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
     }
 
     public void setMangaDetails(MangaDetails mangaDetails, MangaSearchViewHolder holder) {
-        String airedYears = "TBA";
-        if(mangaDetails.getStartDate() != null){
-            airedYears = String.valueOf(mangaDetails.getStartDate().getYear());
-        }
+        String airedYears = mangaDetails.getStartDate().getYear() == -1 ? "TBA" : String.valueOf(mangaDetails.getStartDate().getYear());
 
-        if(mangaDetails.getEndDate() != null){
-            airedYears += " - ";
-            airedYears += mangaDetails.getEndDate().getYear();
+        if (mangaDetails.getEndDate() != null) {
+            airedYears += mangaDetails.getEndDate().getYear() == -1 ? "" : " - " + mangaDetails.getEndDate().getYear();
         }
 
         String volumes = "?";
-        if(mangaDetails.getVolumes() != 0){
+        if (mangaDetails.getVolumes() != 0) {
             volumes = String.valueOf(mangaDetails.getVolumes());
         }
 
-        if(Objects.equals(mangaDetails.getStatus(), AnilistObjectMappings.mediaStatusToString.get(MediaStatus.FINISHED.rawValue))){
+        if (Objects.equals(mangaDetails.getStatus(), AnilistObjectMappings.mediaStatusToString.get(MediaStatus.FINISHED.rawValue))) {
             // finished manga, display volumes
             holder.seasonAndFormat.setText(String.format("%s · %s (%s vols)", airedYears, mangaDetails.getFormat(), volumes));
-        }
-        else{
+        } else {
             // unfinished manga, display status
             holder.seasonAndFormat.setText(String.format("%s · %s (%s)", airedYears, mangaDetails.getFormat(), mangaDetails.getStatus()));
         }
 
-        if(mangaDetails.getGenres() != null){
+        if (mangaDetails.getGenres() != null) {
             holder.genres.setText(mangaDetails.getGenres().getGenreList().toString().replaceAll("[\\[\\]]",""));
             holder.genres.setVisibility(View.VISIBLE);
-        }
-        else {
+        } else {
             holder.genres.setVisibility(View.GONE);
         }
         holder.favorites.setText(String.valueOf(mangaDetails.getFavorites()));

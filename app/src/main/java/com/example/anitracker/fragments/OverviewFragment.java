@@ -89,14 +89,24 @@ public class OverviewFragment extends Fragment {
             overviewViewObjects.add(details.getTrailer());
         }
 
-        if(details instanceof VNDetails){
-            if (!((VNDetails) details).getScreenshots().getScreenshotURLs().isEmpty()) {
+        if (details instanceof VNDetails) {
+            VNDetails vnDetails = (VNDetails) details;
+            if (!vnDetails.getScreenshots().getScreenshotURLs().isEmpty()) {
                 overviewViewObjects.add(new Header("Screenshots"));
-                overviewViewObjects.add(((VNDetails) details).getScreenshots());
+                overviewViewObjects.add(vnDetails.getScreenshots());
             }
         }
+
         overviewViewObjects.add(new Header("Info"));
         overviewViewObjects.addAll(details.getInfo());
+
+        if (details instanceof VNDetails) {
+            VNDetails vnDetails = (VNDetails) details;
+            if (vnDetails.getLinks() != null && !vnDetails.getLinks().isEmpty()) {
+                overviewViewObjects.add(new Header("Links"));
+                overviewViewObjects.addAll(vnDetails.getLinks());
+            }
+        }
 
         overviewViewObjects.add(new TagsHeader(details));
 

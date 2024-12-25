@@ -30,12 +30,15 @@ public class EntityRolesFragment extends RelationsFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = this.uiSetup(inflater, container);
-        if (viewModel.getMediaType() != MediaType.VISUAL_NOVEL) {
-            viewModel.observeEntityRoles().observe(getViewLifecycleOwner(), this::addRelations);
-            viewModel.getEntityRoles();
-        } else if (viewModel.getMediaType() == MediaType.VISUAL_NOVEL) {
-            this.addRelations(viewModel.getLastFetchedDetail().getVnRoles());
+        if (viewModel.getEntityType().equals("Char")) {
+            if (viewModel.getMediaType() != MediaType.VISUAL_NOVEL) {
+                viewModel.observeCharRoles().observe(getViewLifecycleOwner(), this::addRelations);
+                viewModel.getCharRoles();
+            } else if (viewModel.getMediaType() == MediaType.VISUAL_NOVEL) {
+                this.addRelations(viewModel.getLastFetchedCharDetail().getVnRoles());
+            }
         }
+
 
         return view;
     }
