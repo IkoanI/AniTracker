@@ -17,8 +17,10 @@ import com.example.anitracker.CharacterRolesQuery;
 import com.example.anitracker.MangaMoreDetailsQuery;
 import com.example.anitracker.MangaSearchPageQuery;
 import com.example.anitracker.RelationsPageQuery;
+import com.example.anitracker.StaffCharsQuery;
 import com.example.anitracker.StaffDetailQuery;
 import com.example.anitracker.StaffPageQuery;
+import com.example.anitracker.StaffRolesQuery;
 import com.example.anitracker.animeObjects.AnimeDetails;
 import com.example.anitracker.animeObjects.Studios;
 import com.example.anitracker.clients.AniClient;
@@ -34,6 +36,7 @@ import com.example.anitracker.fragment.ShortCharDetail;
 import com.example.anitracker.fragment.ShortDetail;
 import com.example.anitracker.fragment.ShortStaffDetail;
 import com.example.anitracker.fragment.StaffDetail;
+import com.example.anitracker.type.CharacterRole;
 import com.example.anitracker.type.MediaSort;
 import com.example.anitracker.vnObjects.VNCharPage;
 import com.example.anitracker.vnObjects.VNDetails;
@@ -360,6 +363,56 @@ public class ApiRepository {
                         error -> mutableErrorMsg.setValue(error.getMessage()))
         );
     }
+
+    public void fetchStaffChars(int id, int page) {
+        ApolloCall<StaffCharsQuery.Data> staffCharsCall = aniClient.query(new StaffCharsQuery(id, page));
+        List<CharacterDetails> staffChars = new ArrayList<>();
+        compositeDisposable.add(Rx3Apollo.single(staffCharsCall)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.newThread())
+                .subscribe(res -> {
+                            assert res.data != null;
+                            List<StaffCharsQuery.Edge> edges = res.data.Staff.characterMedia.edges;
+                            for (StaffCharsQuery.Edge edge : edges) {
+                                CharacterRole role = edge.characterRole;
+                                MediaDetails charMedia = new MediaDetails();
+                                this.setShortDetail(charMedia, edge.node.shortDetail);
+                                for (StaffCharsQuery.Character character : edge.characters) {
+                                    CharacterDetails characterDetails = new CharacterDetails();
+                                    this.setShortCharDetails(character.shortCharDetail, characterDetails);
+                                    characterDetails.setCharMedia(charMedia);
+                                    characterDetails.setRole(AnilistObjectMappings.characterRoleToString.get(role));
+                                    staffChars.add(characterDetails);
+                                }
+                            }
+                            mutableCharPage.setValue(staffChars);
+                        },
+                        error -> mutableErrorMsg.setValue(error.getMessage()))
+        );
+    }
+
+    public void fetchStaffRoles(int id, int page) {
+        ApolloCall<StaffRolesQuery.Data> staffRolesCall = aniClient.query(new StaffRolesQuery(id, page));
+        List<MediaDetails> roles = new ArrayList<>();
+        compositeDisposable.add(Rx3Apollo.single(staffRolesCall)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.newThread())
+                .subscribe(res -> {
+                            assert res.data != null;
+                            for (StaffRolesQuery.Edge media : res.data.Staff.staffMedia.edges) {
+                                MediaDetails mediaDetails = new MediaDetails();
+                                this.setShortDetail(mediaDetails, media.node.shortDetail);
+                                mediaDetails.setRelation(media.staffRole);
+                                roles.add(mediaDetails);
+                            }
+
+                            mutableRelationsPage.setValue(roles);
+                        },
+                        error -> mutableErrorMsg.setValue(error.getMessage()))
+        );
+    }
+
+    // VNDB API calls
 
     private void fetchVNPage(VNRequestBody body){
         Call<VNPage> call = VNClient.fetchVNPage(body);

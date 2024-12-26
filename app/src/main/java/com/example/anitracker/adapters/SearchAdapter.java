@@ -163,7 +163,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
             holder.seasonAndFormat.setText(String.format("%s · %s (%s vols)", airedYears, mangaDetails.getFormat(), volumes));
         } else {
             // unfinished manga, display status
-            holder.seasonAndFormat.setText(String.format("%s · %s (%s)", airedYears, mangaDetails.getFormat(), mangaDetails.getStatus()));
+            holder.seasonAndFormat.setText(String.format("%s · %s (%s)", airedYears, mangaDetails.getFormat(), AnilistObjectMappings.mediaStatusToString.get(mangaDetails.getStatus())));
         }
 
         if (mangaDetails.getGenres() != null) {

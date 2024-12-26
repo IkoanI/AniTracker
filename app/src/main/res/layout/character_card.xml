@@ -43,7 +43,7 @@
                 android:layout_marginStart="10dp"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toEndOf="@id/charImage"
-                app:layout_constraintEnd_toStartOf="@id/vaName"/>
+                app:layout_constraintEnd_toStartOf="@id/relationName"/>
 
             <TextView
                 android:id="@+id/role"
@@ -55,10 +55,10 @@
                 android:layout_marginStart="10dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toEndOf="@id/charImage"
-                app:layout_constraintEnd_toStartOf="@id/language"/>
+                app:layout_constraintEnd_toStartOf="@id/relationInfo"/>
 
             <com.google.android.material.imageview.ShapeableImageView
-                android:id="@+id/vaImage"
+                android:id="@+id/relationImage"
                 android:layout_width="70dp"
                 android:layout_height="100dp"
                 android:foreground="?android:attr/selectableItemBackground"
@@ -70,29 +70,29 @@
                 tools:srcCompat="@tools:sample/avatars" />
 
             <TextView
-                android:id="@+id/vaName"
+                android:id="@+id/relationName"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="@string/va_name"
+                android:text="@string/relation_name"
                 android:textColor="@color/white"
                 android:textSize="12sp"
                 android:layout_marginEnd="10dp"
                 android:gravity="end"
                 app:layout_constraintStart_toEndOf="@id/charName"
                 app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/vaImage" />
+                app:layout_constraintEnd_toStartOf="@id/relationImage" />
 
             <TextView
-                android:id="@+id/language"
+                android:id="@+id/relationInfo"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="@string/language"
+                android:text="@string/relation_info"
                 android:textColor="@color/white"
                 android:textSize="12sp"
                 android:layout_marginEnd="10dp"
                 android:gravity="end"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/vaImage"
+                app:layout_constraintEnd_toStartOf="@id/relationImage"
                 app:layout_constraintStart_toEndOf="@id/role"/>
 
 

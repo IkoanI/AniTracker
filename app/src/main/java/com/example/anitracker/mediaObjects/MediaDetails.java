@@ -111,7 +111,7 @@ public class MediaDetails {
 
     public List<Info> getInfo() {
         List<Info> infoList = new ArrayList<>();
-        String[] infoOrder = {"Format", "Duration", "Chapters", "Volumes", "Length", "Play Time", "Status", "Released", "Finished",
+        String[] infoOrder = {"Format", "Duration", "Episodes","Chapters", "Volumes", "Length", "Play Time", "Status", "Released", "Finished",
                 "Season", "Average Score", "Mean Score", "Popularity", "Favorites", "Studios", "Producers", "Developers",
                 "Sources", "Hashtag", "Romaji", "English", "Native", "Aliases", "Synonyms", "Languages", "Platforms"};
 
@@ -259,15 +259,21 @@ public class MediaDetails {
     }
 
     public void setRelation(MediaRelation relation) {
-        this.setRelation(AnilistObjectMappings.mediaRelationsToString.get(relation));
+        if (this.relation != null) {
+            this.setRelation(AnilistObjectMappings.mediaRelationsToString.get(relation));
+        }
     }
 
     public void setRelation(CharacterRole relation) {
-        this.setRelation(AnilistObjectMappings.characterRoleToString.get(relation));
+        if (relation != null) {
+            this.setRelation(AnilistObjectMappings.characterRoleToString.get(relation));
+        }
     }
 
     public void setRelation(String relation) {
-        this.relation = relation;
+        if (relation != null) {
+            this.relation = relation;
+        }
     }
 
     public void setTrailer(Detail.Trailer trailer) {

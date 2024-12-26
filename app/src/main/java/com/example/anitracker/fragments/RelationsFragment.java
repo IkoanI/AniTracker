@@ -41,12 +41,12 @@ public class RelationsFragment extends Fragment implements RecyclerViewInterface
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.relationsViewAdapter = new RelationsViewAdapter(context, this, null);
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        this.relationsViewAdapter = new RelationsViewAdapter(context, this, null);
         View view = this.uiSetup(inflater, container);
         DetailsViewModel detailsViewModel = new ViewModelProvider(requireActivity()).get(DetailsViewModel.class);
         if (detailsViewModel.getType() != MediaType.VISUAL_NOVEL) {

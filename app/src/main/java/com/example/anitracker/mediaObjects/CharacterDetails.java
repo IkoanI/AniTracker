@@ -10,7 +10,7 @@ import java.util.Locale;
 public class CharacterDetails extends Entity {
     private String notes;
     private StaffDetails voiceActor;
-
+    private MediaDetails charMedia;
     // VN Exclusive
     private int height, weight, bust, waist, hips;
     private String cup;
@@ -170,5 +170,13 @@ public class CharacterDetails extends Entity {
 
     public List<MediaDetails> getVnRoles() {
         return this.vnRoles;
+    }
+
+    public MediaDetails getCharMedia() {
+        return charMedia;
+    }
+
+    public void setCharMedia(MediaDetails charMedia) {
+        this.charMedia = charMedia;
     }
 }

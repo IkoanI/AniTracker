@@ -26,11 +26,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CharactersFragment extends Fragment {
-    private Context context;
-    private DetailsViewModel detailsViewModel;
-    private CharacterViewAdapter characterViewAdapter;
-    private TextView noData;
-    private ProgressBar loadingIndicator;
+    protected Context context;
+    protected ProgressBar loadingIndicator;
+    protected CharacterViewAdapter characterViewAdapter;
+    protected TextView noData;
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -41,19 +40,32 @@ public class CharactersFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.detailsViewModel = new ViewModelProvider(requireActivity()).get(DetailsViewModel.class);
-        this.characterViewAdapter = new CharacterViewAdapter(this.context, this.detailsViewModel);
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        DetailsViewModel detailsViewModel = new ViewModelProvider(requireActivity()).get(DetailsViewModel.class);
+        this.characterViewAdapter = new CharacterViewAdapter(this.context, detailsViewModel);
         // observe updates to char list
-        this.detailsViewModel.observeCharPage().observe(getViewLifecycleOwner(), this::addChars);
+        detailsViewModel.observeCharPage().observe(getViewLifecycleOwner(), this::addChars);
         // initial retrieval of characters
         detailsViewModel.getCharPage();
+        View view = this.uiSetup(inflater, container);
 
 
+
+        // creating list of objects to populate recycler view
+        List<Object> objectList = new ArrayList<>();
+        if (detailsViewModel.getType() == MediaType.ANIME) {
+            // if not anime, no need for ability to change language of voice actor
+            objectList.add(new LanguageDropdown(this.context));
+        }
+        this.characterViewAdapter.addObjects(objectList);
+        return view;
+    }
+
+    public View uiSetup(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {
         View view = inflater.inflate(R.layout.recycler_view, container, false);
         this.noData = view.findViewById(R.id.noData);
         this.loadingIndicator = view.findViewById(R.id.loadingSpinner);
@@ -63,14 +75,6 @@ public class CharactersFragment extends Fragment {
         characterView.setAdapter(this.characterViewAdapter);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this.context);
         characterView.setLayoutManager(linearLayoutManager);
-
-        // creating list of objects to populate recycler view
-        List<Object> objectList = new ArrayList<>();
-        if (detailsViewModel.getType() == MediaType.ANIME) {
-            // if not anime, no need for ability to change language of voice actor
-            objectList.add(new LanguageDropdown(this.context));
-        }
-        this.characterViewAdapter.addObjects(objectList);
         return view;
     }
 

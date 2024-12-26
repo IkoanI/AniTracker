@@ -2,6 +2,7 @@ package com.example.anitracker.adapters;
 
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,17 +11,21 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.lifecycle.ViewModel;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.anitracker.R;
+import com.example.anitracker.activities.Details;
 import com.example.anitracker.activities.EntityDetails;
 import com.example.anitracker.mediaObjects.CharacterDetails;
+import com.example.anitracker.mediaObjects.MediaDetails;
 import com.example.anitracker.mediaObjects.StaffDetails;
 import com.example.anitracker.repository.AnilistObjectMappings;
 import com.example.anitracker.type.MediaType;
 import com.example.anitracker.uiObjects.Image;
 import com.example.anitracker.uiObjects.LanguageDropdown;
 import com.example.anitracker.viewModels.DetailsViewModel;
+import com.example.anitracker.viewModels.EntityViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +35,9 @@ public class CharacterViewAdapter extends RecyclerView.Adapter<RecyclerView.View
     private final List<Object> objectList;
     private final Context context;
 
-    private final DetailsViewModel viewModel;
+    private DetailsViewModel detailsViewModel;
+    private EntityViewModel entityViewModel;
+
     private Map<String, StaffDetails> vnKnownVAs;
 
     private boolean loading = false;
@@ -39,12 +46,17 @@ public class CharacterViewAdapter extends RecyclerView.Adapter<RecyclerView.View
             characterViewVar = 1;
 
 
-    public CharacterViewAdapter(Context context, DetailsViewModel viewModel) {
+    public CharacterViewAdapter(Context context, ViewModel viewModel) {
         this.context = context;
-        this.viewModel = viewModel;
+        Log.d("TESTING", String.valueOf(viewModel.getClass()));
+        if (viewModel instanceof DetailsViewModel) {
+            this.detailsViewModel = (DetailsViewModel) viewModel;
+        } else if (viewModel instanceof EntityViewModel) {
+            this.entityViewModel = (EntityViewModel) viewModel;
+        }
         this.objectList = new ArrayList<>();
-        if (viewModel.getType().equals(MediaType.VISUAL_NOVEL)) {
-            this.vnKnownVAs = viewModel.getKnownVAs();
+        if (this.detailsViewModel != null && this.detailsViewModel.getType().equals(MediaType.VISUAL_NOVEL)) {
+            this.vnKnownVAs = detailsViewModel.getKnownVAs();
         }
     }
 
@@ -88,8 +100,12 @@ public class CharacterViewAdapter extends RecyclerView.Adapter<RecyclerView.View
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        if (!loading && position >= getItemCount() - 1) {
-            viewModel.getCharPage();
+        if (!this.loading && position >= getItemCount() - 1) {
+            if (detailsViewModel != null) {
+                detailsViewModel.getCharPage();
+            } else if (entityViewModel != null) {
+                entityViewModel.getStaffChars();
+            }
         }
 
         switch (holder.getItemViewType()) {
@@ -101,17 +117,17 @@ public class CharacterViewAdapter extends RecyclerView.Adapter<RecyclerView.View
                     languageDropdownView.languageDropdown.setAdapter(languageDropdown.getAdapter());
                 }
 
-                languageDropdownView.languageDropdown.setSelection(viewModel.getLastSelectedLanguagePos());
+                languageDropdownView.languageDropdown.setSelection(detailsViewModel.getLastSelectedLanguagePos());
 
                 languageDropdownView.languageDropdown.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                     @Override
                     public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                        if (viewModel.getLastSelectedLanguagePos() != i) {
+                        if (detailsViewModel.getLastSelectedLanguagePos() != i) {
                             objectList.subList(1, objectList.size()).clear();
-                            viewModel.setCurrCharPage(1);
-                            viewModel.setLastSelectedLanguage(languageDropdown.getStaffLanguage(i));
-                            viewModel.setLastSelectedLanguagePos(i);
-                            viewModel.getCharPage();
+                            detailsViewModel.setCurrCharPage(1);
+                            detailsViewModel.setLastSelectedLanguage(languageDropdown.getStaffLanguage(i));
+                            detailsViewModel.setLastSelectedLanguagePos(i);
+                            detailsViewModel.getCharPage();
                         }
                     }
 
@@ -144,58 +160,89 @@ public class CharacterViewAdapter extends RecyclerView.Adapter<RecyclerView.View
                 characterView.charImage.setOnClickListener(e -> {
                     Intent intent = new Intent(context, EntityDetails.class);
                     intent.putExtra("ID", character.getId());
-                    intent.putExtra("Type", viewModel.getType().rawValue);
+                    if (detailsViewModel != null) {
+                        intent.putExtra("Type", detailsViewModel.getType().rawValue);
+                    } else {
+                        intent.putExtra("Type", entityViewModel.getMediaType().rawValue);
+                    }
                     intent.putExtra("Entity", "Char");
                     context.startActivity(intent);
                 });
 
-                if (character.getVoiceActor() == null) {
-                    characterView.hideVoiceActor();
-                } else {
+                if (character.getCharMedia() != null) {
+                    characterView.showRelation();
+                    MediaDetails charMedia = character.getCharMedia();
+                    characterView.relationName.setText(charMedia.getTitles().getUserPref());
+                    Image.loadImage(this.context, charMedia.getImage(), characterView.relationImage);
+                    characterView.relationImage.setOnClickListener(e -> {
+                        Intent intent = new Intent(context, Details.class);
+                        intent.putExtra("ID", charMedia.getId());
+                        intent.putExtra("Type", charMedia.getType().rawValue);
+                        context.startActivity(intent);
+                    });
+                    characterView.relationInfo.setText(String.format("%s · %s", charMedia.getFormat(), AnilistObjectMappings.mediaStatusToString.get(charMedia.getStatus())));
+
+                } else if (character.getVoiceActor() != null) {
                     // recyclerview reuses view so if previously set gone, must be set visible again
-                    characterView.showVoiceActor();
-                    characterView.vaName.setText(character.getVoiceActor().getName().getUserPref());
-                    Image.loadImage(this.context, character.getVoiceActor().getImage(), characterView.vaImage);
-                    characterView.vaImage.setOnClickListener(e -> {
+                    characterView.showRelation();
+                    StaffDetails va = character.getVoiceActor();
+                    characterView.relationName.setText(va.getName().getUserPref());
+                    Image.loadImage(this.context, va.getImage(), characterView.relationImage);
+                    characterView.relationImage.setOnClickListener(e -> {
                         Intent intent = new Intent(context, EntityDetails.class);
-                        intent.putExtra("ID", character.getVoiceActor().getId());
-                        intent.putExtra("Type", viewModel.getType().rawValue);
+                        intent.putExtra("ID", va.getId());
+                        if (detailsViewModel != null) {
+                            intent.putExtra("Type", detailsViewModel.getType().rawValue);
+                        } else {
+                            intent.putExtra("Type", entityViewModel.getMediaType().rawValue);
+                        }
                         intent.putExtra("Entity", "Staff");
                         context.startActivity(intent);
                     });
-                    characterView.language.setText(AnilistObjectMappings.staffLanguageToString.get(viewModel.getLastSelectedLanguage()));
+
+                    if (detailsViewModel != null) {
+                        characterView.relationInfo.setText(AnilistObjectMappings.staffLanguageToString.get(detailsViewModel.getLastSelectedLanguage()));
+                    }
+                } else {
+                    characterView.hideRelation();
                 }
+
+                break;
         }
     }
 
     @Override
     public int getItemCount() {
-        return Math.max(0, objectList.size() - (viewModel.getType().equals(MediaType.ANIME) ? 1 : 0));
+        if (detailsViewModel != null) {
+            return Math.max(0, objectList.size() - (detailsViewModel.getType().equals(MediaType.ANIME) ? 1 : 0));
+        }
+
+        return objectList.size();
     }
 
     private static class CharacterView extends RecyclerView.ViewHolder {
-        public TextView charName, role, vaName, language;
-        public ImageView charImage, vaImage;
+        public TextView charName, role, relationName, relationInfo;
+        public ImageView charImage, relationImage;
         public CharacterView(@NonNull View itemView) {
             super(itemView);
             charName = itemView.findViewById(R.id.charName);
             role = itemView.findViewById(R.id.role);
-            vaName = itemView.findViewById(R.id.vaName);
-            language = itemView.findViewById(R.id.language);
+            relationName = itemView.findViewById(R.id.relationName);
+            relationInfo = itemView.findViewById(R.id.relationInfo);
             charImage = itemView.findViewById(R.id.charImage);
-            vaImage = itemView.findViewById(R.id.vaImage);
+            relationImage = itemView.findViewById(R.id.relationImage);
         }
 
-        public void hideVoiceActor() {
-            this.vaImage.setVisibility(View.GONE);
-            this.vaName.setVisibility(View.GONE);
-            this.language.setVisibility(View.GONE);
+        public void hideRelation() {
+            this.relationImage.setVisibility(View.GONE);
+            this.relationName.setVisibility(View.GONE);
+            this.relationInfo.setVisibility(View.GONE);
         }
 
-        public void showVoiceActor() {
-            this.vaImage.setVisibility(View.VISIBLE);
-            this.vaName.setVisibility(View.VISIBLE);
-            this.language.setVisibility(View.VISIBLE);
+        public void showRelation() {
+            this.relationImage.setVisibility(View.VISIBLE);
+            this.relationName.setVisibility(View.VISIBLE);
+            this.relationInfo.setVisibility(View.VISIBLE);
         }
 
     }

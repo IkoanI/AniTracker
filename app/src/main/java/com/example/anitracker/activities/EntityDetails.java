@@ -19,6 +19,7 @@ import com.example.anitracker.R;
 import com.example.anitracker.adapters.VPAdapter;
 import com.example.anitracker.fragments.EntityOverviewFragment;
 import com.example.anitracker.fragments.EntityRolesFragment;
+import com.example.anitracker.fragments.StaffCharsFragment;
 import com.example.anitracker.mediaObjects.Entity;
 import com.example.anitracker.type.MediaType;
 import com.example.anitracker.uiObjects.Image;
@@ -30,7 +31,6 @@ import com.google.android.material.tabs.TabLayoutMediator;
 import java.util.Objects;
 
 public class EntityDetails extends AppCompatActivity {
-    private final String[] fragmentTitles = {"Overview", "Roles"};
     EntityViewModel viewModel;
     AppBarLayout appBarLayout;
 
@@ -89,13 +89,18 @@ public class EntityDetails extends AppCompatActivity {
         // creating fragments
         EntityOverviewFragment overviewFragment = new EntityOverviewFragment();
         EntityRolesFragment rolesFragment = new EntityRolesFragment();
-        
-        // adding fragments to view pager
         viewPagerAdapter.addFragment(overviewFragment);
         viewPagerAdapter.addFragment(rolesFragment);
-
         viewPager.setAdapter(viewPagerAdapter);
-        new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> tab.setText(fragmentTitles[position])).attach();
+        if (Objects.equals(viewModel.getEntityType(), "Char")) {
+            String[] fragmentTitles = {"Overview", "Roles"};
+            new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> tab.setText(fragmentTitles[position])).attach();
+        } else {
+            String[] fragmentTitles = {"Overview", "Roles", "Characters"};
+            StaffCharsFragment staffCharsFragment = new StaffCharsFragment();
+            viewPagerAdapter.addFragment(staffCharsFragment);
+            new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> tab.setText(fragmentTitles[position])).attach();
+        }
     }
 
     @Override

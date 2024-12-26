@@ -9,8 +9,6 @@ import com.example.anitracker.mediaObjects.MediaDetails;
 import com.example.anitracker.mediaObjects.StaffDetails;
 import com.example.anitracker.repository.ApiRepository;
 import com.example.anitracker.type.MediaType;
-import com.example.anitracker.type.Page;
-import com.example.anitracker.vnObjects.VNCharPage;
 
 import java.util.List;
 
@@ -28,15 +26,20 @@ public class EntityViewModel extends ViewModel {
     private final MutableLiveData<StaffDetails> liveStaffDetail;
 
     // roles fragment
-    private final MutableLiveData<List<MediaDetails>> liveCharRoles;
+    private final MutableLiveData<List<MediaDetails>> liveRoles;
     private int currRolePage = 1;
+
+    // staff chars fragment
+    private final MutableLiveData<List<CharacterDetails>> liveStaffChars;
+    private int currStaffCharPage = 1;
 
     public EntityViewModel() {
         this.repository = new ApiRepository();
         this.liveErrorMsg = repository.getMutableErrorMsg();
         this.liveCharDetail = repository.getMutableCharacterDetail();
         this.liveStaffDetail = repository.getMutableStaffDetail();
-        this.liveCharRoles = repository.getMutableRelationsPage();
+        this.liveRoles = repository.getMutableRelationsPage();
+        this.liveStaffChars = repository.getMutableCharPage();
     }
 
     public MediaType getMediaType() {
@@ -87,16 +90,34 @@ public class EntityViewModel extends ViewModel {
         }
     }
 
+    public void getStaffChars() {
+        if (this.mediaType != MediaType.VISUAL_NOVEL) {
+            this.repository.fetchStaffChars(Integer.parseInt(this.id), this.currStaffCharPage);
+            this.currStaffCharPage++;
+        }
+    }
+
+    public void getStaffRoles() {
+        if (this.mediaType != MediaType.VISUAL_NOVEL) {
+            this.repository.fetchStaffRoles(Integer.parseInt(this.id), this.currStaffCharPage);
+            this.currRolePage++;
+        }
+    }
+
     public LiveData<CharacterDetails> observeCharDetail() {
         return this.liveCharDetail;
     }
 
-    public LiveData<List<MediaDetails>> observeCharRoles() {
-        return this.liveCharRoles;
+    public LiveData<List<MediaDetails>> observeRoles() {
+        return this.liveRoles;
     }
 
     public LiveData<StaffDetails> observeStaffDetail() {
         return this.liveStaffDetail;
+    }
+
+    public LiveData<List<CharacterDetails>> observeStaffChars() {
+        return this.liveStaffChars;
     }
 
     public LiveData<String> observeErrorMsg() { return liveErrorMsg; }

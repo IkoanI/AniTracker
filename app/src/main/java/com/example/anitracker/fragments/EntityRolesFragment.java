@@ -17,28 +17,27 @@ import com.example.anitracker.type.MediaType;
 import com.example.anitracker.viewModels.EntityViewModel;
 
 public class EntityRolesFragment extends RelationsFragment {
-    private EntityViewModel viewModel;
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        this.viewModel = new ViewModelProvider(requireActivity()).get(EntityViewModel.class);
-        this.relationsViewAdapter = new RelationsViewAdapter(context, this, this.viewModel);
-    }
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        EntityViewModel viewModel = new ViewModelProvider(requireActivity()).get(EntityViewModel.class);
+        this.relationsViewAdapter = new RelationsViewAdapter(context, this, viewModel);
+
         View view = this.uiSetup(inflater, container);
-        if (viewModel.getEntityType().equals("Char")) {
-            if (viewModel.getMediaType() != MediaType.VISUAL_NOVEL) {
-                viewModel.observeCharRoles().observe(getViewLifecycleOwner(), this::addRelations);
+        if (viewModel.getMediaType() != MediaType.VISUAL_NOVEL) {
+            viewModel.observeRoles().observe(getViewLifecycleOwner(), this::addRelations);
+            if (viewModel.getEntityType().equals("Char")) {
                 viewModel.getCharRoles();
-            } else if (viewModel.getMediaType() == MediaType.VISUAL_NOVEL) {
+            } else {
+                viewModel.getStaffRoles();
+            }
+        } else {
+            if (viewModel.getEntityType().equals("Char")) {
                 this.addRelations(viewModel.getLastFetchedCharDetail().getVnRoles());
+            } else {
+                // VN STAFF ROLES
             }
         }
-
 
         return view;
     }

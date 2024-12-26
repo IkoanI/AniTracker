@@ -2,18 +2,12 @@ fragment shortDetail on Media {
     title {
         userPreferred
     }
-    averageScore
     coverImage {
         large
     }
     format
     id
-    genres
-    favourites
     status
-    startDate {
-        year
-    }
     type
 }
 
@@ -249,6 +243,35 @@ query StaffPage ($mediaId : Int!, $pageNo : Int!) {
 query StaffDetail($id : Int!) {
     Staff(id : $id) {
         ...staffDetail
+    }
+}
+
+query StaffChars($id: Int!, $page: Int!) {
+    Staff(id : $id) {
+        characterMedia(sort: FAVOURITES_DESC, page: $page, perPage: 25) {
+            edges {
+                characterRole
+                characters {
+                    ...shortCharDetail
+                }
+                node {
+                    ...shortDetail
+                }
+            }
+        }
+    }
+}
+
+query StaffRoles($id: Int!, $page: Int!) {
+    Staff(id : $id) {
+        staffMedia(sort: POPULARITY_DESC, page: $page, perPage: 25) {
+            edges {
+                staffRole
+                node {
+                    ...shortDetail
+                }
+            }
+        }
     }
 }
 

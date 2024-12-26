@@ -30,13 +30,12 @@ public class Date {
         return day;
     }
 
-
     @Override
     @NonNull
     public String toString() {
         return String.format("%s%s%s",
-                this.year == -1 ? "" : this.year + " ",
+                this.day == -1 ? "" : this.day + " ",
                 this.month == -1 ? "" : this.months[this.month - 1] + " ",
-                this.day == -1 ? "" : this.day);
+                this.year == -1 ? "" : this.year);
     }
 }

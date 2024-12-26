@@ -2,6 +2,8 @@ package com.example.anitracker.mediaObjects;
 
 import com.example.anitracker.vnObjects.VNLink;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -57,8 +59,11 @@ public class StaffDetails extends Entity {
     }
 
     public void setPrimaryOccupations(List<String> primaryOccupations) {
-        this.primaryOccupations = primaryOccupations;
-        this.infoMap.put("Primary Occupations", String.join("\n\n", this.primaryOccupations));
+        if (primaryOccupations != null && !primaryOccupations.isEmpty()) {
+            this.primaryOccupations = primaryOccupations;
+            this.infoMap.put("Primary Occupations", String.join("\n\n", this.primaryOccupations));
+
+        }
     }
 
     public Date getDateOfDeath() {
@@ -66,8 +71,8 @@ public class StaffDetails extends Entity {
     }
 
     public void setDateOfDeath(Date dateOfDeath) {
-        this.dateOfDeath = dateOfDeath;
-        if (!this.dateOfDeath.toString().isBlank()) {
+        if (StringUtils.isNotBlank(dateOfDeath.toString())) {
+            this.dateOfDeath = dateOfDeath;
             this.infoMap.put("Date of Death", this.dateOfDeath.toString());
         }
     }

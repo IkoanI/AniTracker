@@ -27,12 +27,14 @@ public class RelationsViewAdapter extends RecyclerView.Adapter<RecyclerView.View
     private final List<MediaDetails> relationsList = new ArrayList<>();
     private final RecyclerViewInterface recyclerViewInterface;
     private boolean loading = false;
-    private final ViewModel viewModel;
+    private EntityViewModel entityViewModel;
 
     public RelationsViewAdapter(Context context, RecyclerViewInterface recyclerViewInterface, ViewModel viewModel) {
         this.context = context;
         this.recyclerViewInterface = recyclerViewInterface;
-        this.viewModel = viewModel;
+        if (viewModel instanceof EntityViewModel) {
+            this.entityViewModel = (EntityViewModel) viewModel;
+        }
     }
 
     @NonNull
@@ -45,12 +47,14 @@ public class RelationsViewAdapter extends RecyclerView.Adapter<RecyclerView.View
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        if (viewModel instanceof EntityViewModel
-                && !loading && position >= getItemCount()-1
-                && !((EntityViewModel) viewModel).getMediaType().equals(MediaType.VISUAL_NOVEL)) {
-
-            ((EntityViewModel) viewModel).getCharRoles();
+        if (entityViewModel != null && !loading && position >= getItemCount()-1  && !entityViewModel.getMediaType().equals(MediaType.VISUAL_NOVEL)) {
+            if (entityViewModel.getEntityType().equals("Char")) {
+                entityViewModel.getCharRoles();
+            } else {
+                entityViewModel.getStaffRoles();
+            }
         }
+
         RelationsView relationsViewItem = (RelationsView) holder;
         MediaDetails relation = this.getRelation(position);
         Image.loadImage(this.context, relation.getImage(), relationsViewItem.coverImg);
@@ -75,7 +79,7 @@ public class RelationsViewAdapter extends RecyclerView.Adapter<RecyclerView.View
         return relationsList.get(pos);
     }
 
-    public static class RelationsView extends RecyclerView.ViewHolder{
+    public static class RelationsView extends RecyclerView.ViewHolder {
         TextView relation, title, formatAndStatus;
         ImageView coverImg;
         public RelationsView(@NonNull View itemView, RecyclerViewInterface recyclerViewInterface) {
