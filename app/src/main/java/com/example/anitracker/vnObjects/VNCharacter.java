@@ -61,6 +61,7 @@ public class VNCharacter {
         characterDetails.setName(name);
         characterDetails.setId(this.id);
         characterDetails.setImage(this.getImage().getUrl());
+
         for (VNResponse vn : this.getVns()) {
             if (Objects.equals(vn.getId(), vndbID)) {
                 characterDetails.setRole(StringUtils.capitalize(vn.getRole()));
@@ -75,7 +76,7 @@ public class VNCharacter {
         characterDetails.setWaist(this.waist);
         characterDetails.setHips(this.hips);
         characterDetails.setCup(this.cup);
-        characterDetails.setAge(String.valueOf(this.age));
+        characterDetails.setAge(this.age);
         characterDetails.setDateOfbirth(this.getBirthday());
         characterDetails.setGender(this.getSex());
         characterDetails.setTraits(this.traits);

@@ -1,19 +1,23 @@
 package com.example.anitracker.vnObjects;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Screenshots {
-    List<String> screenshotURLs;
+    private final List<VNImage> screenshots;
 
-    public Screenshots(List<String> screenshotURLs) {
-        this.screenshotURLs = screenshotURLs;
+    public Screenshots(List<VNImage> screenshots) {
+        this.screenshots = screenshots;
     }
 
     public List<String> getScreenshotURLs() {
-        return screenshotURLs;
-    }
-
-    public void setScreenshotURLs(List<String> screenshotURLs) {
-        this.screenshotURLs = screenshotURLs;
+        if (this.screenshots != null && !this.screenshots.isEmpty()) {
+            List<String> screenshotURLs = new ArrayList<>();
+            for (VNImage screenshot : this.screenshots) {
+                screenshotURLs.add(screenshot.getUrl());
+            }
+            return screenshotURLs;
+        }
+        return null;
     }
 }

@@ -50,6 +50,7 @@ public class RelationsFragment extends Fragment implements RecyclerViewInterface
         DetailsViewModel viewModel = new ViewModelProvider(requireActivity()).get(DetailsViewModel.class);
         this.relationsViewAdapter = new RelationsViewAdapter(context, this, viewModel);
         DetailsViewModel detailsViewModel = new ViewModelProvider(requireActivity()).get(DetailsViewModel.class);
+        View view = this.uiSetup(inflater, container);
 
         if (detailsViewModel.getMediaType() != MediaType.VISUAL_NOVEL) {
             detailsViewModel.observeRelationsPage().observe(getViewLifecycleOwner(), this::addRelations);
@@ -70,7 +71,7 @@ public class RelationsFragment extends Fragment implements RecyclerViewInterface
             }
         }
 
-        return this.uiSetup(inflater, container);
+        return view;
     }
 
     public View uiSetup(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {

@@ -159,7 +159,7 @@ public class CharacterDetails extends Entity {
         if (roles != null && !roles.isEmpty()) {
             List<MediaDetails> vnRoles = new ArrayList<>();
             for (VNResponse vn : roles) {
-                MediaDetails details = vn.convertToMediaObject();;
+                MediaDetails details = vn.convertToMediaObject();
                 details.setRelation(vn.getRole());
                 vnRoles.add(details);
             }

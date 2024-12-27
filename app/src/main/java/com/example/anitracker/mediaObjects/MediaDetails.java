@@ -132,6 +132,7 @@ public class MediaDetails {
     }
 
     public void setCoverImg(String coverImg) {
+
         this.coverImg = coverImg;
     }
 
@@ -259,7 +260,7 @@ public class MediaDetails {
     }
 
     public void setRelation(MediaRelation relation) {
-        if (this.relation != null) {
+        if (relation != null) {
             this.setRelation(AnilistObjectMappings.mediaRelationsToString.get(relation));
         }
     }

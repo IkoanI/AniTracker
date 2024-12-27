@@ -67,6 +67,10 @@ public class VNResponse {
     @SerializedName("extlinks")
     private List<VNLink> links;
 
+    // exclusive to show specific release of visual novel a character is associated with
+    @SerializedName("release")
+    private VNRelease release;
+
 
     public String getId() {
         return id;
@@ -77,7 +81,7 @@ public class VNResponse {
     }
 
     public VNImage getImage() {
-        if(image == null){
+        if (image == null) {
             return new VNImage();
         }
 
@@ -136,13 +140,29 @@ public class VNResponse {
     }
 
     public List<String> getLanguages() {
-        this.languages.replaceAll(VNLanguage.languageMap::get);
-        return this.languages;
+        if (this.languages != null && !this.languages.isEmpty()) {
+            this.languages.replaceAll(VNLanguage.languageMap::get);
+            return this.languages;
+        }
+
+        return null;
     }
 
     public List<String> getPlatforms() {
-        this.platforms.replaceAll(VNPlatform.platformMap::get);
-        return this.platforms;
+        if (this.platforms != null && !this.platforms.isEmpty()) {
+            this.platforms.replaceAll(VNPlatform.platformMap::get);
+            return this.platforms;
+        }
+
+        return null;
+    }
+
+    public String getRole() {
+        return StringUtils.capitalize(this.role);
+    }
+
+    public List<VNLink> getLinks() {
+        return links;
     }
 
     public VNDetails convertToMediaObject() {
@@ -150,13 +170,18 @@ public class VNResponse {
         String natTitle = null, romTitle = null, engTitle = null;
         List<String> synonyms = new ArrayList<>();
 
+        if (this.release != null) {
+            vnDetails.setRelease(this.release);
+            this.title = String.format("%s (%s)", this.title, this.release.getTitle());
+        }
+
         if (this.titles != null) {
             for (VNTitle title : this.titles) {
                 if (title.isMain()) {
                     natTitle = title.getTitle();
                     romTitle = title.getLatin();
                 } else if (title.isOfficial()) {
-                    if( Objects.equals(title.getLang(), "en")) {
+                    if (Objects.equals(title.getLang(), "en")) {
                         engTitle = title.getTitle();
                     } else {
                         synonyms.add(title.getTitle());
@@ -166,35 +191,21 @@ public class VNResponse {
         }
 
         vnDetails.setTitles(new Titles(engTitle, natTitle, romTitle, this.title));
-
-        if (!synonyms.isEmpty()) {vnDetails.setSynonyms(synonyms);}
-
-        if (this.aliases != null && !this.aliases.isEmpty()) { vnDetails.setAliases(this.aliases); }
-
+        vnDetails.setSynonyms(synonyms);
+        vnDetails.setAliases(this.aliases);
         vnDetails.setCoverImg(this.getImage().getThumbnail());
-
-        if (this.desc != null) {vnDetails.setDesc(this.desc);}
-
+        vnDetails.setDesc(this.desc);
         vnDetails.setStatus(this.getStatus());
-
         vnDetails.setId(this.id);
-
         vnDetails.setAvgScore(this.getRating());
-
         vnDetails.setMeanScore(Math.round(this.average));
-
         if (this.tags != null) {
             vnDetails.setAllTags(VNTag.getAllTags(this.tags));
             vnDetails.setNoSpoilerTags(VNTag.getNoSpoilerTags(this.tags));
         }
-
-
-        if (this.developers != null && !this.developers.isEmpty()) { vnDetails.setDevelopers(this.developers); }
-
-        if (this.length_minutes > 0) {vnDetails.setLengthMinutes(this.length_minutes, this.lengthVotes);}
-
+        vnDetails.setDevelopers(this.developers);
+        vnDetails.setLengthMinutes(this.length_minutes, this.lengthVotes);
         vnDetails.setLength(this.getLength());
-
         if (this.released != null) {
             int[] date = {-1, -1, -1};
 
@@ -211,21 +222,11 @@ public class VNResponse {
             vnDetails.setStartDate(new Date(date[0], date[1], date[2]));
         }
 
-        if (this.screenshots != null) {
-            List<String> screenshotURLs = new ArrayList<>();
-            for (VNImage screenshot: this.screenshots) {
-                screenshotURLs.add(screenshot.url);
-            }
-            vnDetails.setScreenshots(new Screenshots(screenshotURLs));
+        if (this.screenshots != null && !this.screenshots.isEmpty()) {
+            vnDetails.setScreenshots(new Screenshots(this.screenshots));
         }
 
-        if (this.relations != null && !this.relations.isEmpty()) {
-            List<MediaDetails> relationsList = new ArrayList<>();
-            for (VNRelation relation : this.relations) {
-                relationsList.add(relation.convertToMediaObject());
-            }
-            vnDetails.setRelations(relationsList);
-        }
+        vnDetails.setRelations(this.relations);
 
         if (this.staffs != null && !this.staffs.isEmpty()) {
             List<StaffDetails> staffsList = new ArrayList<>();
@@ -250,30 +251,15 @@ public class VNResponse {
 
             vnDetails.setKnownVAs(knownVAs);
         }
-
-        if (this.languages != null && !this.languages.isEmpty()) {
-            vnDetails.setLanguages(this.getLanguages());
-        }
-
-        if (this.platforms != null && !this.platforms.isEmpty()) {
-            vnDetails.setPlatforms(this.getPlatforms());
-        }
-
+        vnDetails.setLanguages(this.getLanguages());
+        vnDetails.setPlatforms(this.getPlatforms());
         vnDetails.setLinks(this.links);
-
+        vnDetails.setCharRole(this.getRole());
         vnDetails.setFormat("Visual Novel");
-
         vnDetails.setType(MediaType.VISUAL_NOVEL);
 
         return vnDetails;
     }
 
-    public String getRole() {
-        return StringUtils.capitalize(this.role);
-    }
 
-
-    public List<VNLink> getLinks() {
-        return links;
-    }
 }

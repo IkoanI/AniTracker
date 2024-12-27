@@ -483,7 +483,6 @@ public class ApiRepository {
         List<Object> filters = Arrays.asList("vn","=", new String[]{"id","=",vndbID});
         VNRequestBody body = new VNRequestBody("name", false, 50, page, fields, filters);
         this.fetchVNCharPage(vndbID,  body);
-
     }
 
     public void fetchVNCharDetails(String vndbID) {
@@ -521,6 +520,17 @@ public class ApiRepository {
         List<Object> filters = Arrays.asList("id", "=", vndbID);
         VNRequestBody body = new VNRequestBody(null, false, 1, 1, fields, filters);
         this.fetchVNStaffPage(body);
+    }
+
+    public void fetchVNStaffChars(String vndbID, int page) {
+        String fields = "name, image{url}, vns{title, role, release{title}, image{thumbnail}}";
+        List<Object> filters = Arrays.asList("seiyuu","=", new String[]{"id","=",vndbID});
+        VNRequestBody body = new VNRequestBody(null, false, 50, page, fields, filters);
+        this.fetchVNCharPage(vndbID, body);
+    }
+
+    public void fetchVNStaffRoles(String vndbID, int page) {
+
     }
 
     // setter helper functions

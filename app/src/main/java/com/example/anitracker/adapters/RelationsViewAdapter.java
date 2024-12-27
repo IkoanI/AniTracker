@@ -58,7 +58,8 @@ public class RelationsViewAdapter extends RecyclerView.Adapter<RecyclerView.View
         Image.loadImage(this.context, relation.getImage(), relationsViewItem.coverImg);
         relationsViewItem.relation.setText(relation.getRelation());
         relationsViewItem.title.setText(relation.getTitles().getUserPref());
-        relationsViewItem.formatAndStatus.setText(String.format("%s · %s", relation.getFormat(), AnilistObjectMappings.mediaStatusToString.get(relation.getStatus())));
+        relationsViewItem.formatAndStatus.setText(String.format("%s · %s", relation.getFormat(),
+                this.detailsViewModel.getMediaType().equals(MediaType.VISUAL_NOVEL) ? relation.getStatus() : AnilistObjectMappings.mediaStatusToString.get(relation.getStatus())));
     }
 
     @Override

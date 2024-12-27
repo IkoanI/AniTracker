@@ -101,7 +101,7 @@ public class OverviewFragment extends Fragment {
 
         if (details instanceof VNDetails) {
             VNDetails vnDetails = (VNDetails) details;
-            if (!vnDetails.getScreenshots().getScreenshotURLs().isEmpty()) {
+            if (vnDetails.getScreenshots() != null) {
                 overviewViewObjects.add(new Header("Screenshots"));
                 overviewViewObjects.add(vnDetails.getScreenshots());
             }

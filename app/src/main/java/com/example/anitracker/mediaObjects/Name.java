@@ -1,10 +1,4 @@
 package com.example.anitracker.mediaObjects;
-
-import androidx.annotation.NonNull;
-
-import com.example.anitracker.vnObjects.VNAlias;
-
-import java.util.ArrayList;
 import java.util.List;
 
 public class Name {

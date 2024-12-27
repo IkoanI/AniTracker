@@ -118,8 +118,10 @@ public class DetailsViewModel extends ViewModel {
     public void getStaffChars() {
         if (this.mediaType != MediaType.VISUAL_NOVEL) {
             this.repository.fetchStaffChars(Integer.parseInt(this.id), this.currCharPage);
-            this.currCharPage++;
+        } else {
+            this.repository.fetchVNStaffChars(this.id, this.currCharPage);
         }
+        this.currCharPage++;
     }
 
     public LiveData<List<CharacterDetails>> observeCharPage() {

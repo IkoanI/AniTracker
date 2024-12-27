@@ -15,11 +15,15 @@ public class VNDetails extends MediaDetails {
     private Screenshots screenshots;
     private int lengthMinutes, lengthVotes;
     private String length;
+    private VNRelease release;
     private List<String> languages;
     private List<String> platforms;
     private List<MediaDetails> relations = new ArrayList<>();
     private List<StaffDetails> staffs = new ArrayList<>();
     private Map<String, StaffDetails> knownVAs = new HashMap<>();
+
+    // character role in vn
+    private String charRole;
 
     private List<VNLink> links;
 
@@ -52,15 +56,23 @@ public class VNDetails extends MediaDetails {
     }
 
     public void setStaffs(List<StaffDetails> staffs) {
-        this.staffs = staffs;
+        if (staffs != null && !staffs.isEmpty()) {
+            this.staffs = staffs;
+        }
     }
 
     public List<StaffDetails> getStaffs() {
         return this.staffs;
     }
 
-    public void setRelations(List<MediaDetails> relations) {
-        this.relations = relations;
+    public void setRelations(List<VNRelation> relations) {
+        if (relations != null && !relations.isEmpty()) {
+            List<MediaDetails> relationsList = new ArrayList<>();
+            for (VNRelation relation : relations) {
+                relationsList.add(relation.convertToMediaObject());
+            }
+            this.relations = relationsList;
+        }
     }
 
     public List<MediaDetails> getRelations() {
@@ -68,26 +80,32 @@ public class VNDetails extends MediaDetails {
     }
 
     public void setDevelopers(List<Developer> developers) {
-        this.developers = developers;
+        if (developers != null && !developers.isEmpty()) {
+            this.developers = developers;
 
-        StringBuilder developerNames = new StringBuilder();
-        for (Developer developer : this.developers) {
-            developerNames.append(developer.name).append("\n\n");
+            StringBuilder developerNames = new StringBuilder();
+            for (Developer developer : this.developers) {
+                developerNames.append(developer.name).append("\n\n");
+            }
+            infoMap.put("Developers", developerNames.toString().trim());
         }
-        infoMap.put("Developers", developerNames.toString().trim());
     }
 
     public void setLengthMinutes(int lengthMinutes, int lengthVotes) {
-        this.lengthMinutes = lengthMinutes;
-        int hours = lengthMinutes / 60;
-        int minutes = lengthMinutes % 60;
-        infoMap.put("Play Time", String.format(Locale.ENGLISH, "%dh %dm\n(from %d votes)",
-                hours, minutes, lengthVotes));
+        if (lengthMinutes > 0) {
+            this.lengthMinutes = lengthMinutes;
+            int hours = lengthMinutes / 60;
+            int minutes = lengthMinutes % 60;
+            infoMap.put("Play Time", String.format(Locale.ENGLISH, "%dh %dm\n(from %d votes)",
+                    hours, minutes, lengthVotes));
+        }
     }
 
     public void setAliases(List<String> aliases) {
-        this.aliases = aliases;
-        infoMap.put("Aliases", String.join("\n\n", this.aliases));
+        if (aliases != null && !aliases.isEmpty()) {
+            this.aliases = aliases;
+            infoMap.put("Aliases", String.join("\n\n", this.aliases));
+        }
     }
 
     public void setLength(String length) {
@@ -96,13 +114,17 @@ public class VNDetails extends MediaDetails {
     }
 
     public void setLanguages(List<String> languages) {
-        this.languages = languages;
-        infoMap.put("Languages", String.join("\n\n", this.languages));
+        if (languages != null && !languages.isEmpty()) {
+            this.languages = languages;
+            infoMap.put("Languages", String.join("\n\n", this.languages));
+        }
     }
 
     public void setPlatforms(List<String> platforms) {
-        this.platforms = platforms;
-        infoMap.put("Platforms", String.join("\n\n", this.platforms));
+        if (platforms != null && !platforms.isEmpty()) {
+            this.platforms = platforms;
+            infoMap.put("Platforms", String.join("\n\n", this.platforms));
+        }
     }
 
     public Screenshots getScreenshots() {
@@ -129,5 +151,22 @@ public class VNDetails extends MediaDetails {
         if (links != null && !links.isEmpty()) {
             this.links = links;
         }
+    }
+
+    public VNRelease getRelease() {
+        return release;
+    }
+
+    public void setRelease(VNRelease release) {
+        this.release = release;
+    }
+
+
+    public String getCharRole() {
+        return charRole;
+    }
+
+    public void setCharRole(String charRole) {
+        this.charRole = charRole;
     }
 }

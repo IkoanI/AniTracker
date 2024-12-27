@@ -22,6 +22,7 @@ import com.example.anitracker.type.MediaType;
 import com.example.anitracker.uiObjects.Image;
 import com.example.anitracker.uiObjects.LanguageDropdown;
 import com.example.anitracker.viewModels.DetailsViewModel;
+import com.example.anitracker.vnObjects.VNDetails;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,9 +52,37 @@ public class CharacterViewAdapter extends RecyclerView.Adapter<RecyclerView.View
         }
     }
 
+    public CharacterDetails copyVNChar(CharacterDetails characterDetails) {
+        CharacterDetails newCharacterDetails = new CharacterDetails();
+        newCharacterDetails.setImage(characterDetails.getImage());
+        newCharacterDetails.setName(characterDetails.getName());
+        newCharacterDetails.setRole(characterDetails.getRole());
+
+        return newCharacterDetails;
+    }
+
     public void addObjects(List<?> objects) {
         this.loading = true;
-        objectList.addAll(objects);
+        if (Objects.equals(this.detailsViewModel.getEntityType(), "Staff") && this.detailsViewModel.getMediaType().equals(MediaType.VISUAL_NOVEL)) {
+            for (Object object : objects) {
+                CharacterDetails characterDetails = (CharacterDetails) object;
+                if (characterDetails.getVnRoles() != null && !characterDetails.getVnRoles().isEmpty()) {
+                    for (MediaDetails mediaDetails : characterDetails.getVnRoles()) {
+                        CharacterDetails newCharacterDetails = this.copyVNChar(characterDetails);
+                        VNDetails vnDetails = (VNDetails) mediaDetails;
+                        newCharacterDetails.setCharMedia(mediaDetails);
+                        newCharacterDetails.setRole(vnDetails.getCharRole());
+
+                        objectList.add(newCharacterDetails);
+                    }
+                } else {
+                    objectList.add(characterDetails);
+                }
+            }
+        } else {
+            objectList.addAll(objects);
+        }
+
         notifyItemRangeInserted(this.getItemCount()-objects.size(), objects.size());
         this.loading = false;
     }
@@ -92,10 +121,10 @@ public class CharacterViewAdapter extends RecyclerView.Adapter<RecyclerView.View
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if (!this.loading && position >= getItemCount() - 1) {
-            if (Objects.equals(this.detailsViewModel.getEntityType(), "Char")) {
-                this.detailsViewModel.getCharPage();
-            } else {
+            if (Objects.equals(this.detailsViewModel.getEntityType(), "Staff")) {
                 this.detailsViewModel.getStaffChars();
+            } else {
+                this.detailsViewModel.getCharPage();
             }
         }
 
@@ -167,7 +196,8 @@ public class CharacterViewAdapter extends RecyclerView.Adapter<RecyclerView.View
                         intent.putExtra("Type", charMedia.getType().rawValue);
                         context.startActivity(intent);
                     });
-                    characterView.relationInfo.setText(String.format("%s · %s", charMedia.getFormat(), AnilistObjectMappings.mediaStatusToString.get(charMedia.getStatus())));
+                    characterView.relationInfo.setText(String.format("%s · %s", charMedia.getFormat(),
+                            this.detailsViewModel.getMediaType().equals(MediaType.VISUAL_NOVEL) ? charMedia.getStatus() : AnilistObjectMappings.mediaStatusToString.get(charMedia.getStatus())));
 
                 } else if (character.getVoiceActor() != null) {
                     // recyclerview reuses view so if previously set gone, must be set visible again
