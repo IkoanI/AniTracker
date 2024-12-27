@@ -24,6 +24,7 @@ import com.example.anitracker.viewModels.DetailsViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class CharactersFragment extends Fragment {
     protected Context context;
@@ -47,22 +48,23 @@ public class CharactersFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         DetailsViewModel detailsViewModel = new ViewModelProvider(requireActivity()).get(DetailsViewModel.class);
         this.characterViewAdapter = new CharacterViewAdapter(this.context, detailsViewModel);
+        // creating list of objects to populate recycler view
+        List<Object> objectList = new ArrayList<>();
         // observe updates to char list
         detailsViewModel.observeCharPage().observe(getViewLifecycleOwner(), this::addChars);
         // initial retrieval of characters
-        detailsViewModel.getCharPage();
-        View view = this.uiSetup(inflater, container);
-
-
-
-        // creating list of objects to populate recycler view
-        List<Object> objectList = new ArrayList<>();
-        if (detailsViewModel.getType() == MediaType.ANIME) {
-            // if not anime, no need for ability to change language of voice actor
-            objectList.add(new LanguageDropdown(this.context));
+        if (Objects.equals(detailsViewModel.getEntityType(), "Staff")) {
+            detailsViewModel.getStaffChars();
+        } else {
+            detailsViewModel.getCharPage();
+            if (detailsViewModel.getMediaType() == MediaType.ANIME) {
+                // if not anime, no need for ability to change language of voice actor
+                objectList.add(new LanguageDropdown(this.context));
+            }
         }
+
         this.characterViewAdapter.addObjects(objectList);
-        return view;
+        return this.uiSetup(inflater, container);
     }
 
     public View uiSetup(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {

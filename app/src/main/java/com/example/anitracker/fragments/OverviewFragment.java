@@ -15,8 +15,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.anitracker.R;
 import com.example.anitracker.adapters.OverviewViewAdapter;
+import com.example.anitracker.mediaObjects.CharacterDetails;
 import com.example.anitracker.mediaObjects.Description;
+import com.example.anitracker.mediaObjects.Entity;
 import com.example.anitracker.mediaObjects.MediaDetails;
+import com.example.anitracker.mediaObjects.StaffDetails;
+import com.example.anitracker.type.MediaType;
 import com.example.anitracker.uiObjects.Header;
 import com.example.anitracker.uiObjects.TagsHeader;
 import com.example.anitracker.viewModels.DetailsViewModel;
@@ -27,13 +31,13 @@ import com.google.android.flexbox.FlexboxLayoutManager;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class OverviewFragment extends Fragment {
     protected Context context;
     protected ProgressBar progressBar;
     protected OverviewViewAdapter overviewViewAdapter;
-
-    private DetailsViewModel detailsViewModel;
+    protected DetailsViewModel detailsViewModel;
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -51,7 +55,13 @@ public class OverviewFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         this.detailsViewModel = new ViewModelProvider(requireActivity()).get(DetailsViewModel.class);
-        this.detailsViewModel.observeMediaDetails().observe(getViewLifecycleOwner(), this::insertDetails);
+        if (Objects.equals(this.detailsViewModel.getEntityType(), "Char")) {
+            this.detailsViewModel.observeCharDetail().observe(getViewLifecycleOwner(), this::insertDetails);
+        } else if (Objects.equals(this.detailsViewModel.getEntityType(), "Staff")) {
+            this.detailsViewModel.observeStaffDetail().observe(getViewLifecycleOwner(), this::insertDetails);
+        } else {
+            this.detailsViewModel.observeMediaDetails().observe(getViewLifecycleOwner(), this::insertDetails);
+        }
         return this.uiSetup(inflater, container);
     }
 
@@ -113,6 +123,44 @@ public class OverviewFragment extends Fragment {
         overviewViewObjects.addAll(details.getNoSpoilerTags());
 
         overviewViewAdapter.addObjects(overviewViewObjects);
+        this.progressBar.setVisibility(View.GONE);
+    }
+
+    private List<Object> insertDetails (Entity details) {
+        List<Object> overviewViewObjects = new ArrayList<>();
+        if (details.getDescription() != null && !details.getDescription().isBlank()) {
+            overviewViewObjects.add(new Header("Description"));
+            overviewViewObjects.add(new Description(details.getDescription()));
+        }
+
+        overviewViewObjects.add(new Header("Info"));
+
+        return overviewViewObjects;
+    }
+
+    private void insertDetails(CharacterDetails details) {
+        List<Object> overviewViewObjects = this.insertDetails((Entity) details);
+        overviewViewObjects.addAll(details.getInfo());
+
+        if (detailsViewModel.getMediaType().equals(MediaType.VISUAL_NOVEL)) {
+            overviewViewObjects.add(new TagsHeader(details));
+            overviewViewObjects.addAll(details.getNoSpoilerTraits());
+        }
+
+        this.overviewViewAdapter.addObjects(overviewViewObjects);
+        this.progressBar.setVisibility(View.GONE);
+    }
+
+    private void insertDetails(StaffDetails details) {
+        List<Object> overviewViewObjects = this.insertDetails((Entity) details);
+        overviewViewObjects.addAll(details.getInfo());
+
+        if (details.getLinks() != null && !details.getLinks().isEmpty()) {
+            overviewViewObjects.add(new Header("Links"));
+            overviewViewObjects.addAll(details.getLinks());
+        }
+
+        this.overviewViewAdapter.addObjects(overviewViewObjects);
         this.progressBar.setVisibility(View.GONE);
     }
 }

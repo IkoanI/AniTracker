@@ -2,7 +2,6 @@ package com.example.anitracker.adapters;
 
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,12 +10,10 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
-import androidx.lifecycle.ViewModel;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.anitracker.R;
 import com.example.anitracker.activities.Details;
-import com.example.anitracker.activities.EntityDetails;
 import com.example.anitracker.mediaObjects.CharacterDetails;
 import com.example.anitracker.mediaObjects.MediaDetails;
 import com.example.anitracker.mediaObjects.StaffDetails;
@@ -25,18 +22,17 @@ import com.example.anitracker.type.MediaType;
 import com.example.anitracker.uiObjects.Image;
 import com.example.anitracker.uiObjects.LanguageDropdown;
 import com.example.anitracker.viewModels.DetailsViewModel;
-import com.example.anitracker.viewModels.EntityViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class CharacterViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private final List<Object> objectList;
     private final Context context;
 
-    private DetailsViewModel detailsViewModel;
-    private EntityViewModel entityViewModel;
+    private final DetailsViewModel detailsViewModel;
 
     private Map<String, StaffDetails> vnKnownVAs;
 
@@ -46,16 +42,11 @@ public class CharacterViewAdapter extends RecyclerView.Adapter<RecyclerView.View
             characterViewVar = 1;
 
 
-    public CharacterViewAdapter(Context context, ViewModel viewModel) {
+    public CharacterViewAdapter(Context context, DetailsViewModel viewModel) {
         this.context = context;
-        Log.d("TESTING", String.valueOf(viewModel.getClass()));
-        if (viewModel instanceof DetailsViewModel) {
-            this.detailsViewModel = (DetailsViewModel) viewModel;
-        } else if (viewModel instanceof EntityViewModel) {
-            this.entityViewModel = (EntityViewModel) viewModel;
-        }
+        this.detailsViewModel = viewModel;
         this.objectList = new ArrayList<>();
-        if (this.detailsViewModel != null && this.detailsViewModel.getType().equals(MediaType.VISUAL_NOVEL)) {
+        if (this.detailsViewModel.getMediaType().equals(MediaType.VISUAL_NOVEL)) {
             this.vnKnownVAs = detailsViewModel.getKnownVAs();
         }
     }
@@ -101,10 +92,10 @@ public class CharacterViewAdapter extends RecyclerView.Adapter<RecyclerView.View
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if (!this.loading && position >= getItemCount() - 1) {
-            if (detailsViewModel != null) {
-                detailsViewModel.getCharPage();
-            } else if (entityViewModel != null) {
-                entityViewModel.getStaffChars();
+            if (Objects.equals(this.detailsViewModel.getEntityType(), "Char")) {
+                this.detailsViewModel.getCharPage();
+            } else {
+                this.detailsViewModel.getStaffChars();
             }
         }
 
@@ -158,13 +149,9 @@ public class CharacterViewAdapter extends RecyclerView.Adapter<RecyclerView.View
                 Image.loadImage(this.context, character.getImage(), characterView.charImage);
 
                 characterView.charImage.setOnClickListener(e -> {
-                    Intent intent = new Intent(context, EntityDetails.class);
+                    Intent intent = new Intent(context, Details.class);
                     intent.putExtra("ID", character.getId());
-                    if (detailsViewModel != null) {
-                        intent.putExtra("Type", detailsViewModel.getType().rawValue);
-                    } else {
-                        intent.putExtra("Type", entityViewModel.getMediaType().rawValue);
-                    }
+                    intent.putExtra("Type", detailsViewModel.getMediaType().rawValue);
                     intent.putExtra("Entity", "Char");
                     context.startActivity(intent);
                 });
@@ -189,18 +176,14 @@ public class CharacterViewAdapter extends RecyclerView.Adapter<RecyclerView.View
                     characterView.relationName.setText(va.getName().getUserPref());
                     Image.loadImage(this.context, va.getImage(), characterView.relationImage);
                     characterView.relationImage.setOnClickListener(e -> {
-                        Intent intent = new Intent(context, EntityDetails.class);
+                        Intent intent = new Intent(context, Details.class);
                         intent.putExtra("ID", va.getId());
-                        if (detailsViewModel != null) {
-                            intent.putExtra("Type", detailsViewModel.getType().rawValue);
-                        } else {
-                            intent.putExtra("Type", entityViewModel.getMediaType().rawValue);
-                        }
+                        intent.putExtra("Type", detailsViewModel.getMediaType().rawValue);
                         intent.putExtra("Entity", "Staff");
                         context.startActivity(intent);
                     });
 
-                    if (detailsViewModel != null) {
+                    if (detailsViewModel.getEntityType() == null) {
                         characterView.relationInfo.setText(AnilistObjectMappings.staffLanguageToString.get(detailsViewModel.getLastSelectedLanguage()));
                     }
                 } else {
@@ -213,8 +196,8 @@ public class CharacterViewAdapter extends RecyclerView.Adapter<RecyclerView.View
 
     @Override
     public int getItemCount() {
-        if (detailsViewModel != null) {
-            return Math.max(0, objectList.size() - (detailsViewModel.getType().equals(MediaType.ANIME) ? 1 : 0));
+        if (detailsViewModel.getEntityType() == null) {
+            return Math.max(0, objectList.size() - (detailsViewModel.getMediaType().equals(MediaType.ANIME) ? 1 : 0));
         }
 
         return objectList.size();

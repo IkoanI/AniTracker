@@ -25,6 +25,7 @@ import com.example.anitracker.type.MediaType;
 import com.example.anitracker.viewModels.DetailsViewModel;
 
 import java.util.List;
+import java.util.Objects;
 
 public class RelationsFragment extends Fragment implements RecyclerViewInterface {
     protected Context context;
@@ -46,17 +47,30 @@ public class RelationsFragment extends Fragment implements RecyclerViewInterface
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        this.relationsViewAdapter = new RelationsViewAdapter(context, this, null);
-        View view = this.uiSetup(inflater, container);
+        DetailsViewModel viewModel = new ViewModelProvider(requireActivity()).get(DetailsViewModel.class);
+        this.relationsViewAdapter = new RelationsViewAdapter(context, this, viewModel);
         DetailsViewModel detailsViewModel = new ViewModelProvider(requireActivity()).get(DetailsViewModel.class);
-        if (detailsViewModel.getType() != MediaType.VISUAL_NOVEL) {
+
+        if (detailsViewModel.getMediaType() != MediaType.VISUAL_NOVEL) {
             detailsViewModel.observeRelationsPage().observe(getViewLifecycleOwner(), this::addRelations);
-            detailsViewModel.getRelationsPage();
-        } else if (detailsViewModel.getType() == MediaType.VISUAL_NOVEL) {
-            this.addRelations(detailsViewModel.getVnRelationsList());
+            if (Objects.equals(viewModel.getEntityType(), "Char")) {
+                viewModel.getCharRoles();
+            } else if (Objects.equals(viewModel.getEntityType(), "Staff")) {
+                viewModel.getStaffRoles();
+            } else {
+                detailsViewModel.getRelationsPage();
+            }
+        } else if (detailsViewModel.getMediaType() == MediaType.VISUAL_NOVEL) {
+            if (Objects.equals(viewModel.getEntityType(), "Char")) {
+                this.addRelations(viewModel.getLastFetchedCharDetail().getVnRoles());
+            } else if (Objects.equals(viewModel.getEntityType(), "Staff")) {
+                // VN STAFF ROLES
+            } else {
+                this.addRelations(detailsViewModel.getVnRelationsList());
+            }
         }
 
-        return view;
+        return this.uiSetup(inflater, container);
     }
 
     public View uiSetup(@NonNull LayoutInflater inflater, @Nullable ViewGroup container) {

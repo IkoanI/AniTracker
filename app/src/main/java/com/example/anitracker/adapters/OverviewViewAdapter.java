@@ -25,6 +25,7 @@ import com.example.anitracker.mediaObjects.Tag;
 import com.example.anitracker.uiObjects.Header;
 import com.example.anitracker.uiObjects.Image;
 import com.example.anitracker.uiObjects.LinkClickHandler;
+import com.example.anitracker.uiObjects.NoScrollTextView;
 import com.example.anitracker.uiObjects.TagsHeader;
 import com.example.anitracker.vnObjects.Screenshots;
 import com.example.anitracker.vnObjects.VNLink;
@@ -294,7 +295,7 @@ public class OverviewViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     }
 
     public static class DescriptionView extends RecyclerView.ViewHolder{
-        TextView description;
+        NoScrollTextView description;
         ImageView expandButton;
         public DescriptionView(@NonNull View itemView) {
             super(itemView);

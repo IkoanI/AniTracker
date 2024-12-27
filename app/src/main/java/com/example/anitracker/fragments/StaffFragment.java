@@ -17,10 +17,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.anitracker.R;
-import com.example.anitracker.activities.EntityDetails;
+import com.example.anitracker.activities.Details;
 import com.example.anitracker.adapters.StaffViewAdapter;
 import com.example.anitracker.interfaces.RecyclerViewInterface;
-import com.example.anitracker.mediaObjects.MediaDetails;
 import com.example.anitracker.mediaObjects.StaffDetails;
 import com.example.anitracker.type.MediaType;
 import com.example.anitracker.viewModels.DetailsViewModel;
@@ -61,10 +60,10 @@ public class StaffFragment extends Fragment implements RecyclerViewInterface {
         LinearLayoutManager staffViewLayoutManager = new LinearLayoutManager(context);
         staffView.setLayoutManager(staffViewLayoutManager);
 
-        if (detailsViewModel.getType() != MediaType.VISUAL_NOVEL) {
+        if (detailsViewModel.getMediaType() != MediaType.VISUAL_NOVEL) {
             detailsViewModel.observeStaffPage().observe(getViewLifecycleOwner(), this::addStaffs);
             detailsViewModel.getStaffPage();
-        } else if (detailsViewModel.getType() == MediaType.VISUAL_NOVEL) {
+        } else if (detailsViewModel.getMediaType() == MediaType.VISUAL_NOVEL) {
             this.addStaffs(detailsViewModel.getVnStaffsList());
         }
 
@@ -84,9 +83,9 @@ public class StaffFragment extends Fragment implements RecyclerViewInterface {
     @Override
     public void onItemClick(int position) {
         StaffDetails staffDetails = staffViewAdapter.getStaff(position);
-        Intent intent = new Intent(context, EntityDetails.class);
+        Intent intent = new Intent(context, Details.class);
         intent.putExtra("ID", staffDetails.getId());
-        intent.putExtra("Type", detailsViewModel.getType().rawValue);
+        intent.putExtra("Type", detailsViewModel.getMediaType().rawValue);
         intent.putExtra("Entity", "Staff");
         context.startActivity(intent);
     }

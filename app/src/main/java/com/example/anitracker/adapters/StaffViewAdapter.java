@@ -1,7 +1,6 @@
 package com.example.anitracker.adapters;
 
 import android.content.Context;
-import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,7 +11,6 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.anitracker.R;
-import com.example.anitracker.activities.EntityDetails;
 import com.example.anitracker.interfaces.RecyclerViewInterface;
 import com.example.anitracker.mediaObjects.StaffDetails;
 import com.example.anitracker.type.MediaType;
@@ -45,7 +43,7 @@ public class StaffViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        if (!loading && position >= getItemCount()-1 && viewModel.getType() != MediaType.VISUAL_NOVEL) {
+        if (!loading && position >= getItemCount()-1 && viewModel.getMediaType() != MediaType.VISUAL_NOVEL) {
             viewModel.getStaffPage();
         }
         StaffViewItem staffViewItem = (StaffViewItem) holder;

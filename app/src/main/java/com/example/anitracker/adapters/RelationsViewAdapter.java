@@ -8,7 +8,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.lifecycle.ViewModel;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.anitracker.R;
@@ -17,24 +16,23 @@ import com.example.anitracker.mediaObjects.MediaDetails;
 import com.example.anitracker.repository.AnilistObjectMappings;
 import com.example.anitracker.type.MediaType;
 import com.example.anitracker.uiObjects.Image;
-import com.example.anitracker.viewModels.EntityViewModel;
+import com.example.anitracker.viewModels.DetailsViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class RelationsViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private final Context context;
     private final List<MediaDetails> relationsList = new ArrayList<>();
     private final RecyclerViewInterface recyclerViewInterface;
     private boolean loading = false;
-    private EntityViewModel entityViewModel;
+    private final DetailsViewModel detailsViewModel;
 
-    public RelationsViewAdapter(Context context, RecyclerViewInterface recyclerViewInterface, ViewModel viewModel) {
+    public RelationsViewAdapter(Context context, RecyclerViewInterface recyclerViewInterface, DetailsViewModel detailsViewModel) {
         this.context = context;
         this.recyclerViewInterface = recyclerViewInterface;
-        if (viewModel instanceof EntityViewModel) {
-            this.entityViewModel = (EntityViewModel) viewModel;
-        }
+        this.detailsViewModel = detailsViewModel;
     }
 
     @NonNull
@@ -47,11 +45,11 @@ public class RelationsViewAdapter extends RecyclerView.Adapter<RecyclerView.View
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        if (entityViewModel != null && !loading && position >= getItemCount()-1  && !entityViewModel.getMediaType().equals(MediaType.VISUAL_NOVEL)) {
-            if (entityViewModel.getEntityType().equals("Char")) {
-                entityViewModel.getCharRoles();
+        if (!loading && position >= getItemCount()-1  && !detailsViewModel.getMediaType().equals(MediaType.VISUAL_NOVEL)) {
+            if (Objects.equals(detailsViewModel.getEntityType(), "Char")) {
+                detailsViewModel.getCharRoles();
             } else {
-                entityViewModel.getStaffRoles();
+                detailsViewModel.getStaffRoles();
             }
         }
 
