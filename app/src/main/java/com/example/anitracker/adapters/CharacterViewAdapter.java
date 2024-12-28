@@ -57,12 +57,14 @@ public class CharacterViewAdapter extends RecyclerView.Adapter<RecyclerView.View
         newCharacterDetails.setImage(characterDetails.getImage());
         newCharacterDetails.setName(characterDetails.getName());
         newCharacterDetails.setRole(characterDetails.getRole());
+        newCharacterDetails.setId(characterDetails.getId());
 
         return newCharacterDetails;
     }
 
     public void addObjects(List<?> objects) {
         this.loading = true;
+        int prevItemCount = this.objectList.size();
         if (Objects.equals(this.detailsViewModel.getEntityType(), "Staff") && this.detailsViewModel.getMediaType().equals(MediaType.VISUAL_NOVEL)) {
             for (Object object : objects) {
                 CharacterDetails characterDetails = (CharacterDetails) object;
@@ -83,7 +85,7 @@ public class CharacterViewAdapter extends RecyclerView.Adapter<RecyclerView.View
             objectList.addAll(objects);
         }
 
-        notifyItemRangeInserted(this.getItemCount()-objects.size(), objects.size());
+        notifyItemRangeInserted(prevItemCount, this.objectList.size());
         this.loading = false;
     }
 

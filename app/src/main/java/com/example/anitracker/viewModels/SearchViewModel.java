@@ -18,9 +18,9 @@ import java.util.List;
 
 public class SearchViewModel extends ViewModel {
     private final ApiRepository repository;
-    private final MutableLiveData<List<AnimeDetails>> liveAnimePage;
-    private final MutableLiveData<List<MangaDetails>> liveMangaPage;
-    private final MutableLiveData<List<VNDetails>> liveVNPage;
+    private final MutableLiveData<List<AnimeDetails>> animeSearchPage;
+    private final MutableLiveData<List<MangaDetails>> mangaSearchPage;
+    private final MutableLiveData<List<VNDetails>> vnSearchPage;
     private final MutableLiveData<String> errorMsg;
 
     private final MutableLiveData<String> userSearch = new MutableLiveData<>();
@@ -31,19 +31,23 @@ public class SearchViewModel extends ViewModel {
 
     public SearchViewModel() {
         repository = new ApiRepository();
-        liveAnimePage = repository.getMutableAnimePage();
-        liveMangaPage = repository.getMutableMangaPage();
-        liveVNPage = repository.getMutableVNPage();
+        animeSearchPage = repository.getMutableAnimeSearch();
+        mangaSearchPage = repository.getMutableMangaSearch();
+        vnSearchPage = repository.getMutableVNSearch();
         errorMsg = repository.getMutableErrorMsg();
     }
 
-    public LiveData<List<AnimeDetails>> observeAnimePage(){
-        return liveAnimePage;
+    public LiveData<List<AnimeDetails>> observeAnimeSearchPage(){
+        return animeSearchPage;
     }
 
-    public LiveData<List<MangaDetails>> observeMangaPage() { return liveMangaPage; }
+    public LiveData<List<MangaDetails>> observeMangaSearchPage(){
+        return mangaSearchPage;
+    }
 
-    public LiveData<List<VNDetails>> observeVNPage() { return liveVNPage; }
+    public LiveData<List<VNDetails>> observeVNSearchPage(){
+        return vnSearchPage;
+    }
 
     public void getSearchPage(MediaType mediaType, int page, String userSearch, List<MediaSort> sort) {
         repository.fetchSearchResults(mediaType, page, userSearch, sort);

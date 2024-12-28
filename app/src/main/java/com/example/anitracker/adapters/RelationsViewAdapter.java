@@ -13,10 +13,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.anitracker.R;
 import com.example.anitracker.interfaces.RecyclerViewInterface;
 import com.example.anitracker.mediaObjects.MediaDetails;
+import com.example.anitracker.mediaObjects.StaffDetails;
 import com.example.anitracker.repository.AnilistObjectMappings;
 import com.example.anitracker.type.MediaType;
 import com.example.anitracker.uiObjects.Image;
 import com.example.anitracker.viewModels.DetailsViewModel;
+import com.example.anitracker.vnObjects.VNDetails;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +50,7 @@ public class RelationsViewAdapter extends RecyclerView.Adapter<RecyclerView.View
         if (!loading && position >= getItemCount()-1  && !detailsViewModel.getMediaType().equals(MediaType.VISUAL_NOVEL)) {
             if (Objects.equals(detailsViewModel.getEntityType(), "Char")) {
                 detailsViewModel.getCharRoles();
-            } else {
+            } else if (Objects.equals(detailsViewModel.getEntityType(), "Staff")){
                 detailsViewModel.getStaffRoles();
             }
         }
@@ -67,9 +69,36 @@ public class RelationsViewAdapter extends RecyclerView.Adapter<RecyclerView.View
         return relationsList.size();
     }
 
-    public void addRelations(List<MediaDetails> newItems) {
+    private VNDetails copyVNDetails(VNDetails vnDetails) {
+        VNDetails copyVNDetails = new VNDetails();
+        copyVNDetails.setCoverImg(vnDetails.getImage());
+        copyVNDetails.setTitles(vnDetails.getTitles());
+        copyVNDetails.setFormat(vnDetails.getFormat());
+        copyVNDetails.setStatus(vnDetails.getStatus());
+        copyVNDetails.setId(vnDetails.getId());
+        copyVNDetails.setType(vnDetails.getType());
+        return copyVNDetails;
+    }
+    public void addRelations(List<? extends MediaDetails> newItems) {
         this.loading = true;
-        relationsList.addAll(newItems);
+        if (detailsViewModel.getMediaType() == MediaType.VISUAL_NOVEL && Objects.equals(detailsViewModel.getEntityType(), "Staff")) {
+            for (MediaDetails mediaDetails : newItems) {
+                VNDetails vnDetails = (VNDetails) mediaDetails;
+                if (vnDetails.getStaffs() != null && !vnDetails.getStaffs().isEmpty()) {
+                    for (StaffDetails staff : vnDetails.getStaffs()) {
+                        if (Objects.equals(staff.getId(), detailsViewModel.getId())) {
+                            VNDetails copyVNDetails = this.copyVNDetails(vnDetails);
+                            copyVNDetails.setRelation(staff.getRole());
+                            relationsList.add(copyVNDetails);
+                        }
+                    }
+                }
+            }
+        } else {
+            relationsList.addAll(newItems);
+        }
+
+
         notifyItemRangeInserted(relationsList.size()-newItems.size(), newItems.size());
         this.loading = false;
     }

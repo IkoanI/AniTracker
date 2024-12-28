@@ -3,7 +3,6 @@ package com.example.anitracker.fragments;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -60,13 +59,14 @@ public class SearchFragment extends Fragment implements RecyclerViewInterface {
         this.noData = view.findViewById(R.id.noData);
 
         // observe search result
-        if (this.mediaType == MediaType.ANIME) {
-            viewModel.observeAnimePage().observe(getViewLifecycleOwner(), this::addItems);
-        } else if (this.mediaType == MediaType.MANGA) {
-            viewModel.observeMangaPage().observe(getViewLifecycleOwner(), this::addItems);
-        } else if (this.mediaType == MediaType.VISUAL_NOVEL) {
-            viewModel.observeVNPage().observe(getViewLifecycleOwner(), this::addItems);
+        if (mediaType == MediaType.ANIME) {
+            viewModel.observeAnimeSearchPage().observe(getViewLifecycleOwner(), this::addItems);
+        } else if (mediaType == MediaType.MANGA) {
+            viewModel.observeMangaSearchPage().observe(getViewLifecycleOwner(), this::addItems);
+        } else {
+            viewModel.observeVNSearchPage().observe(getViewLifecycleOwner(), this::addItems);
         }
+
 
         // fetch data when list is empty
         if (adapter.getItemCount() == 0) {

@@ -21,7 +21,6 @@ import com.example.anitracker.activities.Details;
 import com.example.anitracker.adapters.RelationsViewAdapter;
 import com.example.anitracker.interfaces.RecyclerViewInterface;
 import com.example.anitracker.mediaObjects.MediaDetails;
-import com.example.anitracker.type.MediaType;
 import com.example.anitracker.viewModels.DetailsViewModel;
 
 import java.util.List;
@@ -49,26 +48,15 @@ public class RelationsFragment extends Fragment implements RecyclerViewInterface
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         DetailsViewModel viewModel = new ViewModelProvider(requireActivity()).get(DetailsViewModel.class);
         this.relationsViewAdapter = new RelationsViewAdapter(context, this, viewModel);
-        DetailsViewModel detailsViewModel = new ViewModelProvider(requireActivity()).get(DetailsViewModel.class);
         View view = this.uiSetup(inflater, container);
 
-        if (detailsViewModel.getMediaType() != MediaType.VISUAL_NOVEL) {
-            detailsViewModel.observeRelationsPage().observe(getViewLifecycleOwner(), this::addRelations);
-            if (Objects.equals(viewModel.getEntityType(), "Char")) {
-                viewModel.getCharRoles();
-            } else if (Objects.equals(viewModel.getEntityType(), "Staff")) {
-                viewModel.getStaffRoles();
-            } else {
-                detailsViewModel.getRelationsPage();
-            }
-        } else if (detailsViewModel.getMediaType() == MediaType.VISUAL_NOVEL) {
-            if (Objects.equals(viewModel.getEntityType(), "Char")) {
-                this.addRelations(viewModel.getLastFetchedCharDetail().getVnRoles());
-            } else if (Objects.equals(viewModel.getEntityType(), "Staff")) {
-                // VN STAFF ROLES
-            } else {
-                this.addRelations(detailsViewModel.getVnRelationsList());
-            }
+        viewModel.observeRelationsPage().observe(getViewLifecycleOwner(), this::addRelations);
+        if (Objects.equals(viewModel.getEntityType(), "Char")) {
+            viewModel.getCharRoles();
+        } else if (Objects.equals(viewModel.getEntityType(), "Staff")) {
+            viewModel.getStaffRoles();
+        } else {
+            viewModel.getRelationsPage();
         }
 
         return view;
@@ -88,7 +76,7 @@ public class RelationsFragment extends Fragment implements RecyclerViewInterface
         return view;
     }
 
-    public void addRelations(List<MediaDetails> relationsList) {
+    public void addRelations(List<? extends MediaDetails> relationsList) {
         relationsViewAdapter.addRelations(relationsList);
         this.loadingIndicator.setVisibility(View.GONE);
         if (relationsViewAdapter.getItemCount() == 0) {

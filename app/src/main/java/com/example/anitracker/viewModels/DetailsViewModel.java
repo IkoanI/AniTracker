@@ -1,5 +1,7 @@
 package com.example.anitracker.viewModels;
 
+import android.util.Log;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -10,6 +12,7 @@ import com.example.anitracker.mediaObjects.StaffDetails;
 import com.example.anitracker.repository.ApiRepository;
 import com.example.anitracker.type.MediaType;
 import com.example.anitracker.type.StaffLanguage;
+import com.example.anitracker.vnObjects.VNDetails;
 
 import java.util.List;
 import java.util.Map;
@@ -45,7 +48,7 @@ public class DetailsViewModel extends ViewModel {
     private List<StaffDetails> vnStaffsList;
 
     // used by relations and roles fragment
-    private final MutableLiveData<List<MediaDetails>> liveRelationsPage;
+    private final MutableLiveData<List<? extends MediaDetails>> liveMediaPage;
     private List<MediaDetails> vnRelationsList;
     private int currRolePage = 1;
 
@@ -53,7 +56,7 @@ public class DetailsViewModel extends ViewModel {
         this.repository = new ApiRepository();
         this.liveErrorMsg = repository.getMutableErrorMsg();
         this.liveCharPage = repository.getMutableCharPage();
-        this.liveRelationsPage = repository.getMutableRelationsPage();
+        this.liveMediaPage = repository.getMutableMediaPage();
     }
 
     public LiveData<String> observeErrorMsg() { return liveErrorMsg; }
@@ -150,7 +153,12 @@ public class DetailsViewModel extends ViewModel {
     // relation fragment
 
     public void getRelationsPage() {
-        repository.fetchRelationsPage(Integer.parseInt(this.id));
+        if (this.mediaType != MediaType.VISUAL_NOVEL) {
+            repository.fetchRelationsPage(Integer.parseInt(this.id));
+        } else {
+            liveMediaPage.setValue(this.vnRelationsList);
+        }
+
     }
 
     public void setVnRelationsList(List<MediaDetails> vnRelationsList) {
@@ -165,18 +173,24 @@ public class DetailsViewModel extends ViewModel {
         if (this.mediaType != MediaType.VISUAL_NOVEL) {
             this.repository.fetchCharRoles(Integer.parseInt(this.id), this.currRolePage);
             this.currRolePage++;
+        } else {
+            liveMediaPage.setValue(this.lastFetchedCharDetail.getVnRoles());
         }
     }
 
     public void getStaffRoles() {
         if (this.mediaType != MediaType.VISUAL_NOVEL) {
             this.repository.fetchStaffRoles(Integer.parseInt(this.id), this.currRolePage);
-            this.currRolePage++;
+        } else {
+            Log.d("TESTING", this.id);
+            this.repository.fetchVNStaffRoles(this.id, this.currRolePage);
         }
+
+        this.currRolePage++;
     }
 
-    public LiveData<List<MediaDetails>> observeRelationsPage(){
-        return liveRelationsPage;
+    public LiveData<List<? extends MediaDetails>> observeRelationsPage(){
+        return this.liveMediaPage;
     }
 
     // general getter and setters

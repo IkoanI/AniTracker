@@ -1,10 +1,8 @@
 package com.example.anitracker.vnObjects;
 
 import com.example.anitracker.mediaObjects.Date;
-import com.example.anitracker.mediaObjects.MediaDetails;
 import com.example.anitracker.mediaObjects.Name;
 import com.example.anitracker.mediaObjects.StaffDetails;
-import com.example.anitracker.mediaObjects.Tag;
 import com.example.anitracker.mediaObjects.Titles;
 import com.example.anitracker.type.MediaType;
 import com.google.gson.annotations.SerializedName;

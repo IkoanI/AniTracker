@@ -88,7 +88,7 @@ public class VNStaff {
         if (this.note == null) {
             staffDetails.setRole(staffRole.get(this.role));
         } else {
-            staffDetails.setRole(this.note);
+            staffDetails.setRole(String.format("%s (%s)", staffRole.get(this.role), this.note));
         }
         staffDetails.setLinks(this.extlinks);
         return staffDetails;

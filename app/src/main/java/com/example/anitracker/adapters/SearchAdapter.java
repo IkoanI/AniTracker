@@ -35,6 +35,10 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
     private Boolean loading = false;
     private final MediaType mediaType;
 
+    private final int animeDetailVar = 0,
+            mangaDetailVar = 1,
+            vnDetailVar = 2;
+
     public SearchAdapter(MediaType mediaType, Context context, RecyclerViewInterface recyclerViewInterface, SearchViewModel viewModel) {
         this.mediaType = mediaType;
         this.context = context;
@@ -58,25 +62,34 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
         return resultPage.get(position);
     }
 
+    @Override
+    public int getItemViewType(int position) {
+        MediaDetails mediaDetails = resultPage.get(position);
+        if (mediaDetails instanceof AnimeDetails) {
+            return animeDetailVar;
+        } else if (mediaDetails instanceof MangaDetails) {
+            return mangaDetailVar;
+        } else {
+            return vnDetailVar;
+        }
+    }
+
     @NonNull
     @Override
     public SearchViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         // inflates layout
         LayoutInflater inflater = LayoutInflater.from(context);
-
-        if (this.mediaType == MediaType.ANIME) {
-            View view = inflater.inflate(R.layout.anime_card, parent, false);
-            return new AnimeSearchViewHolder(view, recyclerViewInterface);
-        } else if (this.mediaType == MediaType.MANGA) {
-            View view = inflater.inflate(R.layout.manga_card, parent, false);
-            return new MangaSearchViewHolder(view, recyclerViewInterface);
-        } else if (this.mediaType == MediaType.VISUAL_NOVEL) {
-            View view = inflater.inflate(R.layout.vn_card, parent, false);
-            return new VNSearchViewHolder(view, recyclerViewInterface);
-        } else {
-            //TODO implement default search card
-            View view = inflater.inflate(R.layout.anime_card, parent, false);
-            return new SearchViewHolder(view, recyclerViewInterface);
+        View view;
+        switch (viewType) {
+            case (animeDetailVar):
+                view = inflater.inflate(R.layout.anime_card, parent, false);
+                return new AnimeSearchViewHolder(view, recyclerViewInterface);
+            case (mangaDetailVar):
+                view = inflater.inflate(R.layout.manga_card, parent, false);
+                return new MangaSearchViewHolder(view, recyclerViewInterface);
+            default:
+                view = inflater.inflate(R.layout.vn_card, parent, false);
+                return new VNSearchViewHolder(view, recyclerViewInterface);
         }
     }
 

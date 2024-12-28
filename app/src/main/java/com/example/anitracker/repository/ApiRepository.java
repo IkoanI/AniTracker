@@ -1,7 +1,5 @@
 package com.example.anitracker.repository;
 
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 import androidx.lifecycle.MutableLiveData;
 
@@ -57,6 +55,7 @@ import com.example.anitracker.vnObjects.VNStaffPage;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
@@ -68,12 +67,10 @@ import retrofit2.Response;
 public class ApiRepository {
     private final ApolloClient aniClient = AniClient.INSTANCE.getClient();
     private final VNDBApi VNClient = VNDBClient.INSTANCE.getClient().create(VNDBApi.class);
-    // anime search page
-    private final MutableLiveData<List<AnimeDetails>> mutableAnimePage = new MutableLiveData<>();
-    // manga search page
-    private final MutableLiveData<List<MangaDetails>> mutableMangaPage = new MutableLiveData<>();
-    // visual novel search page
-    private final MutableLiveData<List<VNDetails>> mutableVNPage = new MutableLiveData<>();
+    // search fragment
+    private final MutableLiveData<List<AnimeDetails>> mutableAnimeSearch = new MutableLiveData<>();
+    private final MutableLiveData<List<MangaDetails>> mutableMangaSearch = new MutableLiveData<>();
+    private final MutableLiveData<List<VNDetails>> mutableVNSearch = new MutableLiveData<>();
     // overview fragment
     private final MutableLiveData<MediaDetails> mutableLiveData = new MutableLiveData<>();
     // character fragment
@@ -81,7 +78,7 @@ public class ApiRepository {
     // staff fragment
     private final MutableLiveData<List<StaffDetails>> mutableStaffPage = new MutableLiveData<>();
     // relations fragment
-    private final MutableLiveData<List<MediaDetails>> mutableRelationsPage = new MutableLiveData<>();
+    private final MutableLiveData<List<? extends MediaDetails>> mutableRelationPage = new MutableLiveData<>();
     // character overview
     private final MutableLiveData<CharacterDetails> mutableCharacterDetail = new MutableLiveData<>();
     // staff overview
@@ -95,17 +92,11 @@ public class ApiRepository {
     }
 
     // getters
+    public MutableLiveData<List<AnimeDetails>> getMutableAnimeSearch() {return mutableAnimeSearch;}
+    public MutableLiveData<List<MangaDetails>> getMutableMangaSearch() {return mutableMangaSearch;}
+    public MutableLiveData<List<VNDetails>> getMutableVNSearch() {return mutableVNSearch;}
+
     public MutableLiveData<MediaDetails>  getMutableLiveData() { return mutableLiveData; }
-
-    public MutableLiveData<List<AnimeDetails>> getMutableAnimePage() {
-        return mutableAnimePage;
-    }
-
-    public MutableLiveData<List<MangaDetails>> getMutableMangaPage() {
-        return mutableMangaPage;
-    }
-
-    public MutableLiveData<List<VNDetails>> getMutableVNPage() { return mutableVNPage; }
 
     public MutableLiveData<List<CharacterDetails>> getMutableCharPage() {
         return mutableCharPage;
@@ -115,7 +106,7 @@ public class ApiRepository {
         return mutableStaffPage;
     }
 
-    public MutableLiveData<List<MediaDetails>> getMutableRelationsPage() {return mutableRelationsPage;}
+    public MutableLiveData<List<? extends MediaDetails>> getMutableMediaPage() {return mutableRelationPage;}
 
     public MutableLiveData<CharacterDetails> getMutableCharacterDetail() {return this.mutableCharacterDetail;}
 
@@ -150,7 +141,7 @@ public class ApiRepository {
                                     }
                                     animeList.add(animeDetails);
                                 }
-                                mutableAnimePage.setValue(animeList);
+                                mutableAnimeSearch.setValue(animeList);
                             },
                             error -> mutableErrorMsg.setValue(error.getMessage()))
             );
@@ -169,7 +160,7 @@ public class ApiRepository {
                                     this.setMangaShortDetail(mangaDetails, result.mangaShortDetail);
                                     mangaList.add(mangaDetails);
                                 }
-                                mutableMangaPage.setValue(mangaList);
+                                mutableMangaSearch.setValue(mangaList);
                             },
                             error -> mutableErrorMsg.setValue(error.getMessage()))
             );
@@ -307,7 +298,7 @@ public class ApiRepository {
                                 mediaDetails.setRelation(edge.relationType);
                                 relationsPage.add(mediaDetails);
                             }
-                            mutableRelationsPage.setValue(relationsPage);
+                            mutableRelationPage.setValue(relationsPage);
                         },
                         error -> mutableErrorMsg.setValue(error.getMessage())
                 ));
@@ -343,7 +334,7 @@ public class ApiRepository {
                                 roles.add(mediaDetails);
                             }
 
-                            mutableRelationsPage.setValue(roles);
+                            mutableRelationPage.setValue(roles);
                         },
                         error -> mutableErrorMsg.setValue(error.getMessage()))
         );
@@ -406,7 +397,7 @@ public class ApiRepository {
                                 roles.add(mediaDetails);
                             }
 
-                            mutableRelationsPage.setValue(roles);
+                            mutableRelationPage.setValue(roles);
                         },
                         error -> mutableErrorMsg.setValue(error.getMessage()))
         );
@@ -414,35 +405,39 @@ public class ApiRepository {
 
     // VNDB API calls
 
-    private void fetchVNPage(VNRequestBody body){
+    private void fetchVNPage(VNRequestBody body, String pageType){
         Call<VNPage> call = VNClient.fetchVNPage(body);
-        call.enqueue(new Callback<VNPage>() {
-            @Override
-            public void onResponse(@NonNull Call<VNPage> call, @NonNull Response<VNPage> response) {
-                assert response.body() != null;
-                if (response.body().getSize() > 1) {
-                    mutableVNPage.setValue(response.body().getVnDetailsList());
-                } else if (response.body().getSize() == 1) {
-                    mutableLiveData.setValue(response.body().getVnDetailsList().get(0));
+            call.enqueue(new Callback<VNPage>() {
+                @Override
+                public void onResponse(@NonNull Call<VNPage> call, @NonNull Response<VNPage> response) {
+                    assert response.body() != null;
+                    if (!Objects.equals(pageType, "Overview")) {
+                        if (Objects.equals(pageType, "Search")) {
+                            mutableVNSearch.setValue(response.body().getVnDetailsList());
+                        } else {
+                            mutableRelationPage.setValue(response.body().getVnDetailsList());
+                        }
+                    } else {
+                        mutableLiveData.setValue(response.body().getVnDetailsList().get(0));
+                    }
                 }
-            }
 
-            @Override
-            public void onFailure(@NonNull Call<VNPage> call, @NonNull Throwable throwable) {
-                mutableErrorMsg.setValue(throwable.getMessage());
-            }
-        });
+                @Override
+                public void onFailure(@NonNull Call<VNPage> call, @NonNull Throwable throwable) {
+                    mutableErrorMsg.setValue(throwable.getMessage());
+                }
+            });
     }
 
     public void fetchDefaultVNPage(String sort, String fields, int page) {
         VNRequestBody body = new VNRequestBody(sort, true, 50, page, fields, null);
-        this.fetchVNPage(body);
+        this.fetchVNPage(body, "Search");
     }
 
     public void fetchVNSearchPage(String search, String sort, String fields, int page){
         List<Object> filters = Arrays.asList("search", "=", search);
         VNRequestBody body = new VNRequestBody(sort, false, 50, page, fields, filters);
-        this.fetchVNPage(body);
+        this.fetchVNPage(body, "Search");
     }
 
     private void fetchVNData(String vndbID) {
@@ -455,7 +450,7 @@ public class ApiRepository {
 
         List<Object> filters = Arrays.asList("id", "=", vndbID);
         VNRequestBody body = new VNRequestBody(null, false, 1, 1, fields, filters);
-        this.fetchVNPage(body);
+        this.fetchVNPage(body, "Overview");
     }
 
     private void fetchVNCharPage(String vndbID, VNRequestBody body) {
@@ -464,10 +459,10 @@ public class ApiRepository {
             @Override
             public void onResponse(@NonNull Call<VNCharPage> call, @NonNull Response<VNCharPage> response) {
                 assert response.body() != null;
-                if (response.body().getSize() > 1) {
-                    mutableCharPage.setValue(response.body().getVNCharList(vndbID));
-                } else if (response.body().getSize() == 1){
+                if (response.body().getSize() == 1) {
                     mutableCharacterDetail.setValue(response.body().getVNCharList(vndbID).get(0));
+                } else {
+                    mutableCharPage.setValue(response.body().getVNCharList(vndbID));
                 }
             }
 
@@ -530,7 +525,10 @@ public class ApiRepository {
     }
 
     public void fetchVNStaffRoles(String vndbID, int page) {
-
+        String fields = "title, image{thumbnail}, staff{role, note}, devstatus";
+        List<Object> filters = Arrays.asList("staff","=", new String[]{"id","=",vndbID});
+        VNRequestBody body = new VNRequestBody(null, false, 50, page, fields, filters);
+        this.fetchVNPage(body, "Relation");
     }
 
     // setter helper functions
