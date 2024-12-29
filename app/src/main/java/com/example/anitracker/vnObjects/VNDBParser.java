@@ -6,6 +6,9 @@ public class VNDBParser {
                 .replaceAll(">", "&gt;")
                 .replaceAll("\\[url([^]]*)]", "<a href$1>")
                 .replaceAll("\\[/url]", "</a>")
-                .replaceAll("\\[b]([^\\[]*)\\[/b]", "<b>$1</b>");
+                .replaceAll("\\[b]([^\\[]*)\\[/b]", "<b>$1</b>")
+                .replaceAll("\\[i]([^\\[]*)\\[/i]", "<i>$1</i>")
+                .replaceAll("\\[u]([^\\[]*)\\[/u]", "<u>$1</u>")
+                .replaceAll("\\[s]([^\\[]*)\\[/s]", "<s>$1</s>");
     }
 }
