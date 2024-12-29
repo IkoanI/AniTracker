@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,9 +22,9 @@ import com.example.anitracker.mediaObjects.Description;
 import com.example.anitracker.mediaObjects.Genres;
 import com.example.anitracker.mediaObjects.Info;
 import com.example.anitracker.mediaObjects.Tag;
+import com.example.anitracker.uiObjects.AnitrackerLinkMovementMethod;
 import com.example.anitracker.uiObjects.Header;
 import com.example.anitracker.uiObjects.Image;
-import com.example.anitracker.uiObjects.LinkClickHandler;
 import com.example.anitracker.uiObjects.NoScrollTextView;
 import com.example.anitracker.uiObjects.TagsHeader;
 import com.example.anitracker.vnObjects.Screenshots;
@@ -43,7 +42,7 @@ import java.util.Locale;
 public class OverviewViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private final List<Object> objectList;
     private final Context context;
-    private final LinkClickHandler linkClickHandler;
+    private final AnitrackerLinkMovementMethod linkClickHandler;
 
     private final int headerTypeVar = 0,
             descriptionTypeVar = 1,
@@ -58,7 +57,7 @@ public class OverviewViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     public OverviewViewAdapter(Context context) {
         this.objectList = new ArrayList<>();
         this.context = context;
-        this.linkClickHandler = new LinkClickHandler(this.context);
+        this.linkClickHandler = new AnitrackerLinkMovementMethod(this.context);
     }
 
     public void addObjects(List<Object> objects) {

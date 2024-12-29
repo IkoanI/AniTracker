@@ -15,13 +15,14 @@ import com.example.anitracker.type.MediaType;
 import java.util.Arrays;
 import java.util.Objects;
 
-public class LinkClickHandler extends LinkMovementMethod {
+public class AnitrackerLinkMovementMethod extends LinkMovementMethod {
     private final Context context;
 
-    public LinkClickHandler(Context context) {
+    public AnitrackerLinkMovementMethod(Context context) {
         this.context = context;
     }
-    public boolean onTouchEvent(TextView widget, android.text.Spannable buffer, android.view.MotionEvent event) {
+
+    public boolean onTouchEvent(TextView widget, android.text.Spannable buffer, MotionEvent event) {
         int action = event.getAction();
         //http://stackoverflow.com/questions/1697084/handle-textview-link-click-in-my-android-app
         if (action == MotionEvent.ACTION_UP) {
