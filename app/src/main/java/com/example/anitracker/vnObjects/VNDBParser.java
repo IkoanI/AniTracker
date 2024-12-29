@@ -4,6 +4,7 @@ public class VNDBParser {
     public static String parseText(String text) {
         return text.replaceAll("<","&lt;")
                 .replaceAll(">", "&gt;")
+                .replaceAll("\n", "<br>")
                 .replaceAll("\\[url([^]]*)]", "<a href$1>")
                 .replaceAll("\\[/url]", "</a>")
                 .replaceAll("\\[b]([^\\[]*)\\[/b]", "<b>$1</b>")
