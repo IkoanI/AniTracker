@@ -68,7 +68,7 @@ public class VNCharacter {
                 break;
             }
         }
-        characterDetails.setDescription(this.description);
+        characterDetails.setDescription(this.getDescription());
         characterDetails.setBloodtype(this.getBloodType());
         characterDetails.setHeight(this.height);
         characterDetails.setWeight(this.weight);
@@ -112,7 +112,7 @@ public class VNCharacter {
     }
 
     public String getDescription() {
-        return description;
+        return this.description == null ? null : VNDBParser.parseText(this.description);
     }
 
     public String getBloodType() {

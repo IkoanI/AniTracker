@@ -164,9 +164,7 @@ public class VNResponse {
     }
 
     public String getDesc() {
-        String[] toReplace = new String[] {"<", ">"};
-        String[] replacement = new String[] {"&lt;", "&gt;"};
-        return this.desc == null ? null : StringUtils.replaceEach(this.desc, toReplace, replacement);
+        return this.desc == null ? null : VNDBParser.parseText(this.desc);
     }
 
     public VNDetails convertToMediaObject() {

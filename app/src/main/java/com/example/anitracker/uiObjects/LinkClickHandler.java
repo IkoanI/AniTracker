@@ -44,20 +44,22 @@ public class LinkClickHandler extends LinkMovementMethod {
                 String[] linkData = url.split("/");
                 Log.d("LINK CLICK TEST", Arrays.toString(linkData));
                 if (linkData.length >= 5 && Objects.equals(linkData[2], "anilist.co")) {
-                    Intent intent = this.getIntent(linkData);
+                    Intent intent = this.getAnilistIntent(linkData);
                     context.startActivity(intent);
-                } else {
+                } else if (linkData.length == 2 || (linkData.length >= 4 && Objects.equals(linkData[2], "vndb.org"))) {
+                    Intent intent = this.getVNDBIntent(linkData);
+                    context.startActivity(intent);
+                }
+                else {
                     return super.onTouchEvent(widget, buffer, event);
                 }
             }
 
-            return true;
-        } else {
-            return true;
         }
+        return true;
     }
 
-    public Intent getIntent(String[] linkData) {
+    public Intent getAnilistIntent(String[] linkData) {
         Intent intent = new Intent(context, Details.class);
         intent.putExtra("ID", linkData[4]);
         if (Objects.equals(linkData[3], "character")) {
@@ -70,6 +72,20 @@ public class LinkClickHandler extends LinkMovementMethod {
             intent.putExtra("Type", MediaType.ANIME.rawValue);
         } else if (Objects.equals(linkData[3], "manga")) {
             intent.putExtra("Type", MediaType.MANGA.rawValue);
+        }
+
+        return intent;
+    }
+
+    public Intent getVNDBIntent(String[] linkData) {
+        Intent intent = new Intent(context, Details.class);
+        String id = linkData[linkData.length - 1];
+        intent.putExtra("Type", MediaType.VISUAL_NOVEL.rawValue);
+        intent.putExtra("ID", id);
+        if (Objects.equals(id.charAt(0), 'c')) {
+            intent.putExtra("Entity", "Char");
+        } else if (Objects.equals(id.charAt(0), 's')) {
+            intent.putExtra("Entity", "Staff");
         }
 
         return intent;
