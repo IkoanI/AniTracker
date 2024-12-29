@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,6 +43,7 @@ import java.util.Locale;
 public class OverviewViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private final List<Object> objectList;
     private final Context context;
+    private final LinkClickHandler linkClickHandler;
 
     private final int headerTypeVar = 0,
             descriptionTypeVar = 1,
@@ -56,6 +58,7 @@ public class OverviewViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     public OverviewViewAdapter(Context context) {
         this.objectList = new ArrayList<>();
         this.context = context;
+        this.linkClickHandler = new LinkClickHandler(this.context);
     }
 
     public void addObjects(List<Object> objects) {
@@ -168,7 +171,7 @@ public class OverviewViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 Description description = (Description) objectList.get(position);
                 DescriptionView descriptionView = (DescriptionView) holder;
                 descriptionView.description.setText(description.getDescription());
-                descriptionView.description.setMovementMethod(LinkClickHandler.getInstance());
+                descriptionView.description.setMovementMethod(this.linkClickHandler);
                 if (description.isExpanded()) {
                     descriptionView.setExpanded();
                 } else {
@@ -275,7 +278,7 @@ public class OverviewViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 LinkView linkView = (LinkView) holder;
                 VNLink vnLink = (VNLink) objectList.get(position);
                 linkView.link.setText(vnLink.getLink());
-                linkView.link.setMovementMethod(LinkClickHandler.getInstance());
+                linkView.link.setMovementMethod(this.linkClickHandler);
                 break;
         }
 

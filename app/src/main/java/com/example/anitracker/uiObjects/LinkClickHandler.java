@@ -1,23 +1,77 @@
 package com.example.anitracker.uiObjects;
 
-import android.text.Spannable;
+import android.content.Context;
+import android.content.Intent;
+import android.text.Layout;
 import android.text.method.LinkMovementMethod;
+import android.text.style.URLSpan;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.widget.TextView;
 
-public class LinkClickHandler extends LinkMovementMethod {
-    private static LinkClickHandler sInstance;
+import com.example.anitracker.activities.Details;
+import com.example.anitracker.type.MediaType;
 
-    public static LinkClickHandler getInstance() {
-        if (sInstance == null)
-            sInstance = new LinkClickHandler();
-        return sInstance;
+import java.util.Arrays;
+import java.util.Objects;
+
+public class LinkClickHandler extends LinkMovementMethod {
+    private final Context context;
+
+    public LinkClickHandler(Context context) {
+        this.context = context;
+    }
+    public boolean onTouchEvent(TextView widget, android.text.Spannable buffer, android.view.MotionEvent event) {
+        int action = event.getAction();
+        //http://stackoverflow.com/questions/1697084/handle-textview-link-click-in-my-android-app
+        if (action == MotionEvent.ACTION_UP) {
+            int x = (int) event.getX();
+            int y = (int) event.getY();
+
+            x -= widget.getTotalPaddingLeft();
+            y -= widget.getTotalPaddingTop();
+
+            x += widget.getScrollX();
+            y += widget.getScrollY();
+
+            Layout layout = widget.getLayout();
+            int line = layout.getLineForVertical(y);
+            int off = layout.getOffsetForHorizontal(line, x);
+
+            URLSpan[] link = buffer.getSpans(off, off, URLSpan.class);
+            if (link.length != 0) {
+                String url = link[0].getURL();
+                String[] linkData = url.split("/");
+                Log.d("LINK CLICK TEST", Arrays.toString(linkData));
+                if (linkData.length >= 5 && Objects.equals(linkData[2], "anilist.co")) {
+                    Intent intent = this.getIntent(linkData);
+                    context.startActivity(intent);
+                } else {
+                    return super.onTouchEvent(widget, buffer, event);
+                }
+            }
+
+            return true;
+        } else {
+            return true;
+        }
     }
 
-    @Override
-    public boolean onTouchEvent(TextView widget, Spannable buffer, MotionEvent event) {
-        Log.d("LINK CLICK TEST", buffer.toString());
-        return super.onTouchEvent(widget, buffer, event);
+    public Intent getIntent(String[] linkData) {
+        Intent intent = new Intent(context, Details.class);
+        intent.putExtra("ID", linkData[4]);
+        if (Objects.equals(linkData[3], "character")) {
+            intent.putExtra("Type", MediaType.ANIME.rawValue);
+            intent.putExtra("Entity", "Char");
+        } else if (Objects.equals(linkData[3], "staff")) {
+            intent.putExtra("Type", MediaType.ANIME.rawValue);
+            intent.putExtra("Entity", "Staff");
+        } else if (Objects.equals(linkData[3], "anime")) {
+            intent.putExtra("Type", MediaType.ANIME.rawValue);
+        } else if (Objects.equals(linkData[3], "manga")) {
+            intent.putExtra("Type", MediaType.MANGA.rawValue);
+        }
+
+        return intent;
     }
 }

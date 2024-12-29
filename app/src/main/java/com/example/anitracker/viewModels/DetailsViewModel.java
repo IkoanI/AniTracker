@@ -182,7 +182,6 @@ public class DetailsViewModel extends ViewModel {
         if (this.mediaType != MediaType.VISUAL_NOVEL) {
             this.repository.fetchStaffRoles(Integer.parseInt(this.id), this.currRolePage);
         } else {
-            Log.d("TESTING", this.id);
             this.repository.fetchVNStaffRoles(this.id, this.currRolePage);
         }
 

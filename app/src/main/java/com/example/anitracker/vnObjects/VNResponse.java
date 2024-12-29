@@ -163,6 +163,12 @@ public class VNResponse {
         return links;
     }
 
+    public String getDesc() {
+        String[] toReplace = new String[] {"<", ">"};
+        String[] replacement = new String[] {"&lt;", "&gt;"};
+        return this.desc == null ? null : StringUtils.replaceEach(this.desc, toReplace, replacement);
+    }
+
     public VNDetails convertToMediaObject() {
         VNDetails vnDetails = new VNDetails();
         String natTitle = null, romTitle = null, engTitle = null;
@@ -192,7 +198,7 @@ public class VNResponse {
         vnDetails.setSynonyms(synonyms);
         vnDetails.setAliases(this.aliases);
         vnDetails.setCoverImg(this.getImage().getThumbnail());
-        vnDetails.setDesc(this.desc);
+        vnDetails.setDesc(this.getDesc());
         vnDetails.setStatus(this.getStatus());
         vnDetails.setId(this.id);
         vnDetails.setAvgScore(this.getRating());

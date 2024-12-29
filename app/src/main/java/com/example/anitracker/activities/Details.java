@@ -76,7 +76,6 @@ public class Details extends AppCompatActivity {
 
         // get and observe details from repository
         if (Objects.equals(this.detailsViewModel.getEntityType(), "Char")) {
-            Log.d("TESING", "CHAR");
             this.detailsViewModel.observeCharDetail().observe(this, res -> {
                 this.detailsViewModel.setLastFetchedCharDetail(res);
                 this.populateActivity(res);
