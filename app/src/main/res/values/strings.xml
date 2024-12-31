@@ -102,4 +102,5 @@
     <string name="text">Text</string>
     <string name="relation_name">Relation Name</string>
     <string name="relation_info">Relation Info</string>
+    <string name="actions">Actions</string>
 </resources>

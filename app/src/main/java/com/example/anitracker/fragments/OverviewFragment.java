@@ -1,6 +1,5 @@
 package com.example.anitracker.fragments;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,26 +28,21 @@ import com.google.android.flexbox.FlexWrap;
 import com.google.android.flexbox.FlexboxLayoutManager;
 
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 public class OverviewFragment extends Fragment {
-    protected Context context;
     protected ProgressBar progressBar;
     protected OverviewViewAdapter overviewViewAdapter;
     protected DetailsViewModel detailsViewModel;
 
     @Override
-    public void onAttach(@NonNull Context context) {
-        super.onAttach(context);
-        this.context = context;
-    }
-
-    @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.overviewViewAdapter = new OverviewViewAdapter(context);
+        this.overviewViewAdapter = new OverviewViewAdapter(getContext());
     }
 
     @Nullable
@@ -71,7 +65,7 @@ public class OverviewFragment extends Fragment {
         this.progressBar.setVisibility(View.VISIBLE);
         RecyclerView overviewView = view.findViewById(R.id.recView);
         overviewView.setAdapter(overviewViewAdapter);
-        FlexboxLayoutManager layoutManager = new FlexboxLayoutManager(context);
+        FlexboxLayoutManager layoutManager = new FlexboxLayoutManager(getContext());
         layoutManager.setFlexWrap(FlexWrap.WRAP);
         overviewView.setLayoutManager(layoutManager);
         return view;
@@ -90,7 +84,7 @@ public class OverviewFragment extends Fragment {
         if (details.getGenres() != null) {
             overviewViewObjects.add(details.getGenres());
         }
-        if (details.getDesc() != null) {
+        if (StringUtils.isNotBlank(details.getDesc())) {
             overviewViewObjects.add(new Header("Synopsis"));
             overviewViewObjects.add(new Description(details.getDesc()));
         }
@@ -118,9 +112,10 @@ public class OverviewFragment extends Fragment {
             }
         }
 
-        overviewViewObjects.add(new TagsHeader(details));
-
-        overviewViewObjects.addAll(details.getNoSpoilerTags());
+        if (details.getNoSpoilerTags() != null && !details.getNoSpoilerTags().isEmpty()) {
+            overviewViewObjects.add(new TagsHeader(details));
+            overviewViewObjects.addAll(details.getNoSpoilerTags());
+        }
 
         overviewViewAdapter.addObjects(overviewViewObjects);
         this.progressBar.setVisibility(View.GONE);

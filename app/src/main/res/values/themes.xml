@@ -11,4 +11,9 @@
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">8dp</item>
     </style>
+
+    <style name="RoundFAB" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="android:radius">40dp</item>
+    </style>
 </resources>

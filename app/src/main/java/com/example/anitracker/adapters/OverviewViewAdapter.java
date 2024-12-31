@@ -107,7 +107,7 @@ public class OverviewViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         switch (viewType) {
             case headerTypeVar:
                 view = inflater.inflate(R.layout.header_layout, parent, false );
-                viewHolder = new HeaderView(view);
+                viewHolder = new Header.HeaderView(view);
                 break;
 
             case descriptionTypeVar:
@@ -159,10 +159,10 @@ public class OverviewViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        switch (holder.getItemViewType()){
+        switch (holder.getItemViewType()) {
             case headerTypeVar:
                 Header header = (Header) objectList.get(position);
-                HeaderView headerView = (HeaderView) holder;
+                Header.HeaderView headerView = (Header.HeaderView) holder;
                 headerView.headerText.setText(header.getHeader());
                 break;
 
@@ -286,14 +286,6 @@ public class OverviewViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     @Override
     public int getItemCount() {
         return objectList.size();
-    }
-
-    public static class HeaderView extends RecyclerView.ViewHolder{
-        TextView headerText;
-        public HeaderView(@NonNull View itemView) {
-            super(itemView);
-            headerText = itemView.findViewById(R.id.header);
-        }
     }
 
     public static class DescriptionView extends RecyclerView.ViewHolder{

@@ -38,4 +38,23 @@
         android:visibility="gone"
         android:text="@string/no_data_found"/>
 
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/actionButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/actions"
+        android:backgroundTint="@color/lightBlue"
+        android:layout_margin="20dp"
+        app:borderWidth="3dp"
+        app:backgroundTint="@color/white"
+        android:src="@drawable/baseline_filter_list_24"
+        app:tint="@color/white"
+        app:maxImageSize="50dp"
+        android:scaleType="center"
+        app:shapeAppearance="@style/RoundFAB"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        style="?attr/floatingActionButtonLargeStyle"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -15,6 +15,7 @@ import com.example.anitracker.interfaces.RecyclerViewInterface;
 import com.example.anitracker.mangaObjects.MangaDetails;
 import com.example.anitracker.mediaObjects.MediaDetails;
 import com.example.anitracker.repository.AnilistObjectMappings;
+import com.example.anitracker.repository.SearchFilter;
 import com.example.anitracker.type.MediaStatus;
 import com.example.anitracker.type.MediaType;
 import com.example.anitracker.uiObjects.Image;
@@ -33,14 +34,17 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
     private final RecyclerViewInterface recyclerViewInterface;
     private final SearchViewModel viewModel;
     private Boolean loading = false;
+    private int loadedPage = 1;
     private final MediaType mediaType;
+    private final SearchFilter searchFilter;
 
     private final int animeDetailVar = 0,
             mangaDetailVar = 1,
             vnDetailVar = 2;
 
-    public SearchAdapter(MediaType mediaType, Context context, RecyclerViewInterface recyclerViewInterface, SearchViewModel viewModel) {
-        this.mediaType = mediaType;
+    public SearchAdapter(SearchFilter searchFilter, Context context, RecyclerViewInterface recyclerViewInterface, SearchViewModel viewModel) {
+        this.mediaType = searchFilter.getMediaType();
+        this.searchFilter = searchFilter;
         this.context = context;
         this.recyclerViewInterface = recyclerViewInterface;
         this.viewModel = viewModel;
@@ -55,6 +59,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
 
     public void clearItems() {
         notifyItemRangeRemoved(0, resultPage.size());
+        this.loadedPage = 1;
         resultPage.clear();
     }
 
@@ -96,7 +101,9 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
     @Override
     public void onBindViewHolder(@NonNull SearchViewHolder holder, int position) {
         if (!loading && position >= getItemCount()-1) {
-            viewModel.getSearchPage(this.mediaType);
+            loadedPage++;
+            this.searchFilter.setPage(loadedPage);
+            viewModel.getSearchPage(this.searchFilter);
         }
 
         // assign value to each view created based on position of recycler view
@@ -191,11 +198,10 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
     public void setVNDetails(VNDetails vnDetails, VNSearchViewHolder holder) {
         String yearAndPlayTime = "Unknown";
         if (vnDetails.getStartDate() != null) {
-            if (vnDetails.getStartDate().getYear() != 0) {
+            if (vnDetails.getStartDate().getYear() != -1) {
                 // display year of release
                 yearAndPlayTime = String.valueOf(vnDetails.getStartDate().getYear());
-            }
-            else{
+            } else {
                 // display whatever status given
                 yearAndPlayTime = vnDetails.getStatus();
             }

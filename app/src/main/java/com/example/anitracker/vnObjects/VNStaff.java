@@ -83,7 +83,7 @@ public class VNStaff {
         staffDetails.setName(name);
         staffDetails.setLang(VNLanguage.languageMap.get(this.lang));
         staffDetails.setGender(this.getGender());
-        staffDetails.setDescription(this.description);
+        staffDetails.setDescription(this.getDescription());
         staffDetails.setImage(VNImage.defaultImage);
         if (this.note == null) {
             staffDetails.setRole(staffRole.get(this.role));
@@ -107,7 +107,7 @@ public class VNStaff {
     }
 
     public String getDescription() {
-        return description;
+        return this.description == null ? null : VNDBParser.parseText(this.description);
     }
 
     public List<VNAlias> getAliases() {

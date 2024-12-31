@@ -93,7 +93,9 @@ public class ApiRepository {
 
     // getters
     public MutableLiveData<List<AnimeDetails>> getMutableAnimeSearch() {return mutableAnimeSearch;}
+
     public MutableLiveData<List<MangaDetails>> getMutableMangaSearch() {return mutableMangaSearch;}
+
     public MutableLiveData<List<VNDetails>> getMutableVNSearch() {return mutableVNSearch;}
 
     public MutableLiveData<MediaDetails>  getMutableLiveData() { return mutableLiveData; }
@@ -115,63 +117,74 @@ public class ApiRepository {
     public MutableLiveData<String> getMutableErrorMsg() { return mutableErrorMsg; }
 
     // fetch data functions
-    public void fetchSearchResults(MediaType mediaType, int page, String userSearch, List<MediaSort> sort) {
-        Optional<String> opUserSearch = Optional.present(userSearch);
-        Optional<List<MediaSort>> opSort = Optional.present(sort);
+    public void fetchSearchResults(SearchFilter searchFilter) {
+        MediaType mediaType = searchFilter.getMediaType();
 
         if (mediaType == MediaType.ANIME) {
-            ApolloCall<AnimeSearchPageQuery.Data> animeQueryCall = aniClient.query(new AnimeSearchPageQuery(page, opUserSearch, opSort));
-            compositeDisposable.add(Rx3Apollo.single(animeQueryCall)
-                    .subscribeOn(Schedulers.newThread())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(res -> {
-                                assert res.data != null;
-                                List<AnimeDetails> animeList = new ArrayList<>();
-                                List<AnimeSearchPageQuery.Medium> results = res.data.Page.media;
-                                for (AnimeSearchPageQuery.Medium result : results) {
-                                    AnimeDetails animeDetails = new AnimeDetails();
-                                    this.setMediumDetail(animeDetails, result.animeShortDetail.mediumDetail);
-                                    this.setAnimeShortDetail(animeDetails, result.animeShortDetail);
-                                    if (!result.studios.nodes.isEmpty()) {
-                                        Studios studios = new Studios();
-                                        for(AnimeSearchPageQuery.Node studio : result.studios.nodes){
-                                            studios.addAnimationStudio(studio.name);
-                                        }
-                                        animeDetails.setStudios(studios);
-                                    }
-                                    animeList.add(animeDetails);
-                                }
-                                mutableAnimeSearch.setValue(animeList);
-                            },
-                            error -> mutableErrorMsg.setValue(error.getMessage()))
-            );
+            this.fetchAnimeSearch(searchFilter);
         } else if (mediaType == MediaType.MANGA) {
-            ApolloCall<MangaSearchPageQuery.Data> mangaQueryCall = aniClient.query(new MangaSearchPageQuery(page, opUserSearch, opSort));
-            compositeDisposable.add(Rx3Apollo.single(mangaQueryCall)
-                    .subscribeOn(Schedulers.newThread())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(res -> {
-                                assert res.data != null;
-                                List<MangaDetails> mangaList = new ArrayList<>();
-                                List<MangaSearchPageQuery.Medium> results = res.data.Page.media;
-                                for (MangaSearchPageQuery.Medium result : results) {
-                                    MangaDetails mangaDetails = new MangaDetails();
-                                    this.setMediumDetail(mangaDetails, result.mangaShortDetail.mediumDetail);
-                                    this.setMangaShortDetail(mangaDetails, result.mangaShortDetail);
-                                    mangaList.add(mangaDetails);
-                                }
-                                mutableMangaSearch.setValue(mangaList);
-                            },
-                            error -> mutableErrorMsg.setValue(error.getMessage()))
-            );
+            this.fetchMangaSearch(searchFilter);
         } else if (mediaType == MediaType.VISUAL_NOVEL) {
-            String fields = "title, image{thumbnail}, developers{name}, released, length, length_minutes, rating, id";
-            if (userSearch == null) {
-                this.fetchDefaultVNPage("rating", fields, page);
-            } else {
-                this.fetchVNSearchPage(userSearch, "searchrank", fields, page);
-            }
+            this.fetchVNSearchPage(searchFilter);
         }
+    }
+
+    private void fetchAnimeSearch(SearchFilter searchFilter) {
+        Optional<String> opUserSearch = Optional.present(searchFilter.getUserSearch());
+        Optional<List<MediaSort>> opSort = Optional.present(searchFilter.getMediaSort());
+        int page = searchFilter.getPage();
+
+
+        ApolloCall<AnimeSearchPageQuery.Data> animeQueryCall = aniClient.query(new AnimeSearchPageQuery(page, opUserSearch, opSort));
+        compositeDisposable.add(Rx3Apollo.single(animeQueryCall)
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(res -> {
+                        assert res.data != null;
+                        List<AnimeDetails> animeList = new ArrayList<>();
+                        List<AnimeSearchPageQuery.Medium> results = res.data.Page.media;
+                        for (AnimeSearchPageQuery.Medium result : results) {
+                            AnimeDetails animeDetails = new AnimeDetails();
+                            this.setMediumDetail(animeDetails, result.animeShortDetail.mediumDetail);
+                            this.setAnimeShortDetail(animeDetails, result.animeShortDetail);
+                            if (!result.studios.nodes.isEmpty()) {
+                                Studios studios = new Studios();
+                                for(AnimeSearchPageQuery.Node studio : result.studios.nodes){
+                                    studios.addAnimationStudio(studio.name);
+                                }
+                                animeDetails.setStudios(studios);
+                            }
+                            animeList.add(animeDetails);
+                        }
+                        mutableAnimeSearch.setValue(animeList);
+                    },
+                    error -> mutableErrorMsg.setValue(error.getMessage()))
+        );
+    }
+
+    private void fetchMangaSearch(SearchFilter searchFilter) {
+        Optional<String> opUserSearch = Optional.present(searchFilter.getUserSearch());
+        Optional<List<MediaSort>> opSort = Optional.present(searchFilter.getMediaSort());
+        int page = searchFilter.getPage();
+
+        ApolloCall<MangaSearchPageQuery.Data> mangaQueryCall = aniClient.query(new MangaSearchPageQuery(page, opUserSearch, opSort));
+        compositeDisposable.add(Rx3Apollo.single(mangaQueryCall)
+                .subscribeOn(Schedulers.newThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(res -> {
+                        assert res.data != null;
+                        List<MangaDetails> mangaList = new ArrayList<>();
+                        List<MangaSearchPageQuery.Medium> results = res.data.Page.media;
+                        for (MangaSearchPageQuery.Medium result : results) {
+                            MangaDetails mangaDetails = new MangaDetails();
+                            this.setMediumDetail(mangaDetails, result.mangaShortDetail.mediumDetail);
+                            this.setMangaShortDetail(mangaDetails, result.mangaShortDetail);
+                            mangaList.add(mangaDetails);
+                        }
+                        mutableMangaSearch.setValue(mangaList);
+                    },
+                    error -> mutableErrorMsg.setValue(error.getMessage()))
+        );
     }
 
     private void fetchAnimeData (int id){
@@ -429,14 +442,19 @@ public class ApiRepository {
             });
     }
 
-    public void fetchDefaultVNPage(String sort, String fields, int page) {
-        VNRequestBody body = new VNRequestBody(sort, true, 50, page, fields, null);
-        this.fetchVNPage(body, "Search");
-    }
+    public void fetchVNSearchPage(SearchFilter searchFilter) {
+        String fields = "title, image{thumbnail}, developers{name}, released, length, length_minutes, rating, id";
+        String userSearch = searchFilter.getUserSearch();
+        List<Object> filters = Arrays.asList("search", "=", userSearch);
+        int sortID = searchFilter.getSortIDs().get(0);
+        String sort = userSearch == null ? VNDBFilters.sort[sortID] : VNDBFilters.sortWithSearch[sortID];
+        sort = VNDBFilters.stringToVNDBFilter.get(sort);
 
-    public void fetchVNSearchPage(String search, String sort, String fields, int page){
-        List<Object> filters = Arrays.asList("search", "=", search);
-        VNRequestBody body = new VNRequestBody(sort, false, 50, page, fields, filters);
+        boolean reverse = searchFilter.getOrderIDs().get(0) != 0;
+        reverse = Objects.equals(sort, "searchrank") != reverse;
+
+        int page = searchFilter.getPage();
+        VNRequestBody body = new VNRequestBody(sort, reverse, 50, page, fields, filters);
         this.fetchVNPage(body, "Search");
     }
 
@@ -453,13 +471,13 @@ public class ApiRepository {
         this.fetchVNPage(body, "Overview");
     }
 
-    private void fetchVNCharPage(String vndbID, VNRequestBody body) {
+    private void fetchVNCharPage(String vndbID, VNRequestBody body, boolean page) {
         Call<VNCharPage> call = VNClient.fetchVNChars(body);
         call.enqueue(new Callback<VNCharPage>() {
             @Override
             public void onResponse(@NonNull Call<VNCharPage> call, @NonNull Response<VNCharPage> response) {
                 assert response.body() != null;
-                if (response.body().getSize() == 1) {
+                if (!page) {
                     mutableCharacterDetail.setValue(response.body().getVNCharList(vndbID).get(0));
                 } else {
                     mutableCharPage.setValue(response.body().getVNCharList(vndbID));
@@ -477,7 +495,7 @@ public class ApiRepository {
         String fields = "name, image{url}, vns{role}";
         List<Object> filters = Arrays.asList("vn","=", new String[]{"id","=",vndbID});
         VNRequestBody body = new VNRequestBody("name", false, 50, page, fields, filters);
-        this.fetchVNCharPage(vndbID,  body);
+        this.fetchVNCharPage(vndbID,  body, true);
     }
 
     public void fetchVNCharDetails(String vndbID) {
@@ -487,7 +505,7 @@ public class ApiRepository {
 
         List<Object> filters = Arrays.asList("id", "=", vndbID);
         VNRequestBody body = new VNRequestBody(null, false, 1, 1, fields, filters);
-        this.fetchVNCharPage(vndbID, body);
+        this.fetchVNCharPage(vndbID, body, false);
     }
 
     private void fetchVNStaffPage(VNRequestBody body) {
@@ -521,7 +539,7 @@ public class ApiRepository {
         String fields = "name, image{url}, vns{title, role, release{title}, image{thumbnail}}";
         List<Object> filters = Arrays.asList("seiyuu","=", new String[]{"id","=",vndbID});
         VNRequestBody body = new VNRequestBody(null, false, 50, page, fields, filters);
-        this.fetchVNCharPage(vndbID, body);
+        this.fetchVNCharPage(vndbID, body, true);
     }
 
     public void fetchVNStaffRoles(String vndbID, int page) {

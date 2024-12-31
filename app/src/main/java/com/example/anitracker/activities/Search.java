@@ -10,18 +10,25 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.anitracker.R;
 import com.example.anitracker.adapters.VPAdapter;
+import com.example.anitracker.fragments.FilterDialogFragment;
 import com.example.anitracker.fragments.SearchFragment;
 import com.example.anitracker.type.MediaType;
 import com.example.anitracker.viewModels.SearchViewModel;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEvent;
+
+import java.util.Objects;
 
 public class Search extends AppCompatActivity {
     SearchViewModel viewModel;
@@ -103,10 +110,10 @@ public class Search extends AppCompatActivity {
         viewPagerAdapter.addFragment(new SearchFragment(MediaType.MANGA));
         viewPagerAdapter.addFragment(new SearchFragment(MediaType.VISUAL_NOVEL));
 
-        // since number of tabs is known, load all at once instead of loading every time user switches
+        viewPager.setAdapter(viewPagerAdapter);
         viewPager.setOffscreenPageLimit(2);
 
-        viewPager.setAdapter(viewPagerAdapter);
         new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> tab.setText(fragmentTitles[position])).attach();
     }
+
 }
