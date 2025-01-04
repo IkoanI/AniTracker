@@ -45,11 +45,17 @@ public class SearchViewModel extends ViewModel {
         repository.fetchSearchResults(searchFilter);
     }
 
+    public void getMediaAttributes() {
+        repository.fetchMediaAttributes();
+    }
+
 
     // get error message from repository
     public LiveData<String> getErrorMsg() { return errorMsg; }
 
-    public void setUserSearch(String userSearch) { this.userSearch.setValue(userSearch); }
+    public MutableLiveData<String> getUserSearch() {
+        return userSearch;
+    }
 
     public LiveData<String> observeUserSearch() { return userSearch; }
 }

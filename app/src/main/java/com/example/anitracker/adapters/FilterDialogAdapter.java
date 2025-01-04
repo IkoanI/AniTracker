@@ -1,16 +1,18 @@
 package com.example.anitracker.adapters;
 
 import android.content.Context;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.SearchView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.anitracker.R;
-import com.example.anitracker.type.MediaType;
+import com.example.anitracker.uiObjects.ChipGroupSearch;
 import com.example.anitracker.uiObjects.FilterChip;
 import com.example.anitracker.uiObjects.FilterChipGroup;
 import com.example.anitracker.uiObjects.Header;
@@ -21,15 +23,15 @@ import java.util.List;
 
 public class FilterDialogAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private final List<Object> objectList;
-    private final MediaType mediaType;
     private final Context context;
     private LayoutInflater inflater;
 
     private final int headerVar = 0,
-            chipGroupVar = 1;
+            chipGroupSearchVar = 1,
+            chipGroupVar = 2;
 
-    public FilterDialogAdapter(MediaType mediaType, Context context, List<Object> uiObjects) {
-        this.mediaType = mediaType;
+
+    public FilterDialogAdapter(Context context, List<Object> uiObjects) {
         this.context = context;
         this.objectList = uiObjects;
     }
@@ -39,6 +41,8 @@ public class FilterDialogAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         Object object = objectList.get(position);
         if (object instanceof Header) {
             return headerVar;
+        } else if (object instanceof ChipGroupSearch) {
+            return chipGroupSearchVar;
         } else if (object instanceof FilterChipGroup) {
             return chipGroupVar;
         } else {
@@ -59,9 +63,14 @@ public class FilterDialogAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 viewHolder = new Header.HeaderView(view);
                 break;
 
+            case chipGroupSearchVar:
+                view = inflater.inflate(R.layout.searchable_filter_layout, parent, false);
+                viewHolder = new ChipGroupSearch.ViewHolder(view);
+                break;
+
             case chipGroupVar:
                 view = inflater.inflate(R.layout.chip_group_layout, parent, false);
-                viewHolder = new FilterChipGroup.ChipGroupView(view);
+                viewHolder = new FilterChipGroup.ViewHolder(view);
                 break;
         }
 
@@ -80,15 +89,36 @@ public class FilterDialogAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 break;
 
             case chipGroupVar:
-                FilterChipGroup.ChipGroupView chipGroupView = (FilterChipGroup.ChipGroupView) holder;
+                FilterChipGroup.ViewHolder chipGroupView = (FilterChipGroup.ViewHolder) holder;
                 FilterChipGroup chipGroup = (FilterChipGroup) object;
-                chipGroupView.chipGroup.setSingleSelection(chipGroup.isSingleSelection());
-                chipGroupView.chipGroup.setSelectionRequired(chipGroup.isSelectionRequired());
-                this.addChips(chipGroup.getFilterChips(), chipGroupView.chipGroup, chipGroup);
-                for (int id : chipGroup.getCheckedChipIds()) {
-                    ((Chip) chipGroupView.chipGroup.getChildAt(id)).setChecked(true);
-                }
+                chipGroupView.setup(chipGroup);
+
+                chipGroupView.chipGroup.removeAllViews();
+                this.addFilterChips(chipGroupView.chipGroup, chipGroup);
                 break;
+
+            case chipGroupSearchVar:
+                ChipGroupSearch.ViewHolder searchChipGroupView = (ChipGroupSearch.ViewHolder) holder;
+                ChipGroupSearch searchableChipGroup = (ChipGroupSearch) object;
+
+                Handler handler = new Handler();
+                searchChipGroupView.searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+                    @Override
+                    public boolean onQueryTextSubmit(String s) {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onQueryTextChange(String s) {
+                        handler.removeCallbacksAndMessages(null);
+                        handler.postDelayed(() -> searchableChipGroup.getUserSearch().setValue(s), 500);
+                        return true;
+                    }
+                });
+                break;
+
+            default:
+                throw new IllegalStateException("Unexpected value: " + holder.getItemViewType());
         }
     }
 
@@ -97,12 +127,27 @@ public class FilterDialogAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         return objectList.size();
     }
 
-    private void addChips(List<FilterChip> filterChips, ChipGroup chipGroup, FilterChipGroup filterChipGroup) {
+    private void addFilterChips(ChipGroup chipGroup, FilterChipGroup filterChipGroup) {
+        List<FilterChip> filterChips = filterChipGroup.getFilterChips();
         for (int i = 0; i < filterChips.size(); i++) {
             Chip chip = (Chip) inflater.inflate(R.layout.chip_layout, chipGroup, false);
-            chip.setText(filterChips.get(i).getText());
+            String name = filterChips.get(i).getText();
+            chip.setText(name);
             chip.setId(i);
-            chip.setOnCheckedChangeListener((e, isChecked) -> filterChipGroup.setCheckedChipIds(chipGroup.getCheckedChipIds()));
+            chip.setOnCheckedChangeListener((e, isChecked) -> {
+                if (isChecked) {
+                    filterChipGroup.getSelected().add(name);
+                } else {
+                    filterChipGroup.getSelected().remove(name);
+                }
+
+                Log.d("Testing", filterChipGroup.getSelected().toString());
+            });
+
+            if (filterChipGroup.getSelected().contains(name)) {
+                chip.setChecked(true);
+            }
+
             chipGroup.addView(chip);
         }
     }

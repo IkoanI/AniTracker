@@ -1,96 +1,57 @@
 package com.example.anitracker.uiObjects;
-
-import android.util.Log;
 import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.anitracker.R;
-import com.example.anitracker.repository.AnilistFilters;
-import com.example.anitracker.repository.SearchFilter;
-import com.example.anitracker.repository.VNDBFilters;
-import com.example.anitracker.type.MediaType;
 import com.google.android.material.chip.ChipGroup;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 
 public class FilterChipGroup {
-    private final List<FilterChip> filterChips;
-    private final MediaType mediaType;
-    private final String filterGroup;
-    private boolean singleSelection, selectionRequired;
-    private List<Integer> checkedChipIds;
-    private final SearchFilter searchFilter;
+    private List<FilterChip> filterChips = new ArrayList<>();
+    private final boolean singleSelection, selectionRequired;
+    private final HashSet<String> selected = new HashSet<>();
 
-    public FilterChipGroup(String filterGroup, SearchFilter searchFilter) {
-        this.searchFilter = searchFilter;
-        this.filterChips = new ArrayList<>();
-        this.filterGroup = filterGroup;
-        this.mediaType = searchFilter.getMediaType();
-        if (Objects.equals(filterGroup, "Sort")) {
-            this.checkedChipIds = searchFilter.getSortIDs();
-            this.setSortFilter();
-        } else if (Objects.equals(filterGroup, "Order")) {
-            this.checkedChipIds = searchFilter.getOrderIDs();
-            this.setOrderFilter();
+    public FilterChipGroup(List<String> chipNames, List<String> selected, boolean singleSelection, boolean selectionRequired) {
+        this.singleSelection = singleSelection;
+        this.selectionRequired = selectionRequired;
+        for (String name : chipNames) {
+            filterChips.add(new FilterChip(name));
         }
+
+        this.selected.addAll(selected);
     }
 
-    public boolean isSingleSelection() {
-        return this.singleSelection;
-    }
-
-    public boolean isSelectionRequired() {
-        return this.selectionRequired;
+    public FilterChipGroup(boolean singleSelection, boolean selectionRequired) {
+        this(new ArrayList<>(), new ArrayList<>(), singleSelection, selectionRequired);
     }
 
     public List<FilterChip> getFilterChips() {
         return this.filterChips;
     }
 
-    public void setSortFilter() {
-        this.singleSelection = true;
-        this.selectionRequired = true;
-        String[] chipNames;
-        if (this.mediaType == MediaType.VISUAL_NOVEL) {
-            chipNames = this.searchFilter.getUserSearch() == null ? VNDBFilters.sort : VNDBFilters.sortWithSearch;
-        } else {
-            chipNames = AnilistFilters.sort;
-        }
-        for (String sort : chipNames) {
-            this.filterChips.add(new FilterChip(sort));
-        }
+    public void setFilterChips(List<FilterChip> filterChips) {
+        this.filterChips = filterChips;
     }
 
-    public void setOrderFilter() {
-        this.singleSelection = true;
-        this.selectionRequired = true;
-        String[] chipNames = this.mediaType == MediaType.VISUAL_NOVEL ? VNDBFilters.order : AnilistFilters.order;
-        for (String order : chipNames) {
-            this.filterChips.add(new FilterChip(order));
-        }
+    public HashSet<String> getSelected() {
+        return selected;
     }
 
-    public void setCheckedChipIds(List<Integer> checkedChipIds) {
-        this.checkedChipIds = checkedChipIds;
-    }
-
-    public List<Integer> getCheckedChipIds() {
-        return this.checkedChipIds;
-    }
-
-    public String getFilterGroup() {
-        return filterGroup;
-    }
-
-    public static class ChipGroupView extends RecyclerView.ViewHolder {
+    public static class ViewHolder extends RecyclerView.ViewHolder {
         public ChipGroup chipGroup;
-        public ChipGroupView(@NonNull View itemView) {
+        public ViewHolder(@NonNull View itemView) {
             super(itemView);
             this.chipGroup = itemView.findViewById(R.id.chip_group);
+        }
+
+        public void setup(FilterChipGroup filterChipGroup) {
+            this.chipGroup.setSelectionRequired(filterChipGroup.selectionRequired);
+            this.chipGroup.setSingleSelection(filterChipGroup.singleSelection);
         }
     }
 }

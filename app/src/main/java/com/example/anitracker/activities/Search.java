@@ -3,35 +3,28 @@ package com.example.anitracker.activities;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
+import android.widget.SearchView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.anitracker.R;
 import com.example.anitracker.adapters.VPAdapter;
-import com.example.anitracker.fragments.FilterDialogFragment;
 import com.example.anitracker.fragments.SearchFragment;
 import com.example.anitracker.type.MediaType;
+import com.example.anitracker.uiObjects.SearchQueryListener;
 import com.example.anitracker.viewModels.SearchViewModel;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
 import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEvent;
 
-import java.util.Objects;
-
 public class Search extends AppCompatActivity {
-    SearchViewModel viewModel;
     private final String[] fragmentTitles = {"Anime", "Manga", "Visual Novel"};
 
     @Override
@@ -45,10 +38,8 @@ public class Search extends AppCompatActivity {
             return insets;
         });
 
-        Handler handler = new Handler();
-
         // initialize view model
-        this.viewModel = new ViewModelProvider(this).get(SearchViewModel.class);
+        SearchViewModel viewModel = new ViewModelProvider(this).get(SearchViewModel.class);
 
         // set up error alert dialogue
         AlertDialog.Builder builder1 = new AlertDialog.Builder(this);
@@ -65,30 +56,15 @@ public class Search extends AppCompatActivity {
                 });
 
         // observe error message
-        this.viewModel.getErrorMsg().observe(this, error -> {
+        viewModel.getErrorMsg().observe(this, error -> {
             builder1.setMessage(error);
             AlertDialog alert11 = builder1.create();
             alert11.show();
         });
 
         // set up search bar
-        android.widget.SearchView searchBar = findViewById(R.id.searchBar);
-        searchBar.setOnQueryTextListener(new android.widget.SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                // clear focus from search bar after submitting
-                searchBar.clearFocus();
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                // delay search until user stops typing
-                handler.removeCallbacksAndMessages(null);
-                handler.postDelayed(() -> viewModel.setUserSearch(newText), 500);
-                return true;
-            }
-        });
+        SearchView searchBar = findViewById(R.id.searchBar);
+        searchBar.setOnQueryTextListener(new SearchQueryListener(searchBar, viewModel.getUserSearch()));
 
         // clear focus from searchbar when keyboard hidden
         KeyboardVisibilityEvent.setEventListener(this,
@@ -106,14 +82,13 @@ public class Search extends AppCompatActivity {
         VPAdapter viewPagerAdapter = new VPAdapter(this, this);
 
         // adding fragments to view pager
-        viewPagerAdapter.addFragment(new SearchFragment(MediaType.ANIME));
-        viewPagerAdapter.addFragment(new SearchFragment(MediaType.MANGA));
-        viewPagerAdapter.addFragment(new SearchFragment(MediaType.VISUAL_NOVEL));
+        viewPagerAdapter.addFragment(SearchFragment.newInstance(MediaType.ANIME));
+        viewPagerAdapter.addFragment(SearchFragment.newInstance(MediaType.MANGA));
+        viewPagerAdapter.addFragment(SearchFragment.newInstance(MediaType.VISUAL_NOVEL));
 
         viewPager.setAdapter(viewPagerAdapter);
         viewPager.setOffscreenPageLimit(2);
 
         new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> tab.setText(fragmentTitles[position])).attach();
     }
-
 }

@@ -175,9 +175,9 @@ fragment staffDetail on Staff {
     favourites
 }
 
-query AnimeSearchPage ($pageNo : Int!, $userSearch : String, $sort:[MediaSort]) {
+query AnimeSearchPage ($pageNo : Int!, $userSearch : String, $sort : [MediaSort], $genres : [String], $tags : [String]) {
     Page (page: $pageNo, perPage: 50){
-        media (search: $userSearch, sort: $sort, type: ANIME) {
+        media (search: $userSearch, sort: $sort, type: ANIME, genre_in: $genres, tag_in: $tags) {
             ...animeShortDetail
             studios(isMain:true){
                 nodes{
@@ -188,9 +188,9 @@ query AnimeSearchPage ($pageNo : Int!, $userSearch : String, $sort:[MediaSort]) 
     }
 }
 
-query MangaSearchPage ($pageNo : Int!, $userSearch : String, $sort:[MediaSort]) {
+query MangaSearchPage ($pageNo : Int!, $userSearch : String, $sort:[MediaSort], $genres : [String], $tags : [String]) {
     Page (page: $pageNo, perPage: 50){
-        media (search: $userSearch, sort: $sort, type: MANGA){
+        media (search: $userSearch, sort: $sort, type: MANGA, genre_in: $genres, tag_in: $tags){
             ...mangaShortDetail
         }
     }
@@ -304,5 +304,12 @@ query CharacterRoles ($id : Int!, $page : Int!) {
                 }
             }
         }
+    }
+}
+
+query MediaAttributes {
+    GenreCollection
+    MediaTagCollection {
+        name
     }
 }

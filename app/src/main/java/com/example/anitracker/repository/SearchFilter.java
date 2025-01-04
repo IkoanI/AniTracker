@@ -10,13 +10,18 @@ import java.util.List;
 
 public class SearchFilter {
     private String userSearch;
-    private List<Integer> sortIDs, orderIDs;
+    private List<String> sort;
+    private List<String> order;
+    private List<String> genres;
+    private List<String> tags;
     private MediaType mediaType;
     private int page;
 
     public SearchFilter() {
-        this.sortIDs = List.of(2);
-        this.orderIDs = List.of(1);
+        this.sort = List.of("Average Score");
+        this.order = List.of("Descending");
+        this.genres = new ArrayList<>();
+        this.tags = new ArrayList<>();
         this.page = 1;
     }
     public MediaType getMediaType() {
@@ -45,32 +50,50 @@ public class SearchFilter {
 
     public List<MediaSort> getMediaSort() {
         List<MediaSort> mediaSorts = new ArrayList<>();
-        for (int sortID : this.sortIDs) {
-            for (int orderID : this.orderIDs ) {
-                mediaSorts.add(AnilistFilters.stringToMediaSort.get(AnilistFilters.sort[sortID] + AnilistFilters.order[orderID]));
+        for (String sort : this.sort) {
+            for (String order : this.order ) {
+                mediaSorts.add(AnilistFilters.stringToMediaSort.get(sort + order));
             }
         }
 
         return mediaSorts;
     }
 
-    public List<Integer> getSortIDs() {
-        return this.sortIDs;
+    public List<String> getSort() {
+        return this.sort;
     }
 
-    public void setSortIds(List<Integer> sortIDs) {
-        if (sortIDs == null || !sortIDs.isEmpty()) {
-            this.sortIDs = sortIDs;
+    public void setSort(List<String> sort) {
+        if (sort == null || !sort.isEmpty()) {
+            this.sort = sort;
         }
     }
 
-    public List<Integer> getOrderIDs() {
-        return orderIDs;
+    public List<String> getOrder() {
+        return this.order;
     }
 
-    public void setOrderIDs(List<Integer> orderIDs) {
-        if (orderIDs == null || !orderIDs.isEmpty()) {
-            this.orderIDs = orderIDs;
+    public void setOrder(List<String> order) {
+        if (order == null || !order.isEmpty()) {
+            this.order = order;
         }
+    }
+
+    public List<String> getGenres() {
+        return this.genres;
+    }
+
+    public void setGenres(List<String> genres) {
+        if (genres != null && !genres.isEmpty()) {
+            this.genres = genres;
+        }
+    }
+
+    public List<String> getTags() {
+        return this.tags;
+    }
+
+    public void setTags(List<String> tags) {
+        this.tags = tags;
     }
 }

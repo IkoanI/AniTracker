@@ -12,7 +12,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -23,32 +22,39 @@ import com.example.anitracker.activities.Details;
 import com.example.anitracker.adapters.SearchAdapter;
 import com.example.anitracker.interfaces.RecyclerViewInterface;
 import com.example.anitracker.mediaObjects.MediaDetails;
+import com.example.anitracker.repository.AnilistFilters;
 import com.example.anitracker.repository.SearchFilter;
 import com.example.anitracker.type.MediaType;
 import com.example.anitracker.viewModels.SearchViewModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.List;
+import java.util.Objects;
 
 public class SearchFragment extends Fragment implements RecyclerViewInterface {
     private SearchViewModel viewModel;
     private Context context;
-    private final MediaType mediaType;
+    private MediaType mediaType;
     private SearchAdapter adapter;
     private ProgressBar loadingIndicator;
     private TextView noData;
-    private final SearchFilter searchFilter;
+    private SearchFilter searchFilter;
 
-    public SearchFragment(MediaType mediaType) {
-        this.mediaType = mediaType;
-        this.searchFilter = new SearchFilter();
-        this.searchFilter.setMediaType(mediaType);
+    public static SearchFragment newInstance(MediaType mediaType) {
+        Bundle args = new Bundle();
+        args.putString("mediaType", mediaType.rawValue);
+        SearchFragment searchFragment = new SearchFragment();
+        searchFragment.setArguments(args);
+        return searchFragment;
     }
 
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         this.context = context;
+        this.mediaType = MediaType.safeValueOf(Objects.requireNonNull(requireArguments().getString("mediaType")));
+        this.searchFilter = new SearchFilter();
+        this.searchFilter.setMediaType(mediaType);
     }
 
     @Nullable
@@ -77,17 +83,20 @@ public class SearchFragment extends Fragment implements RecyclerViewInterface {
 
         // observe user search
         viewModel.observeUserSearch().observe(getViewLifecycleOwner(), res -> {
-            adapter.clearItems();
-            this.loadingIndicator.setVisibility(View.VISIBLE);
+            this.resetSearchPage();
             this.searchFilter.setUserSearch(res);
             viewModel.getSearchPage(this.searchFilter);
         });
 
         FloatingActionButton actionButton = view.findViewById(R.id.actionButton);
         actionButton.setOnClickListener(e -> {
-            adapter.clearItems();
-            loadingIndicator.setVisibility(View.VISIBLE);
-            this.showFilterDialog();
+            this.resetSearchPage();
+            if (AnilistFilters.genres.getValue() == null) {
+                viewModel.getMediaAttributes();
+                AnilistFilters.genres.observe(getViewLifecycleOwner(), res -> this.showFilterDialog());
+            } else {
+                this.showFilterDialog();
+            }
         });
 
         // set up recycler view
@@ -123,6 +132,12 @@ public class SearchFragment extends Fragment implements RecyclerViewInterface {
         // Create and show the dialog.
         FilterDialogFragment newFragment = new FilterDialogFragment(this.searchFilter);
         newFragment.show(ft, "dialog");
+    }
+
+    public void resetSearchPage() {
+        this.adapter.clearItems();
+        this.searchFilter.setPage(1);
+        loadingIndicator.setVisibility(View.VISIBLE);
     }
 
     @Override

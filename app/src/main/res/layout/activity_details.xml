@@ -117,21 +117,5 @@
         app:layout_anchorGravity="bottom"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/actionButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:contentDescription="@string/actions"
-        android:backgroundTint="@color/lightBlue"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="20dp"
-        app:borderWidth="3dp"
-        app:backgroundTint="@color/white"
-        android:src="@drawable/baseline_filter_list_24"
-        app:tint="@color/white"
-        app:maxImageSize="45dp"
-        android:scaleType="center"
-        style="?attr/floatingActionButtonLargeStyle"/>
-
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

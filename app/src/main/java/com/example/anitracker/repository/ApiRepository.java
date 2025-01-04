@@ -14,6 +14,7 @@ import com.example.anitracker.CharacterPageQuery;
 import com.example.anitracker.CharacterRolesQuery;
 import com.example.anitracker.MangaMoreDetailsQuery;
 import com.example.anitracker.MangaSearchPageQuery;
+import com.example.anitracker.MediaAttributesQuery;
 import com.example.anitracker.RelationsPageQuery;
 import com.example.anitracker.StaffCharsQuery;
 import com.example.anitracker.StaffDetailQuery;
@@ -34,6 +35,7 @@ import com.example.anitracker.fragment.ShortCharDetail;
 import com.example.anitracker.fragment.ShortDetail;
 import com.example.anitracker.fragment.ShortStaffDetail;
 import com.example.anitracker.fragment.StaffDetail;
+import com.example.anitracker.mediaObjects.Tag;
 import com.example.anitracker.type.CharacterRole;
 import com.example.anitracker.type.MediaSort;
 import com.example.anitracker.vnObjects.VNCharPage;
@@ -119,7 +121,6 @@ public class ApiRepository {
     // fetch data functions
     public void fetchSearchResults(SearchFilter searchFilter) {
         MediaType mediaType = searchFilter.getMediaType();
-
         if (mediaType == MediaType.ANIME) {
             this.fetchAnimeSearch(searchFilter);
         } else if (mediaType == MediaType.MANGA) {
@@ -132,10 +133,20 @@ public class ApiRepository {
     private void fetchAnimeSearch(SearchFilter searchFilter) {
         Optional<String> opUserSearch = Optional.present(searchFilter.getUserSearch());
         Optional<List<MediaSort>> opSort = Optional.present(searchFilter.getMediaSort());
+
+        Optional<List<String>> opGenres = null;
+        if (!searchFilter.getGenres().isEmpty()) {
+            opGenres = Optional.present(searchFilter.getGenres());
+        }
+
+        Optional<List<String>> opTags = null;
+        if (!searchFilter.getTags().isEmpty()) {
+            opTags = Optional.present(searchFilter.getTags());
+        }
+
         int page = searchFilter.getPage();
 
-
-        ApolloCall<AnimeSearchPageQuery.Data> animeQueryCall = aniClient.query(new AnimeSearchPageQuery(page, opUserSearch, opSort));
+        ApolloCall<AnimeSearchPageQuery.Data> animeQueryCall = aniClient.query(new AnimeSearchPageQuery(page, opUserSearch, opSort, opGenres, opTags));
         compositeDisposable.add(Rx3Apollo.single(animeQueryCall)
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -165,9 +176,18 @@ public class ApiRepository {
     private void fetchMangaSearch(SearchFilter searchFilter) {
         Optional<String> opUserSearch = Optional.present(searchFilter.getUserSearch());
         Optional<List<MediaSort>> opSort = Optional.present(searchFilter.getMediaSort());
+        Optional<List<String>> opGenres = null;
+        if (!searchFilter.getGenres().isEmpty()) {
+            opGenres = Optional.present(searchFilter.getGenres());
+        }
+
+        Optional<List<String>> opTags = null;
+        if (!searchFilter.getTags().isEmpty()) {
+            opTags = Optional.present(searchFilter.getTags());
+        }
         int page = searchFilter.getPage();
 
-        ApolloCall<MangaSearchPageQuery.Data> mangaQueryCall = aniClient.query(new MangaSearchPageQuery(page, opUserSearch, opSort));
+        ApolloCall<MangaSearchPageQuery.Data> mangaQueryCall = aniClient.query(new MangaSearchPageQuery(page, opUserSearch, opSort, opGenres, opTags));
         compositeDisposable.add(Rx3Apollo.single(mangaQueryCall)
                 .subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -412,6 +432,27 @@ public class ApiRepository {
 
                             mutableRelationPage.setValue(roles);
                         },
+                        error -> mutableErrorMsg.setValue(error.getMessage())
+                )
+        );
+    }
+
+    public void fetchMediaAttributes() {
+        ApolloCall<MediaAttributesQuery.Data> mediaAttributesCall = aniClient.query(new MediaAttributesQuery());
+        compositeDisposable.add(Rx3Apollo.single(mediaAttributesCall)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.newThread())
+                .subscribe(res -> {
+                            assert res.data != null;
+                            List<String> genres = res.data.GenreCollection;
+                            List<String> tags = new ArrayList<>();
+                            for (MediaAttributesQuery.MediaTagCollection tag: res.data.MediaTagCollection) {
+                                tags.add(tag.name);
+                            }
+
+                            AnilistFilters.tags.setValue(tags);
+                            AnilistFilters.genres.setValue(genres);
+                },
                         error -> mutableErrorMsg.setValue(error.getMessage()))
         );
     }
@@ -446,11 +487,10 @@ public class ApiRepository {
         String fields = "title, image{thumbnail}, developers{name}, released, length, length_minutes, rating, id";
         String userSearch = searchFilter.getUserSearch();
         List<Object> filters = Arrays.asList("search", "=", userSearch);
-        int sortID = searchFilter.getSortIDs().get(0);
-        String sort = userSearch == null ? VNDBFilters.sort[sortID] : VNDBFilters.sortWithSearch[sortID];
+        String sort = searchFilter.getSort().get(0);
         sort = VNDBFilters.stringToVNDBFilter.get(sort);
 
-        boolean reverse = searchFilter.getOrderIDs().get(0) != 0;
+        boolean reverse = Objects.equals(searchFilter.getOrder().get(0), "Descending");
         reverse = Objects.equals(sort, "searchrank") != reverse;
 
         int page = searchFilter.getPage();

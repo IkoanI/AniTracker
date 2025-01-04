@@ -43,7 +43,6 @@ public class AnitrackerLinkMovementMethod extends LinkMovementMethod {
             if (link.length != 0) {
                 String url = link[0].getURL();
                 String[] linkData = url.split("/");
-                Log.d("LINK CLICK TEST", Arrays.toString(linkData));
                 if (linkData.length >= 5 && Objects.equals(linkData[2], "anilist.co")) {
                     Intent intent = this.getAnilistIntent(linkData);
                     context.startActivity(intent);
