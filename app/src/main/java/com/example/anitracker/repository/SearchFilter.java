@@ -45,6 +45,10 @@ public class SearchFilter {
 
     public void setUserSearch(String userSearch) {
         this.userSearch = StringUtils.isBlank(userSearch) ? null : userSearch;
+        if (StringUtils.isBlank(userSearch) && mediaType == MediaType.VISUAL_NOVEL) {
+            this.sort.remove("Relevance");
+            this.sort.add("Average Score");
+        }
     }
 
     public List<MediaSort> getMediaSort() {
