@@ -6,24 +6,23 @@ import com.example.anitracker.type.MediaType;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 public class SearchFilter {
     private String userSearch;
-    private List<String> sort;
-    private List<String> order;
-    private List<String> genres;
-    private List<String> tags;
+    private final LinkedHashSet<String> sort, order, genres, tags;
     private MediaType mediaType;
     private int page;
 
     public SearchFilter() {
-        this.sort = List.of("Average Score");
-        this.order = List.of("Descending");
-        this.genres = new ArrayList<>();
-        this.tags = new ArrayList<>();
+        this.sort = new LinkedHashSet<>(List.of("Average Score"));
+        this.order = new LinkedHashSet<>(List.of("Descending"));
+        this.genres = new LinkedHashSet<>();
+        this.tags = new LinkedHashSet<>();
         this.page = 1;
     }
+
     public MediaType getMediaType() {
         return mediaType;
     }
@@ -59,41 +58,19 @@ public class SearchFilter {
         return mediaSorts;
     }
 
-    public List<String> getSort() {
+    public LinkedHashSet<String> getSort() {
         return this.sort;
     }
 
-    public void setSort(List<String> sort) {
-        if (sort == null || !sort.isEmpty()) {
-            this.sort = sort;
-        }
-    }
-
-    public List<String> getOrder() {
+    public LinkedHashSet<String> getOrder() {
         return this.order;
     }
 
-    public void setOrder(List<String> order) {
-        if (order == null || !order.isEmpty()) {
-            this.order = order;
-        }
-    }
-
-    public List<String> getGenres() {
+    public LinkedHashSet<String> getGenres() {
         return this.genres;
     }
 
-    public void setGenres(List<String> genres) {
-        if (genres != null && !genres.isEmpty()) {
-            this.genres = genres;
-        }
-    }
-
-    public List<String> getTags() {
+    public LinkedHashSet<String> getTags() {
         return this.tags;
-    }
-
-    public void setTags(List<String> tags) {
-        this.tags = tags;
     }
 }

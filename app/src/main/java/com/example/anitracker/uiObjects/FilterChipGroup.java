@@ -7,38 +7,30 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.anitracker.R;
 import com.google.android.material.chip.ChipGroup;
 
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 public class FilterChipGroup {
-    private List<FilterChip> filterChips = new ArrayList<>();
     private final boolean singleSelection, selectionRequired;
-    private final HashSet<String> selected = new HashSet<>();
+    private final LinkedHashSet<String> selected;
+    private LinkedHashSet<String> choices;
 
-    public FilterChipGroup(List<String> chipNames, List<String> selected, boolean singleSelection, boolean selectionRequired) {
+    public FilterChipGroup(List<String> chipNames, LinkedHashSet<String> selected, boolean singleSelection, boolean selectionRequired) {
         this.singleSelection = singleSelection;
         this.selectionRequired = selectionRequired;
-        for (String name : chipNames) {
-            filterChips.add(new FilterChip(name));
-        }
-
-        this.selected.addAll(selected);
+        this.choices = new LinkedHashSet<>(chipNames);
+        this.selected = selected;
     }
 
-    public FilterChipGroup(boolean singleSelection, boolean selectionRequired) {
-        this(new ArrayList<>(), new ArrayList<>(), singleSelection, selectionRequired);
+    public LinkedHashSet<String> getChoices() {
+        return choices;
     }
 
-    public List<FilterChip> getFilterChips() {
-        return this.filterChips;
+    public void setChoices(LinkedHashSet<String> choices) {
+        this.choices = choices;
     }
 
-    public void setFilterChips(List<FilterChip> filterChips) {
-        this.filterChips = filterChips;
-    }
-
-    public HashSet<String> getSelected() {
+    public LinkedHashSet<String> getSelected() {
         return selected;
     }
 

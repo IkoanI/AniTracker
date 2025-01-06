@@ -20,7 +20,7 @@ public class SearchQueryListener implements SearchView.OnQueryTextListener {
     public boolean onQueryTextSubmit(String query) {
         // clear focus from search bar after submitting
         searchView.clearFocus();
-        return false;
+        return true;
     }
 
     @Override

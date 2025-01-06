@@ -35,7 +35,6 @@ import com.example.anitracker.fragment.ShortCharDetail;
 import com.example.anitracker.fragment.ShortDetail;
 import com.example.anitracker.fragment.ShortStaffDetail;
 import com.example.anitracker.fragment.StaffDetail;
-import com.example.anitracker.mediaObjects.Tag;
 import com.example.anitracker.type.CharacterRole;
 import com.example.anitracker.type.MediaSort;
 import com.example.anitracker.vnObjects.VNCharPage;
@@ -136,12 +135,12 @@ public class ApiRepository {
 
         Optional<List<String>> opGenres = null;
         if (!searchFilter.getGenres().isEmpty()) {
-            opGenres = Optional.present(searchFilter.getGenres());
+            opGenres = Optional.present(searchFilter.getGenres().stream().toList());
         }
 
         Optional<List<String>> opTags = null;
         if (!searchFilter.getTags().isEmpty()) {
-            opTags = Optional.present(searchFilter.getTags());
+            opTags = Optional.present(searchFilter.getTags().stream().toList());
         }
 
         int page = searchFilter.getPage();
@@ -178,12 +177,12 @@ public class ApiRepository {
         Optional<List<MediaSort>> opSort = Optional.present(searchFilter.getMediaSort());
         Optional<List<String>> opGenres = null;
         if (!searchFilter.getGenres().isEmpty()) {
-            opGenres = Optional.present(searchFilter.getGenres());
+            opGenres = Optional.present(searchFilter.getGenres().stream().toList());
         }
 
         Optional<List<String>> opTags = null;
         if (!searchFilter.getTags().isEmpty()) {
-            opTags = Optional.present(searchFilter.getTags());
+            opTags = Optional.present(searchFilter.getTags().stream().toList());
         }
         int page = searchFilter.getPage();
 
@@ -487,10 +486,10 @@ public class ApiRepository {
         String fields = "title, image{thumbnail}, developers{name}, released, length, length_minutes, rating, id";
         String userSearch = searchFilter.getUserSearch();
         List<Object> filters = Arrays.asList("search", "=", userSearch);
-        String sort = searchFilter.getSort().get(0);
+        String sort = searchFilter.getSort().stream().toList().get(0);
         sort = VNDBFilters.stringToVNDBFilter.get(sort);
 
-        boolean reverse = Objects.equals(searchFilter.getOrder().get(0), "Descending");
+        boolean reverse = Objects.equals(searchFilter.getOrder().stream().toList().get(0), "Descending");
         reverse = Objects.equals(sort, "searchrank") != reverse;
 
         int page = searchFilter.getPage();

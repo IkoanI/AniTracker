@@ -2,7 +2,6 @@ package com.example.anitracker.fragments;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,15 +20,15 @@ import com.example.anitracker.repository.AnilistFilters;
 import com.example.anitracker.repository.SearchFilter;
 import com.example.anitracker.repository.VNDBFilters;
 import com.example.anitracker.type.MediaType;
-import com.example.anitracker.uiObjects.ChipGroupSearch;
-import com.example.anitracker.uiObjects.FilterChip;
 import com.example.anitracker.uiObjects.FilterChipGroup;
+import com.example.anitracker.uiObjects.FilterSearchView;
 import com.example.anitracker.uiObjects.Header;
 import com.example.anitracker.viewModels.SearchViewModel;
 
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 
@@ -73,27 +72,25 @@ public class FilterDialogFragment extends DialogFragment {
                 searchFilter.getGenres(),false,false);
 
         this.uiObjects.add(new Header("Tags"));
-
-        int tagsPosition = adapter.getItemCount() + 1;
-        FilterChipGroup tagSearchResults = new FilterChipGroup(false, false);
-        ChipGroupSearch tagGroup = new ChipGroupSearch();
-        tagGroup.observeUserSearch().observe(getViewLifecycleOwner(), res -> {
-            List<FilterChip> results = new ArrayList<>();
+        FilterChipGroup tagSearchResults = new FilterChipGroup(new ArrayList<>(), searchFilter.getTags(), false, false);
+        FilterSearchView tagSearchView = new FilterSearchView();
+        int tagGroupPos = adapter.getItemCount();
+        tagSearchView.observeUserSearch().observe(getViewLifecycleOwner(), res -> {
+            LinkedHashSet<String> results = new LinkedHashSet<>();
             if (StringUtils.isNotBlank(res)) {
                 for (String tag : Objects.requireNonNull(AnilistFilters.tags.getValue())) {
-                    if (tag.toLowerCase().contains(res.toLowerCase())) {
-                        results.add(new FilterChip(tag));
+                    if (!tagSearchResults.getSelected().contains(tag) && tag.toLowerCase().contains(res.toLowerCase())) {
+                        results.add(tag);
                     }
                 }
             }
 
-            tagSearchResults.setFilterChips(results);
-            adapter.notifyItemChanged(tagsPosition);
+            tagSearchResults.setChoices(results);
+            adapter.notifyItemChanged(tagGroupPos + 1);
         });
-        this.uiObjects.add(tagGroup);
+
+        this.uiObjects.add(tagSearchView);
         this.uiObjects.add(tagSearchResults);
-
-
 
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(layoutManager);
@@ -101,41 +98,14 @@ public class FilterDialogFragment extends DialogFragment {
         return view;
     }
 
-    public void addFilterGroup(String filterGroup, List<String> chipNames, List<String> selected, boolean singleSelction, boolean selectionRequired) {
+    public void addFilterGroup(String filterGroup, List<String> chipNames, LinkedHashSet<String> selected, boolean singleSelction, boolean selectionRequired) {
         this.uiObjects.add(new Header(filterGroup));
         this.uiObjects.add(new FilterChipGroup(chipNames, selected, singleSelction, selectionRequired));
     }
+
     @Override
     public void onDismiss(@NonNull DialogInterface dialog) {
         super.onDismiss(dialog);
-        for (int i = 0; i < this.uiObjects.size(); i++) {
-            Object object = this.uiObjects.get(i);
-            if (object instanceof Header) {
-                this.updateSearchFilter(this.uiObjects.get(i+1), ((Header) object).getHeader(), searchFilter);
-            }
-        }
         viewModel.getSearchPage(this.searchFilter);
-    }
-
-    public void updateSearchFilter(Object ui, String fiterGroup, SearchFilter searchFilter) {
-        if (ui instanceof FilterChipGroup) {
-            FilterChipGroup chipGroup = (FilterChipGroup) ui;
-            List<String> selected = new ArrayList<>(chipGroup.getSelected());
-            switch (fiterGroup) {
-                case "Sort":
-                    searchFilter.setSort(selected);
-                    break;
-                case "Order":
-                    searchFilter.setOrder(selected);
-                    break;
-                case "Genres":
-                    searchFilter.setGenres(selected);
-                    break;
-                case "Tags":
-                    searchFilter.setTags(selected);
-                    break;
-            }
-
-        }
     }
 }

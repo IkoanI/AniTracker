@@ -9,9 +9,8 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.anitracker.R;
-import com.google.android.material.chip.ChipGroup;
 
-public class ChipGroupSearch {
+public class FilterSearchView {
     private final MutableLiveData<String> userSearch = new MutableLiveData<>();
 
     public MutableLiveData<String> getUserSearch() {
@@ -24,11 +23,9 @@ public class ChipGroupSearch {
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public SearchView searchView;
-        public ChipGroup selected;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             this.searchView = itemView.findViewById(R.id.search_bar);
-            this.selected = itemView.findViewById(R.id.selected);
         }
     }
 }
