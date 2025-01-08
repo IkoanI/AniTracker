@@ -1,6 +1,6 @@
 package com.example.anitracker.adapters;
-
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,16 +8,16 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.lifecycle.MutableLiveData;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.anitracker.R;
+import com.example.anitracker.activities.Details;
 import com.example.anitracker.animeObjects.AnimeDetails;
-import com.example.anitracker.interfaces.RecyclerViewInterface;
 import com.example.anitracker.mangaObjects.MangaDetails;
 import com.example.anitracker.mediaObjects.MediaDetails;
 import com.example.anitracker.repository.AnilistObjectMappings;
 import com.example.anitracker.repository.SearchFilter;
 import com.example.anitracker.type.MediaStatus;
-import com.example.anitracker.type.MediaType;
 import com.example.anitracker.uiObjects.Image;
 import com.example.anitracker.viewModels.SearchViewModel;
 import com.example.anitracker.vnObjects.Developer;
@@ -31,23 +31,21 @@ import java.util.Objects;
 public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchViewHolder> {
     private final Context context;
     private final List<MediaDetails> resultPage = new ArrayList<>();
-    private final RecyclerViewInterface recyclerViewInterface;
+    private final MutableLiveData<List<? extends MediaDetails>> searchResults;
     private final SearchViewModel viewModel;
     private Boolean loading = false;
     private int loadedPage = 1;
-    private final MediaType mediaType;
     private final SearchFilter searchFilter;
 
     private final int animeDetailVar = 0,
             mangaDetailVar = 1,
             vnDetailVar = 2;
 
-    public SearchAdapter(SearchFilter searchFilter, Context context, RecyclerViewInterface recyclerViewInterface, SearchViewModel viewModel) {
-        this.mediaType = searchFilter.getMediaType();
+    public SearchAdapter(SearchFilter searchFilter, Context context, SearchViewModel viewModel, MutableLiveData<List<? extends MediaDetails>> searchResults) {
         this.searchFilter = searchFilter;
         this.context = context;
-        this.recyclerViewInterface = recyclerViewInterface;
         this.viewModel = viewModel;
+        this.searchResults = searchResults;
     }
 
     public void addItems(List<? extends MediaDetails> newItems) {
@@ -61,10 +59,6 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
         notifyItemRangeRemoved(0, resultPage.size());
         this.loadedPage = 1;
         resultPage.clear();
-    }
-
-    public MediaDetails getItem(int position) {
-        return resultPage.get(position);
     }
 
     @Override
@@ -86,15 +80,20 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
         LayoutInflater inflater = LayoutInflater.from(context);
         View view;
         switch (viewType) {
-            case (animeDetailVar):
+            case animeDetailVar:
                 view = inflater.inflate(R.layout.anime_card, parent, false);
-                return new AnimeSearchViewHolder(view, recyclerViewInterface);
-            case (mangaDetailVar):
+                return new AnimeSearchViewHolder(view);
+
+            case mangaDetailVar:
                 view = inflater.inflate(R.layout.manga_card, parent, false);
-                return new MangaSearchViewHolder(view, recyclerViewInterface);
-            default:
+                return new MangaSearchViewHolder(view);
+
+            case vnDetailVar:
                 view = inflater.inflate(R.layout.vn_card, parent, false);
-                return new VNSearchViewHolder(view, recyclerViewInterface);
+                return new VNSearchViewHolder(view);
+
+            default:
+                throw new IllegalStateException("Unexpected value: " + viewType);
         }
     }
 
@@ -103,7 +102,7 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
         if (!loading && position >= getItemCount()-1) {
             loadedPage++;
             this.searchFilter.setPage(loadedPage);
-            viewModel.getSearchPage(this.searchFilter);
+            viewModel.getSearchPage(this.searchFilter, searchResults);
         }
 
         // assign value to each view created based on position of recycler view
@@ -229,31 +228,30 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
         return resultPage.size();
     }
 
-    public static class SearchViewHolder extends RecyclerView.ViewHolder {
+    public class SearchViewHolder extends RecyclerView.ViewHolder {
         // grabs views from layout file
         ImageView coverImg;
         TextView title, rating, rank;
-        public SearchViewHolder(@NonNull View itemView, RecyclerViewInterface recyclerViewInterface) {
+        public SearchViewHolder(@NonNull View itemView) {
             super(itemView);
             coverImg = itemView.findViewById(R.id.cover);
             title = itemView.findViewById(R.id.title);
             rating = itemView.findViewById(R.id.rating);
             rank = itemView.findViewById(R.id.rank);
             itemView.setOnClickListener(view -> {
-                if(recyclerViewInterface != null){
-                    int pos = getBindingAdapterPosition();
-                    if(pos != RecyclerView.NO_POSITION){
-                        recyclerViewInterface.onItemClick(pos);
-                    }
-                }
+                Intent intent = new Intent(context, Details.class);
+                MediaDetails mediaDetails = resultPage.get(getBindingAdapterPosition());
+                intent.putExtra("ID", mediaDetails.getId());
+                intent.putExtra("Type", mediaDetails.getType().rawValue);
+                context.startActivity(intent);
             });
         }
     }
 
-    public static class AnimeSearchViewHolder extends SearchViewHolder {
+    public class AnimeSearchViewHolder extends SearchViewHolder {
         TextView seasonAndFormat, genres, studio, favorites;
-        public AnimeSearchViewHolder(@NonNull View itemView, RecyclerViewInterface recyclerViewInterface) {
-            super(itemView, recyclerViewInterface);
+        public AnimeSearchViewHolder(@NonNull View itemView) {
+            super(itemView);
             seasonAndFormat = itemView.findViewById(R.id.seasonAndFormat);
             studio = itemView.findViewById(R.id.studio);
             genres = itemView.findViewById(R.id.genres);
@@ -261,21 +259,21 @@ public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.SearchView
         }
     }
 
-    public static class MangaSearchViewHolder extends SearchViewHolder {
+    public class MangaSearchViewHolder extends SearchViewHolder {
         TextView seasonAndFormat, genres, favorites;
-        public MangaSearchViewHolder(@NonNull View itemView, RecyclerViewInterface recyclerViewInterface) {
-            super(itemView, recyclerViewInterface);
+        public MangaSearchViewHolder(@NonNull View itemView) {
+            super(itemView);
             seasonAndFormat = itemView.findViewById(R.id.seasonAndFormat);
             genres = itemView.findViewById(R.id.genres);
             favorites = itemView.findViewById(R.id.favorites);
         }
     }
 
-    public static class VNSearchViewHolder extends SearchViewHolder{
+    public class VNSearchViewHolder extends SearchViewHolder{
         // grabs views from layout file
         TextView yearAndPlayTime, developers;
-        public VNSearchViewHolder(@NonNull View itemView, RecyclerViewInterface recyclerViewInterface) {
-            super(itemView, recyclerViewInterface);
+        public VNSearchViewHolder(@NonNull View itemView) {
+            super(itemView);
             yearAndPlayTime = itemView.findViewById(R.id.yearAndPlayTime);
             developers = itemView.findViewById(R.id.developers);
         }

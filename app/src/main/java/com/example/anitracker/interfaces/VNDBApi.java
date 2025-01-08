@@ -3,9 +3,8 @@ package com.example.anitracker.interfaces;
 import com.example.anitracker.vnObjects.VNCharPage;
 import com.example.anitracker.vnObjects.VNRequestBody;
 import com.example.anitracker.vnObjects.VNPage;
-import com.example.anitracker.vnObjects.VNResponse;
-import com.example.anitracker.vnObjects.VNStaff;
 import com.example.anitracker.vnObjects.VNStaffPage;
+import com.example.anitracker.vnObjects.VNTagPage;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -24,4 +23,8 @@ public interface VNDBApi {
     @Headers({"Content-Type: application/json"})
     @POST("staff")
     Call<VNStaffPage> fetchVNStaffs(@Body VNRequestBody body);
+
+    @Headers({"Content-Type: application/json"})
+    @POST("tag")
+    Call<VNTagPage> fetchVNTags(@Body VNRequestBody body);
 }

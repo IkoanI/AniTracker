@@ -1,5 +1,7 @@
 package com.example.anitracker.vnObjects;
 
+import androidx.annotation.NonNull;
+
 import com.example.anitracker.mediaObjects.Tag;
 import com.google.gson.annotations.SerializedName;
 
@@ -101,5 +103,11 @@ public class VNTag {
             return -1;
         }
         return 0;
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return name;
     }
 }

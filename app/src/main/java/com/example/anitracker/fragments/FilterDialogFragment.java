@@ -10,12 +10,14 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.DialogFragment;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.anitracker.R;
 import com.example.anitracker.adapters.FilterDialogAdapter;
+import com.example.anitracker.mediaObjects.MediaDetails;
 import com.example.anitracker.repository.AnilistFilters;
 import com.example.anitracker.repository.SearchFilter;
 import com.example.anitracker.repository.VNDBFilters;
@@ -24,6 +26,7 @@ import com.example.anitracker.uiObjects.FilterChipGroup;
 import com.example.anitracker.uiObjects.FilterSearchView;
 import com.example.anitracker.uiObjects.Header;
 import com.example.anitracker.viewModels.SearchViewModel;
+import com.example.anitracker.vnObjects.VNTag;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -36,9 +39,11 @@ public class FilterDialogFragment extends DialogFragment {
     private final List<Object> uiObjects = new ArrayList<>();
     private SearchViewModel viewModel;
     private final SearchFilter searchFilter;
+    private final MutableLiveData<List<? extends MediaDetails>> searchResults;
 
-    public FilterDialogFragment(SearchFilter searchFilter) {
+    public FilterDialogFragment(SearchFilter searchFilter, MutableLiveData<List<? extends MediaDetails>> searchResults) {
         this.searchFilter = searchFilter;
+        this.searchResults = searchResults;
     }
 
     @Override
@@ -68,26 +73,37 @@ public class FilterDialogFragment extends DialogFragment {
                 searchFilter.getSort(), true, true);
         this.addFilterGroup("Order", searchFilter.getMediaType() == MediaType.VISUAL_NOVEL ? VNDBFilters.order : AnilistFilters.order,
                 searchFilter.getOrder(), true, true);
-        this.addFilterGroup("Genres", Objects.requireNonNull(AnilistFilters.genres.getValue()),
-                searchFilter.getGenres(),false,false);
+
+        if (searchFilter.getMediaType() != MediaType.VISUAL_NOVEL) {
+            this.addFilterGroup("Genres", Objects.requireNonNull(AnilistFilters.genres.getValue()),
+                    searchFilter.getGenres(),false,false);
+        }
 
         this.uiObjects.add(new Header("Tags"));
-        FilterChipGroup tagSearchResults = new FilterChipGroup(new ArrayList<>(), searchFilter.getTags(), false, false);
+        FilterChipGroup tagSearchResults = new FilterChipGroup(new LinkedHashSet<>(), searchFilter.getTags(), false, false);
         FilterSearchView tagSearchView = new FilterSearchView();
         int tagGroupPos = adapter.getItemCount();
         tagSearchView.observeUserSearch().observe(getViewLifecycleOwner(), res -> {
-            LinkedHashSet<String> results = new LinkedHashSet<>();
             if (StringUtils.isNotBlank(res)) {
-                for (String tag : Objects.requireNonNull(AnilistFilters.tags.getValue())) {
-                    if (!tagSearchResults.getSelected().contains(tag) && tag.toLowerCase().contains(res.toLowerCase())) {
-                        results.add(tag);
-                    }
+                if (searchFilter.getMediaType() != MediaType.VISUAL_NOVEL) {
+                    tagSearchResults.setChoices(this.getAnilistTags(res, tagSearchResults.getSelected()));
+                    adapter.notifyItemChanged(tagGroupPos + 1);
+                } else {
+                    viewModel.getVNTags(res);
                 }
+            } else {
+                tagSearchResults.clearChoices();
+                adapter.notifyItemChanged(tagGroupPos + 1);
             }
-
-            tagSearchResults.setChoices(results);
-            adapter.notifyItemChanged(tagGroupPos + 1);
         });
+
+        if (searchFilter.getMediaType() == MediaType.VISUAL_NOVEL) {
+            VNDBFilters.tags.observe(getViewLifecycleOwner(), res -> {
+                tagSearchResults.setChoices(this.getVNDBTags(tagSearchResults.getSelected()));
+                adapter.notifyItemChanged(tagGroupPos + 1);
+            });
+        }
+
 
         this.uiObjects.add(tagSearchView);
         this.uiObjects.add(tagSearchResults);
@@ -100,12 +116,38 @@ public class FilterDialogFragment extends DialogFragment {
 
     public void addFilterGroup(String filterGroup, List<String> chipNames, LinkedHashSet<String> selected, boolean singleSelction, boolean selectionRequired) {
         this.uiObjects.add(new Header(filterGroup));
-        this.uiObjects.add(new FilterChipGroup(chipNames, selected, singleSelction, selectionRequired));
+        this.uiObjects.add(new FilterChipGroup(new LinkedHashSet<>(chipNames), selected, singleSelction, selectionRequired));
+    }
+
+    public <T> LinkedHashSet<String> getAnilistTags(String userSearch, LinkedHashSet<T> selected) {
+        LinkedHashSet<String> results = new LinkedHashSet<>();
+        @SuppressWarnings("unchecked")
+        LinkedHashSet<String> stringSelected = (LinkedHashSet<String>) selected;
+        for (String tag : Objects.requireNonNull(AnilistFilters.tags.getValue())) {
+            if (!stringSelected.contains(tag) && tag.toLowerCase().contains(userSearch.toLowerCase())) {
+                results.add(tag);
+            }
+        }
+
+        return results;
+    }
+
+    public <T> LinkedHashSet<VNTag> getVNDBTags(LinkedHashSet<T> selected) {
+        LinkedHashSet<VNTag> results = new LinkedHashSet<>();
+        @SuppressWarnings("unchecked")
+        LinkedHashSet<VNTag> vnSelected = (LinkedHashSet<VNTag>) selected;
+        for (VNTag tag : Objects.requireNonNull(VNDBFilters.tags.getValue())) {
+            if (!vnSelected.contains(tag)) {
+                results.add(tag);
+            }
+        }
+
+        return results;
     }
 
     @Override
     public void onDismiss(@NonNull DialogInterface dialog) {
         super.onDismiss(dialog);
-        viewModel.getSearchPage(this.searchFilter);
+        viewModel.getSearchPage(this.searchFilter, searchResults);
     }
 }

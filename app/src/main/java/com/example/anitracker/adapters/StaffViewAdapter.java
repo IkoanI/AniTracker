@@ -1,6 +1,7 @@
 package com.example.anitracker.adapters;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,7 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.anitracker.R;
-import com.example.anitracker.interfaces.RecyclerViewInterface;
+import com.example.anitracker.activities.Details;
 import com.example.anitracker.mediaObjects.StaffDetails;
 import com.example.anitracker.type.MediaType;
 import com.example.anitracker.uiObjects.Image;
@@ -23,14 +24,12 @@ import java.util.List;
 public class StaffViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private final List<StaffDetails> staffDetailsList = new ArrayList<>();
     private final Context context;
-    private final RecyclerViewInterface recyclerViewInterface;
     private Boolean loading = false;
     private final DetailsViewModel viewModel;
 
-    public StaffViewAdapter(Context context, RecyclerViewInterface recyclerViewInterface, DetailsViewModel viewModel){
+    public StaffViewAdapter(Context context, DetailsViewModel viewModel){
         this.context = context;
         this.viewModel = viewModel;
-        this.recyclerViewInterface = recyclerViewInterface;
     }
 
     @NonNull
@@ -38,7 +37,7 @@ public class StaffViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(context);
         View view = inflater.inflate(R.layout.staff_card, parent, false);
-        return new StaffViewAdapter.StaffViewItem(view, recyclerViewInterface);
+        return new StaffViewAdapter.StaffViewItem(view);
     }
 
     @Override
@@ -66,26 +65,21 @@ public class StaffViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         loading = false;
     }
 
-    public StaffDetails getStaff(int pos){
-        return staffDetailsList.get(pos);
-    }
-
-
-    public static class StaffViewItem extends RecyclerView.ViewHolder{
+    public class StaffViewItem extends RecyclerView.ViewHolder{
         TextView staffName, staffRole;
         ImageView staffImage;
-        public StaffViewItem(@NonNull View itemView, RecyclerViewInterface recyclerViewInterface) {
+        public StaffViewItem(@NonNull View itemView) {
             super(itemView);
             staffImage = itemView.findViewById(R.id.staffImage);
             staffName = itemView.findViewById(R.id.staffName);
             staffRole = itemView.findViewById(R.id.role);
             itemView.setOnClickListener(view -> {
-                if (recyclerViewInterface != null) {
-                    int pos = getBindingAdapterPosition();
-                    if (pos != RecyclerView.NO_POSITION) {
-                        recyclerViewInterface.onItemClick(pos);
-                    }
-                }
+                StaffDetails staffDetails = staffDetailsList.get(getBindingAdapterPosition());
+                Intent intent = new Intent(context, Details.class);
+                intent.putExtra("ID", staffDetails.getId());
+                intent.putExtra("Type", viewModel.getMediaType().rawValue);
+                intent.putExtra("Entity", "Staff");
+                context.startActivity(intent);
             });
         }
     }

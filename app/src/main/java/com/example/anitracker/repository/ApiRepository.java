@@ -38,7 +38,6 @@ import com.example.anitracker.fragment.StaffDetail;
 import com.example.anitracker.type.CharacterRole;
 import com.example.anitracker.type.MediaSort;
 import com.example.anitracker.vnObjects.VNCharPage;
-import com.example.anitracker.vnObjects.VNDetails;
 import com.example.anitracker.vnObjects.VNRequestBody;
 import com.example.anitracker.interfaces.VNDBApi;
 import com.example.anitracker.mangaObjects.MangaDetails;
@@ -52,6 +51,8 @@ import com.example.anitracker.type.MediaType;
 import com.example.anitracker.type.StaffLanguage;
 import com.example.anitracker.vnObjects.VNPage;
 import com.example.anitracker.vnObjects.VNStaffPage;
+import com.example.anitracker.vnObjects.VNTag;
+import com.example.anitracker.vnObjects.VNTagPage;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -68,10 +69,6 @@ import retrofit2.Response;
 public class ApiRepository {
     private final ApolloClient aniClient = AniClient.INSTANCE.getClient();
     private final VNDBApi VNClient = VNDBClient.INSTANCE.getClient().create(VNDBApi.class);
-    // search fragment
-    private final MutableLiveData<List<AnimeDetails>> mutableAnimeSearch = new MutableLiveData<>();
-    private final MutableLiveData<List<MangaDetails>> mutableMangaSearch = new MutableLiveData<>();
-    private final MutableLiveData<List<VNDetails>> mutableVNSearch = new MutableLiveData<>();
     // overview fragment
     private final MutableLiveData<MediaDetails> mutableLiveData = new MutableLiveData<>();
     // character fragment
@@ -92,13 +89,6 @@ public class ApiRepository {
         compositeDisposable.dispose();
     }
 
-    // getters
-    public MutableLiveData<List<AnimeDetails>> getMutableAnimeSearch() {return mutableAnimeSearch;}
-
-    public MutableLiveData<List<MangaDetails>> getMutableMangaSearch() {return mutableMangaSearch;}
-
-    public MutableLiveData<List<VNDetails>> getMutableVNSearch() {return mutableVNSearch;}
-
     public MutableLiveData<MediaDetails>  getMutableLiveData() { return mutableLiveData; }
 
     public MutableLiveData<List<CharacterDetails>> getMutableCharPage() {
@@ -118,18 +108,18 @@ public class ApiRepository {
     public MutableLiveData<String> getMutableErrorMsg() { return mutableErrorMsg; }
 
     // fetch data functions
-    public void fetchSearchResults(SearchFilter searchFilter) {
+    public void fetchSearchResults(SearchFilter searchFilter, MutableLiveData<List<? extends MediaDetails>> searchResults) {
         MediaType mediaType = searchFilter.getMediaType();
         if (mediaType == MediaType.ANIME) {
-            this.fetchAnimeSearch(searchFilter);
+            this.fetchAnimeSearch(searchFilter, searchResults);
         } else if (mediaType == MediaType.MANGA) {
-            this.fetchMangaSearch(searchFilter);
+            this.fetchMangaSearch(searchFilter, searchResults);
         } else if (mediaType == MediaType.VISUAL_NOVEL) {
-            this.fetchVNSearchPage(searchFilter);
+            this.fetchVNPage(searchFilter,searchResults);
         }
     }
 
-    private void fetchAnimeSearch(SearchFilter searchFilter) {
+    private void fetchAnimeSearch(SearchFilter searchFilter, MutableLiveData<List<? extends MediaDetails>> searchResults) {
         Optional<String> opUserSearch = Optional.present(searchFilter.getUserSearch());
         Optional<List<MediaSort>> opSort = Optional.present(searchFilter.getMediaSort());
 
@@ -140,7 +130,9 @@ public class ApiRepository {
 
         Optional<List<String>> opTags = null;
         if (!searchFilter.getTags().isEmpty()) {
-            opTags = Optional.present(searchFilter.getTags().stream().toList());
+            @SuppressWarnings("unchecked")
+            List<String> tags = (List<String>) searchFilter.getTags().stream().toList();
+            opTags = Optional.present(tags);
         }
 
         int page = searchFilter.getPage();
@@ -166,13 +158,13 @@ public class ApiRepository {
                             }
                             animeList.add(animeDetails);
                         }
-                        mutableAnimeSearch.setValue(animeList);
+                            searchResults.setValue(animeList);
                     },
                     error -> mutableErrorMsg.setValue(error.getMessage()))
         );
     }
 
-    private void fetchMangaSearch(SearchFilter searchFilter) {
+    private void fetchMangaSearch(SearchFilter searchFilter, MutableLiveData<List<? extends MediaDetails>> searchResults) {
         Optional<String> opUserSearch = Optional.present(searchFilter.getUserSearch());
         Optional<List<MediaSort>> opSort = Optional.present(searchFilter.getMediaSort());
         Optional<List<String>> opGenres = null;
@@ -182,7 +174,9 @@ public class ApiRepository {
 
         Optional<List<String>> opTags = null;
         if (!searchFilter.getTags().isEmpty()) {
-            opTags = Optional.present(searchFilter.getTags().stream().toList());
+            @SuppressWarnings("unchecked")
+            List<String> tags = (List<String>) searchFilter.getTags().stream().toList();
+            opTags = Optional.present(tags);
         }
         int page = searchFilter.getPage();
 
@@ -200,7 +194,7 @@ public class ApiRepository {
                             this.setMangaShortDetail(mangaDetails, result.mangaShortDetail);
                             mangaList.add(mangaDetails);
                         }
-                        mutableMangaSearch.setValue(mangaList);
+                            searchResults.setValue(mangaList);
                     },
                     error -> mutableErrorMsg.setValue(error.getMessage()))
         );
@@ -460,32 +454,51 @@ public class ApiRepository {
 
     private void fetchVNPage(VNRequestBody body, String pageType){
         Call<VNPage> call = VNClient.fetchVNPage(body);
-            call.enqueue(new Callback<VNPage>() {
-                @Override
-                public void onResponse(@NonNull Call<VNPage> call, @NonNull Response<VNPage> response) {
-                    assert response.body() != null;
-                    if (!Objects.equals(pageType, "Overview")) {
-                        if (Objects.equals(pageType, "Search")) {
-                            mutableVNSearch.setValue(response.body().getVnDetailsList());
-                        } else {
-                            mutableRelationPage.setValue(response.body().getVnDetailsList());
-                        }
-                    } else {
-                        mutableLiveData.setValue(response.body().getVnDetailsList().get(0));
-                    }
+        call.enqueue(new Callback<VNPage>() {
+            @Override
+            public void onResponse(@NonNull Call<VNPage> call, @NonNull Response<VNPage> response) {
+                assert response.body() != null;
+                if (!Objects.equals(pageType, "Overview")) {
+                    mutableRelationPage.setValue(response.body().getVnDetailsList());
+                } else {
+                    mutableLiveData.setValue(response.body().getVnDetailsList().get(0));
                 }
+            }
 
-                @Override
-                public void onFailure(@NonNull Call<VNPage> call, @NonNull Throwable throwable) {
-                    mutableErrorMsg.setValue(throwable.getMessage());
-                }
-            });
+            @Override
+            public void onFailure(@NonNull Call<VNPage> call, @NonNull Throwable throwable) {
+                mutableErrorMsg.setValue(throwable.getMessage());
+            }
+        });
     }
 
-    public void fetchVNSearchPage(SearchFilter searchFilter) {
+    private void fetchVNPage(SearchFilter searchFilter, MutableLiveData<List<? extends MediaDetails>> searchResults) {
+        Call<VNPage> call = VNClient.fetchVNPage(this.getVNRequestBody(searchFilter));
+        call.enqueue(new Callback<VNPage>() {
+            @Override
+            public void onResponse(@NonNull Call<VNPage> call, @NonNull Response<VNPage> response) {
+                assert response.body() != null;
+                searchResults.setValue(response.body().getVnDetailsList());
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<VNPage> call, @NonNull Throwable throwable) {
+                mutableErrorMsg.setValue(throwable.getMessage());
+            }
+        });
+    }
+
+    private VNRequestBody getVNRequestBody(SearchFilter searchFilter) {
         String fields = "title, image{thumbnail}, developers{name}, released, length, length_minutes, rating, id";
         String userSearch = searchFilter.getUserSearch();
-        List<Object> filters = Arrays.asList("search", "=", userSearch);
+        List<Object> filters = new ArrayList<>();
+        filters.add("and");
+        filters.add(Arrays.asList("search", "=", userSearch));
+        @SuppressWarnings("unchecked")
+        List<VNTag> tags = (List<VNTag>) searchFilter.getTags().stream().toList();
+        for (VNTag tag : tags) {
+            filters.add(Arrays.asList("tag", "=", tag.getId()));
+        }
         String sort = searchFilter.getSort().stream().toList().get(0);
         sort = VNDBFilters.stringToVNDBFilter.get(sort);
 
@@ -493,8 +506,8 @@ public class ApiRepository {
         reverse = Objects.equals(sort, "searchrank") != reverse;
 
         int page = searchFilter.getPage();
-        VNRequestBody body = new VNRequestBody(sort, reverse, 50, page, fields, filters);
-        this.fetchVNPage(body, "Search");
+
+        return new VNRequestBody(sort, reverse, 50, page, fields, filters);
     }
 
     private void fetchVNData(String vndbID) {
@@ -586,6 +599,26 @@ public class ApiRepository {
         List<Object> filters = Arrays.asList("staff","=", new String[]{"id","=",vndbID});
         VNRequestBody body = new VNRequestBody(null, false, 50, page, fields, filters);
         this.fetchVNPage(body, "Relation");
+    }
+
+    public void fetchVNTags(String search) {
+        String fields = "name";
+        List<Object> filters = Arrays.asList("search", "=", search);
+        VNRequestBody body = new VNRequestBody("vn_count", true, 10, 1, fields, filters);
+
+        Call<VNTagPage> call = VNClient.fetchVNTags(body);
+        call.enqueue(new Callback<VNTagPage>() {
+            @Override
+            public void onResponse(@NonNull Call<VNTagPage> call, @NonNull Response<VNTagPage> response) {
+                assert response.body() != null;
+                VNDBFilters.tags.setValue(response.body().getTags());
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<VNTagPage> call, @NonNull Throwable throwable) {
+                mutableErrorMsg.setValue(throwable.getMessage());
+            }
+        });
     }
 
     // setter helper functions

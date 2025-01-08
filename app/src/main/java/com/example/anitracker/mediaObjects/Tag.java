@@ -1,7 +1,7 @@
 package com.example.anitracker.mediaObjects;
 
 public class Tag {
-    private String tagName;
+    private final String tagName;
     private int tagRanking;
     private Boolean isSpoiler;
     private int id;

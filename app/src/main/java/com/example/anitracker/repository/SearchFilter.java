@@ -11,7 +11,8 @@ import java.util.List;
 
 public class SearchFilter {
     private String userSearch;
-    private final LinkedHashSet<String> sort, order, genres, tags;
+    private final LinkedHashSet<String> sort, order, genres;
+    private final LinkedHashSet<?> tags;
     private MediaType mediaType;
     private int page;
 
@@ -74,7 +75,7 @@ public class SearchFilter {
         return this.genres;
     }
 
-    public LinkedHashSet<String> getTags() {
+    public LinkedHashSet<?> getTags() {
         return this.tags;
     }
 }

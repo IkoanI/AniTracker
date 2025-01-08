@@ -1,8 +1,9 @@
 package com.example.anitracker.repository;
 
-import com.example.anitracker.mediaObjects.Tag;
+import androidx.lifecycle.MutableLiveData;
 
-import java.util.ArrayList;
+import com.example.anitracker.vnObjects.VNTag;
+
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -21,7 +22,5 @@ public class VNDBFilters {
             Map.entry("Relevance", "searchrank")
     );
 
-    public static List<String> genres = new ArrayList<>();
-
-    public static List<Tag> tags = new ArrayList<>();
+    public static MutableLiveData<List<VNTag>> tags = new MutableLiveData<>();
 }

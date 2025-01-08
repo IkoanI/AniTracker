@@ -52,29 +52,25 @@ public class FilterDialogAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view;
-        RecyclerView.ViewHolder viewHolder = null;
         this.inflater = LayoutInflater.from(context);
+        View view;
 
         switch (viewType) {
             case headerVar:
                 view = inflater.inflate(R.layout.header_layout, parent, false );
-                viewHolder = new Header.HeaderView(view);
-                break;
+                return new Header.HeaderView(view);
 
             case searchViewVar:
                 view = inflater.inflate(R.layout.search_view_layout, parent, false);
-                viewHolder = new FilterSearchView.ViewHolder(view);
-                break;
+                return new FilterSearchView.ViewHolder(view);
 
             case filterChipGroupVar:
                 view = inflater.inflate(R.layout.chip_group_layout, parent, false);
-                viewHolder = new FilterChipGroup.ViewHolder(view);
-                break;
-        }
+                return new FilterChipGroup.ViewHolder(view);
 
-        assert viewHolder != null;
-        return viewHolder;
+            default:
+                throw new IllegalStateException("Unexpected value: " + viewType);
+        }
     }
 
     @Override
@@ -114,27 +110,35 @@ public class FilterDialogAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     }
 
     private void addFilterChips(ChipGroup chipGroup, FilterChipGroup filterChipGroup) {
-        for (String choice : filterChipGroup.getSelected()) {
+        this.insertSelected(filterChipGroup.getSelected(), chipGroup, filterChipGroup);
+        this.insertChoices(filterChipGroup.getChoices(), chipGroup, filterChipGroup);
+    }
+
+    private <T> void insertSelected (LinkedHashSet<T> selected, ChipGroup chipGroup, FilterChipGroup filterChipGroup) {
+        for (T choice : selected) {
             if (!filterChipGroup.getChoices().contains(choice)) {
                 this.chipSetup(choice, true, chipGroup, filterChipGroup);
             }
         }
+    }
 
-        for (String choice : filterChipGroup.getChoices()) {
+    private <T> void insertChoices(LinkedHashSet<T> choices, ChipGroup chipGroup, FilterChipGroup filterChipGroup) {
+        for (T choice : choices) {
             this.chipSetup(choice, filterChipGroup.getSelected().contains(choice),chipGroup, filterChipGroup);
         }
     }
 
-    private void chipSetup(String name, boolean checked, ChipGroup chipGroup, FilterChipGroup filterChipGroup) {
+    private <T> void chipSetup(T object, boolean checked, ChipGroup chipGroup, FilterChipGroup filterChipGroup) {
         Chip chip = (Chip) inflater.inflate(R.layout.filter_chip_layout, chipGroup, false);
-        chip.setText(name);
+        chip.setText(object.toString());
         chip.setOnCheckedChangeListener((e, isChecked) -> {
-            LinkedHashSet<String> selected = filterChipGroup.getSelected();
+            @SuppressWarnings("unchecked")
+            LinkedHashSet<T> selected = (LinkedHashSet<T>) filterChipGroup.getSelected();
             if (isChecked) {
-                selected.add(name);
+                selected.add(object);
             } else {
-                selected.remove(name);
-                if (!filterChipGroup.getChoices().contains(name)) {
+                selected.remove(object);
+                if (!filterChipGroup.getChoices().contains(object)) {
                     chipGroup.removeView(chip);
                 }
             }

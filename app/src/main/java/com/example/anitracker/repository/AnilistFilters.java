@@ -2,7 +2,6 @@ package com.example.anitracker.repository;
 
 import androidx.lifecycle.MutableLiveData;
 
-import com.example.anitracker.mediaObjects.Tag;
 import com.example.anitracker.type.MediaSort;
 
 import java.util.Arrays;

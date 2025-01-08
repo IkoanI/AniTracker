@@ -1,6 +1,7 @@
 package com.example.anitracker.adapters;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,7 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.anitracker.R;
-import com.example.anitracker.interfaces.RecyclerViewInterface;
+import com.example.anitracker.activities.Details;
 import com.example.anitracker.mediaObjects.MediaDetails;
 import com.example.anitracker.mediaObjects.StaffDetails;
 import com.example.anitracker.repository.AnilistObjectMappings;
@@ -27,13 +28,11 @@ import java.util.Objects;
 public class RelationsViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private final Context context;
     private final List<MediaDetails> relationsList = new ArrayList<>();
-    private final RecyclerViewInterface recyclerViewInterface;
     private boolean loading = false;
     private final DetailsViewModel detailsViewModel;
 
-    public RelationsViewAdapter(Context context, RecyclerViewInterface recyclerViewInterface, DetailsViewModel detailsViewModel) {
+    public RelationsViewAdapter(Context context, DetailsViewModel detailsViewModel) {
         this.context = context;
-        this.recyclerViewInterface = recyclerViewInterface;
         this.detailsViewModel = detailsViewModel;
     }
 
@@ -42,7 +41,7 @@ public class RelationsViewAdapter extends RecyclerView.Adapter<RecyclerView.View
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(context);
         View view = inflater.inflate(R.layout.relations_card, parent, false);
-        return new RelationsViewAdapter.RelationsView(view, recyclerViewInterface);
+        return new RelationsViewAdapter.RelationsView(view);
     }
 
     @Override
@@ -107,22 +106,21 @@ public class RelationsViewAdapter extends RecyclerView.Adapter<RecyclerView.View
         return relationsList.get(pos);
     }
 
-    public static class RelationsView extends RecyclerView.ViewHolder {
+    public class RelationsView extends RecyclerView.ViewHolder {
         TextView relation, title, formatAndStatus;
         ImageView coverImg;
-        public RelationsView(@NonNull View itemView, RecyclerViewInterface recyclerViewInterface) {
+        public RelationsView(@NonNull View itemView) {
             super(itemView);
             relation = itemView.findViewById(R.id.relation);
             title = itemView.findViewById(R.id.mediaTitle);
             formatAndStatus = itemView.findViewById(R.id.formatAndStatus);
             coverImg = itemView.findViewById(R.id.mediaImage);
             itemView.setOnClickListener(view -> {
-                if (recyclerViewInterface != null) {
-                    int pos = getBindingAdapterPosition();
-                    if (pos != RecyclerView.NO_POSITION) {
-                        recyclerViewInterface.onItemClick(pos);
-                    }
-                }
+                MediaDetails selected = relationsList.get(getBindingAdapterPosition());
+                Intent intent = new Intent(context, Details.class);
+                intent.putExtra("ID", selected.getId());
+                intent.putExtra("Type", selected.getType().rawValue);
+                context.startActivity(intent);
             });
         }
     }

@@ -1,7 +1,6 @@
 package com.example.anitracker.fragments;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,14 +12,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.anitracker.R;
-import com.example.anitracker.activities.Details;
 import com.example.anitracker.adapters.SearchAdapter;
-import com.example.anitracker.interfaces.RecyclerViewInterface;
 import com.example.anitracker.mediaObjects.MediaDetails;
 import com.example.anitracker.repository.AnilistFilters;
 import com.example.anitracker.repository.SearchFilter;
@@ -31,7 +29,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.util.List;
 import java.util.Objects;
 
-public class SearchFragment extends Fragment implements RecyclerViewInterface {
+public class SearchFragment extends Fragment {
     private SearchViewModel viewModel;
     private Context context;
     private MediaType mediaType;
@@ -39,6 +37,7 @@ public class SearchFragment extends Fragment implements RecyclerViewInterface {
     private ProgressBar loadingIndicator;
     private TextView noData;
     private SearchFilter searchFilter;
+    private final MutableLiveData<List<? extends MediaDetails>> searchResults = new MutableLiveData<>();
 
     public static SearchFragment newInstance(MediaType mediaType) {
         Bundle args = new Bundle();
@@ -61,37 +60,30 @@ public class SearchFragment extends Fragment implements RecyclerViewInterface {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         this.viewModel = new ViewModelProvider(requireActivity()).get(SearchViewModel.class);
-        this.adapter = new SearchAdapter(this.searchFilter, context, this, viewModel);
+        this.adapter = new SearchAdapter(this.searchFilter, context, viewModel, searchResults);
         View view = inflater.inflate(R.layout.recycler_view, container, false);
         this.loadingIndicator = view.findViewById(R.id.loadingSpinner);
         this.noData = view.findViewById(R.id.noData);
 
-        // observe search result
-        if (mediaType == MediaType.ANIME) {
-            viewModel.observeAnimeSearchPage().observe(getViewLifecycleOwner(), this::addItems);
-        } else if (mediaType == MediaType.MANGA) {
-            viewModel.observeMangaSearchPage().observe(getViewLifecycleOwner(), this::addItems);
-        } else {
-            viewModel.observeVNSearchPage().observe(getViewLifecycleOwner(), this::addItems);
-        }
+        searchResults.observe(getViewLifecycleOwner(), this::addItems);
 
         // fetch data when list is empty
         if (adapter.getItemCount() == 0) {
-            this.loadingIndicator.setVisibility(View.VISIBLE);
-            viewModel.getSearchPage(this.searchFilter);
+            this.resetSearchPage();
+            viewModel.getSearchPage(this.searchFilter, searchResults);
         }
 
         // observe user search
         viewModel.observeUserSearch().observe(getViewLifecycleOwner(), res -> {
             this.resetSearchPage();
             this.searchFilter.setUserSearch(res);
-            viewModel.getSearchPage(this.searchFilter);
+            viewModel.getSearchPage(this.searchFilter, searchResults);
         });
 
         FloatingActionButton actionButton = view.findViewById(R.id.actionButton);
         actionButton.setOnClickListener(e -> {
             this.resetSearchPage();
-            if (AnilistFilters.genres.getValue() == null) {
+            if (this.mediaType != MediaType.VISUAL_NOVEL && AnilistFilters.genres.getValue() == null) {
                 viewModel.getMediaAttributes();
                 AnilistFilters.genres.observe(getViewLifecycleOwner(), res -> this.showFilterDialog());
             } else {
@@ -108,8 +100,10 @@ public class SearchFragment extends Fragment implements RecyclerViewInterface {
         return view;
     }
 
-    private void addItems(List<? extends MediaDetails> mediaDetailsList) {
-        adapter.addItems(mediaDetailsList);
+    private <T> void addItems(List<T> searchResults) {
+        @SuppressWarnings("unchecked")
+        List<? extends MediaDetails> mediaResults = (List<? extends MediaDetails>) searchResults;
+        adapter.addItems(mediaResults);
         loadingIndicator.setVisibility(View.GONE);
         if (adapter.getItemCount() == 0) {
             this.noData.setVisibility(View.VISIBLE);
@@ -130,7 +124,7 @@ public class SearchFragment extends Fragment implements RecyclerViewInterface {
         ft.addToBackStack(null);
 
         // Create and show the dialog.
-        FilterDialogFragment newFragment = new FilterDialogFragment(this.searchFilter);
+        FilterDialogFragment newFragment = new FilterDialogFragment(this.searchFilter, searchResults);
         newFragment.show(ft, "dialog");
     }
 
@@ -138,13 +132,5 @@ public class SearchFragment extends Fragment implements RecyclerViewInterface {
         this.adapter.clearItems();
         this.searchFilter.setPage(1);
         loadingIndicator.setVisibility(View.VISIBLE);
-    }
-
-    @Override
-    public void onItemClick(int position) {
-        Intent intent = new Intent(context, Details.class);
-        intent.putExtra("ID", adapter.getItem(position).getId());
-        intent.putExtra("Type", adapter.getItem(position).getType().rawValue);
-        startActivity(intent);
     }
 }

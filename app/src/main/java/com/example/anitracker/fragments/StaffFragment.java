@@ -1,7 +1,6 @@
 package com.example.anitracker.fragments;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,16 +16,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.anitracker.R;
-import com.example.anitracker.activities.Details;
 import com.example.anitracker.adapters.StaffViewAdapter;
-import com.example.anitracker.interfaces.RecyclerViewInterface;
 import com.example.anitracker.mediaObjects.StaffDetails;
 import com.example.anitracker.type.MediaType;
 import com.example.anitracker.viewModels.DetailsViewModel;
 
 import java.util.List;
 
-public class StaffFragment extends Fragment implements RecyclerViewInterface {
+public class StaffFragment extends Fragment {
     private Context context;
     private DetailsViewModel detailsViewModel;
     private StaffViewAdapter staffViewAdapter;
@@ -43,7 +40,7 @@ public class StaffFragment extends Fragment implements RecyclerViewInterface {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.detailsViewModel = new ViewModelProvider(requireActivity()).get(DetailsViewModel.class);
-        this.staffViewAdapter = new StaffViewAdapter(context, this, detailsViewModel);
+        this.staffViewAdapter = new StaffViewAdapter(context, detailsViewModel);
     }
 
     @Nullable
@@ -78,15 +75,5 @@ public class StaffFragment extends Fragment implements RecyclerViewInterface {
         } else {
             this.noData.setVisibility(View.GONE);
         }
-    }
-
-    @Override
-    public void onItemClick(int position) {
-        StaffDetails staffDetails = staffViewAdapter.getStaff(position);
-        Intent intent = new Intent(context, Details.class);
-        intent.putExtra("ID", staffDetails.getId());
-        intent.putExtra("Type", detailsViewModel.getMediaType().rawValue);
-        intent.putExtra("Entity", "Staff");
-        context.startActivity(intent);
     }
 }

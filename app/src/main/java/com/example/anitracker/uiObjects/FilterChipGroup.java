@@ -8,29 +8,32 @@ import com.example.anitracker.R;
 import com.google.android.material.chip.ChipGroup;
 
 import java.util.LinkedHashSet;
-import java.util.List;
 
 public class FilterChipGroup {
     private final boolean singleSelection, selectionRequired;
-    private final LinkedHashSet<String> selected;
-    private LinkedHashSet<String> choices;
+    private final LinkedHashSet<?> selected;
+    private LinkedHashSet<?> choices;
 
-    public FilterChipGroup(List<String> chipNames, LinkedHashSet<String> selected, boolean singleSelection, boolean selectionRequired) {
+    public FilterChipGroup(LinkedHashSet<?> choices, LinkedHashSet<?> selected, boolean singleSelection, boolean selectionRequired) {
         this.singleSelection = singleSelection;
         this.selectionRequired = selectionRequired;
-        this.choices = new LinkedHashSet<>(chipNames);
+        this.choices = choices;
         this.selected = selected;
     }
 
-    public LinkedHashSet<String> getChoices() {
+    public LinkedHashSet<?> getChoices() {
         return choices;
     }
 
-    public void setChoices(LinkedHashSet<String> choices) {
+    public void setChoices(LinkedHashSet<?> choices) {
         this.choices = choices;
     }
 
-    public LinkedHashSet<String> getSelected() {
+    public void clearChoices() {
+        this.choices.clear();
+    }
+
+    public LinkedHashSet<?> getSelected() {
         return selected;
     }
 

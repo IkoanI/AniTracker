@@ -1,7 +1,6 @@
 package com.example.anitracker.fragments;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,16 +16,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.anitracker.R;
-import com.example.anitracker.activities.Details;
 import com.example.anitracker.adapters.RelationsViewAdapter;
-import com.example.anitracker.interfaces.RecyclerViewInterface;
 import com.example.anitracker.mediaObjects.MediaDetails;
 import com.example.anitracker.viewModels.DetailsViewModel;
 
 import java.util.List;
 import java.util.Objects;
 
-public class RelationsFragment extends Fragment implements RecyclerViewInterface {
+public class RelationsFragment extends Fragment {
     protected Context context;
     protected ProgressBar loadingIndicator;
     protected RelationsViewAdapter relationsViewAdapter;
@@ -47,7 +44,7 @@ public class RelationsFragment extends Fragment implements RecyclerViewInterface
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         DetailsViewModel viewModel = new ViewModelProvider(requireActivity()).get(DetailsViewModel.class);
-        this.relationsViewAdapter = new RelationsViewAdapter(context, this, viewModel);
+        this.relationsViewAdapter = new RelationsViewAdapter(context, viewModel);
         View view = this.uiSetup(inflater, container);
 
         viewModel.observeRelationsPage().observe(getViewLifecycleOwner(), this::addRelations);
@@ -84,14 +81,5 @@ public class RelationsFragment extends Fragment implements RecyclerViewInterface
         } else {
             this.noData.setVisibility(View.GONE);
         }
-    }
-
-    @Override
-    public void onItemClick(int position) {
-        MediaDetails selected = relationsViewAdapter.getRelation(position);
-        Intent intent = new Intent(context, Details.class);
-        intent.putExtra("ID", selected.getId());
-        intent.putExtra("Type", selected.getType().rawValue);
-        startActivity(intent);
     }
 }
