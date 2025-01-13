@@ -74,6 +74,7 @@ public class SearchFragment extends Fragment {
         }
 
         // observe user search
+        this.searchFilter.setUserSearch(viewModel.getUserSearch().getValue());
         viewModel.observeUserSearch().observe(getViewLifecycleOwner(), res -> {
             this.resetSearchPage();
             this.searchFilter.setUserSearch(res);
